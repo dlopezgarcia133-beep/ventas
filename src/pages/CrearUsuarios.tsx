@@ -23,7 +23,7 @@ const CrearUsuario = () => {
   useEffect(() => {
   const fetchModulos = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/registro/modulos", config);
+      const res = await axios.get("${process.env.REACT_APP_API_URL}/registro/modulos", config);
       setModulos(res.data); // res.data debe ser [{id, nombre}, ...]
     } catch (err) {
       console.error("Error al cargar módulos");
@@ -35,7 +35,7 @@ const CrearUsuario = () => {
   const handleSubmit = async () => {
     try {
       await axios.post(
-        "http://localhost:8000/registro/registro",
+        "${process.env.REACT_APP_API_URL}/registro/registro",
         {
           username,
           password,

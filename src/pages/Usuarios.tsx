@@ -20,7 +20,7 @@ const UsuariosAdmin = () => {
 
   const cargarModulos = async () => {
   try {
-    const res = await axios.get("http://localhost:8000/registro/modulos", config);
+    const res = await axios.get("${process.env.REACT_APP_API_URL}/registro/modulos", config);
     setModulos(res.data);
   } catch (error) {
     console.error("Error al cargar módulos", error);
@@ -29,7 +29,7 @@ const UsuariosAdmin = () => {
 
   const cargarUsuarios = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/registro/usuarios", config);
+      const res = await axios.get("${process.env.REACT_APP_API_URL}/registro/usuarios", config);
       setUsuarios(res.data);
     } catch (err) {
       alert("Error al cargar usuarios");
@@ -54,7 +54,7 @@ const guardarCambios = async (id: number) => {
      delete datos.id;
     console.log("Enviando datos:", datos); // <-- AGREGA ESTO
 
-    await axios.put(`http://localhost:8000/registro/usuarios/${id}`, datos, config);
+    await axios.put(`${process.env.REACT_APP_API_URL}/registro/usuarios/${id}`, datos, config);
     setEditandoId(null);
     setFormulario({});
     cargarUsuarios();
@@ -66,7 +66,7 @@ const guardarCambios = async (id: number) => {
   const eliminarUsuario = async (id: number) => {
     if (!window.confirm("¿Estás seguro de eliminar este usuario?")) return;
     try {
-      await axios.delete(`http://localhost:8000/registro/usuarios/${id}`, config);
+      await axios.delete(`${process.env.REACT_APP_API_URL}/registro/usuarios/${id}`, config);
       cargarUsuarios();
     } catch (err: any) {
       alert(err.response?.data?.detail || "Error al eliminar usuario");

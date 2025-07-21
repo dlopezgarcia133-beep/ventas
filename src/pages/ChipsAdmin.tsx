@@ -16,7 +16,7 @@ const ChipsAdmin = () => {
 
   const fetchChips = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/ventas/venta_chips", {
+      const res = await axios.get('${process.env.REACT_APP_API_URL}/ventas/venta_chips', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setChips(res.data);
@@ -28,7 +28,7 @@ const ChipsAdmin = () => {
   const validarChip = async (id: number) => {
     try {
       await axios.put(
-        `http://localhost:8000/ventas/venta_chips/${id}/validar`,
+        `${process.env.REACT_APP_API_URL}/ventas/venta_chips/${id}/validar`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -97,7 +97,7 @@ const ChipsAdmin = () => {
         const motivo = e.target.value;
         try {
           await axios.put(
-            `http://localhost:8000/ventas/venta_chips/${chip.id}/motivo_rechazo`,
+            `${process.env.REACT_APP_API_URL}/ventas/venta_chips/${chip.id}/motivo_rechazo`,
             { descripcion: motivo },
             {
               headers: { Authorization: `Bearer ${token}` },

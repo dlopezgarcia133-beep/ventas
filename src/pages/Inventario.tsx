@@ -23,23 +23,23 @@ const InventarioAdmin = () => {
   const config = { headers: { Authorization: `Bearer ${token}` } };
 
   const cargarInventario = async () => {
-    const resProd = await axios.get('http://localhost:8000/inventario/inventario/general', config);
+    const resProd = await axios.get('${process.env.REACT_APP_API_URL}/inventario/inventario/general', config);
     setProductos(resProd.data);
-    const resTel = await axios.get('http://localhost:8000/inventario_telefonos/inventario_telefonos/general', config);
+    const resTel = await axios.get('${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general', config);
     setTelefonos(resTel.data);
   };
 
   const agregar = async () => {
     try {
       if (tipo === 'producto') {
-        await axios.post('http://localhost:8000/inventario/inventario/general', {
+        await axios.post('${process.env.REACT_APP_API_URL}/inventario/inventario/general', {
           producto: nuevo.producto,
           clave: nuevo.clave,
           precio: parseFloat(nuevo.precio),
           cantidad: parseInt(nuevo.cantidad)
         }, config);
       } else {
-        await axios.post('http://localhost:8000/inventario_telefonos/inventario_telefonos/general', {
+        await axios.post('${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general', {
           marca: nuevo.marca,
           modelo: nuevo.modelo,
           precio: parseFloat(nuevo.precio),
@@ -64,12 +64,12 @@ const InventarioAdmin = () => {
 const guardarCambios = async (item: any) => {
   try {
     if (item.tipo === 'producto') {
-      await axios.put(`http://localhost:8000/inventario/inventario/general/${item.id}`, {
+      await axios.put(`${process.env.REACT_APP_API_URL}/inventario/inventario/general/${item.id}`, {
         precio: parseFloat(editarData.precio),
         cantidad: parseInt(editarData.cantidad)
       }, config);
     } else {
-      await axios.put(`http://localhost:8000/inventario_telefonos/inventario_telefonos/general/${item.id}`, {
+      await axios.put(`${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general/${item.id}`, {
         precio: parseFloat(editarData.precio),
         cantidad: parseInt(editarData.cantidad)
       }, config);
@@ -90,9 +90,9 @@ const eliminarItem = async (item: any) => {
 
   try {
     if (item.tipo === 'producto') {
-      await axios.delete(`http://localhost:8000/inventario/inventario/general/${item.id}`, config);
+      await axios.delete(`${process.env.REACT_APP_API_URL}/inventario/inventario/general/${item.id}`, config);
     } else {
-      await axios.delete(`http://localhost:8000/inventario_telefonos/inventario_telefonos/general/${item.id}`, config);
+      await axios.delete(`${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general/${item.id}`, config);
     }
 
     cargarInventario();

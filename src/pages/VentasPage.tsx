@@ -41,7 +41,7 @@ const FormularioVentaMultiple = () => {
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const res = await axios.get('http://localhost:8000/inventario/inventario/general/productos-nombres', config);
+        const res = await axios.get('${process.env.REACT_APP_API_URL}/inventario/inventario/general/productos-nombres', config);
         setProductos(res.data);
       } catch (err) {
         console.error("Error al cargar productos:", err);
@@ -55,7 +55,7 @@ const FormularioVentaMultiple = () => {
     const fetchPrecio = async () => {
       if (producto) {
         try {
-          const res = await axios.get(`http://localhost:8000/inventario/inventario/general/${encodeURIComponent(producto)}`, config);
+          const res = await axios.get(`${process.env.REACT_APP_API_URL}/inventario/inventario/general/${encodeURIComponent(producto)}`, config);
           setPrecio(res.data.precio);
         } catch (err) {
           setPrecio(null);
@@ -69,7 +69,7 @@ const FormularioVentaMultiple = () => {
   
    const cargarVentas = async () => {
   try {
-    const res = await axios.get("http://localhost:8000/ventas/ventas", config);
+    const res = await axios.get("${process.env.REACT_APP_API_URL}/ventas/ventas", config);
     const todas = res.data;
     
     // Solo ventas con producto definido (no teléfonos)
@@ -107,7 +107,7 @@ const FormularioVentaMultiple = () => {
 
   const enviarCarrito = async () => {
     try {
-      await axios.post("http://localhost:8000/ventas/ventas/multiples", {
+      await axios.post("${process.env.REACT_APP_API_URL}/ventas/ventas/multiples", {
         productos: carrito,
         correo_cliente: correo
       }, config);
@@ -125,7 +125,7 @@ const FormularioVentaMultiple = () => {
   const cancelarVenta = async (id: number) => {
   if (!window.confirm("¿Estás seguro de cancelar esta venta?")) return;
   try {
-    await axios.put(`http://localhost:8000/ventas/ventas/${id}/cancelar`, {}, config);
+    await axios.put(`${process.env.REACT_APP_API_URL}/ventas/ventas/${id}/cancelar`, {}, config);
     alert("Venta cancelada");
     cargarVentas(); // para recargar la tabla
   } catch (err: any) {
@@ -140,7 +140,7 @@ const FormularioVentaMultiple = () => {
   const handleSubmit = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.post("http://localhost:8000/ventas/venta_chips", {
+      const res = await axios.post("${process.env.REACT_APP_API_URL}/ventas/venta_chips", {
         tipo_chip: tipoChip,
         numero_telefono: numero,
         monto_recarga: parseFloat(recarga),
@@ -168,7 +168,7 @@ const FormularioVentaMultiple = () => {
   const fetchTelefonosDisponibles = async () => {
     try {
       const modulo = localStorage.getItem("modulo"); // o usa el módulo del usuario logueado
-      const res = await axios.get(`http://localhost:8000/inventario_telefonos/modulo?modulo=${modulo}`, config);
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/inventario_telefonos/modulo?modulo=${modulo}`, config);
       const disponibles = res.data;
       setTelefonosDisponibles(disponibles);  // Guarda lista de { marca, modelo, cantidad }
     } catch (err) {
@@ -193,7 +193,7 @@ const registrarVentaTelefono = async () => {
   }
 
   try {
-    await axios.post("http://localhost:8000/ventas/venta_telefonos", {
+    await axios.post("${process.env.REACT_APP_API_URL}/ventas/venta_telefonos", {
       marca: telefonoMarca,
       modelo: telefonoModelo,
       tipo: telefonoTipo,

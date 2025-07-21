@@ -26,7 +26,7 @@ const TablaComisiones = () => {
     const config = {
     headers: {Authorization: `Bearer ${token}`,},
 };
-    const res = await axios.get("http://localhost:8000/comisiones/comisiones", config);
+    const res = await axios.get("${process.env.REACT_APP_API_URL}/comisiones/comisiones", config);
     setComisiones(res.data);
   };
 
@@ -36,7 +36,7 @@ const TablaComisiones = () => {
     const config = {
       headers: { Authorization: `Bearer ${token}` },
     };
-    await axios.post("http://localhost:8000/comisiones/comisiones", { producto, cantidad: parseFloat(cantidad) }, config);
+    await axios.post("${process.env.REACT_APP_API_URL}/comisiones/comisiones", { producto, cantidad: parseFloat(cantidad) }, config);
     setProducto("");
     setCantidad("");
     cargarComisiones();
@@ -51,7 +51,7 @@ const guardarEdicion = async (producto: string) => {
     const config = {
       headers: { Authorization: `Bearer ${token}` },
     };
-    await axios.put(`http://localhost:8000/comisiones/comisiones/${producto}`, { cantidad: parseFloat(nuevaCantidad) }, config);
+    await axios.put(`${process.env.REACT_APP_API_URL}/comisiones/comisiones/${producto}`, { cantidad: parseFloat(nuevaCantidad) }, config);
     setEditando(null);
     setNuevaCantidad("");
     cargarComisiones();
@@ -67,7 +67,7 @@ const eliminarComision = async (producto: string) => {
     const config = {
       headers: { Authorization: `Bearer ${token}` },
     };
-    await axios.delete(`http://localhost:8000/comisiones/comisiones/${producto}`, config);
+    await axios.delete(`${process.env.REACT_APP_API_URL}/comisiones/comisiones/${producto}`, config);
     cargarComisiones();
   } catch (err) {
     alert("Error al eliminar comisión");

@@ -15,13 +15,13 @@ const TraspasosAdmin = () => {
   };
 
   const cargarTraspasos = async () => {
-    const res = await axios.get("http://localhost:8000/traspasos/traspasos", config);
+    const res = await axios.get("${process.env.REACT_APP_API_URL}/traspasos/traspasos", config);
     setTraspasos(res.data);
   };
 
   const actualizarEstado = async (id: number, estado: "aprobado" | "rechazado") => {
     try {
-      await axios.put(`http://localhost:8000/traspasos/traspasos/${id}`, { estado }, config);
+      await axios.put(`${process.env.REACT_APP_API_URL}/traspasos/traspasos/${id}`, { estado }, config);
       cargarTraspasos();
     } catch (err: any) {
       alert(err.response?.data?.detail || "Error al actualizar traspaso");

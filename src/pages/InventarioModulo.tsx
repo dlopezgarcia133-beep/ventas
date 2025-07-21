@@ -24,13 +24,13 @@ const InventarioPorModulo = () => {
   const config = { headers: { Authorization: `Bearer ${token}` } };
 
   const cargarModulos = async () => {
-    const res = await axios.get("http://localhost:8000/registro/modulos", config);
+    const res = await axios.get("${process.env.REACT_APP_API_URL}/registro/modulos", config);
     setModulos(res.data);
   };
 
   const cargarInventario = async () => {
     if (!moduloSeleccionado) return;
-    const res = await axios.get(`http://localhost:8000/inventario/inventario/modulo?modulo=${moduloSeleccionado}`, config);
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo?modulo=${moduloSeleccionado}`, config);
      console.log("Inventario recibido:", res.data);
     setInventario(res.data);
   };
@@ -45,7 +45,7 @@ const InventarioPorModulo = () => {
   precio: parseFloat(nuevo.precio),
   modulo: moduloSeleccionado
 });
-      await axios.post("http://localhost:8000/inventario/inventario/modulo", {
+      await axios.post("${process.env.REACT_APP_API_URL}/inventario/inventario/modulo", {
         producto: nuevo.producto,
         clave: nuevo.clave,
         cantidad: parseInt(nuevo.cantidad),
@@ -53,7 +53,7 @@ const InventarioPorModulo = () => {
         modulo: moduloSeleccionado,
       }, config);
     } else {
-      await axios.post("http://localhost:8000/inventario_telefonos/inventario_telefonos/modulo", {
+      await axios.post("${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/modulo", {
         marca: nuevoTelefono.marca,
         modelo: nuevoTelefono.modelo,
         cantidad: parseInt(nuevo.cantidad),
@@ -72,7 +72,7 @@ const InventarioPorModulo = () => {
 
   const guardarEdicion = async (producto: string) => {
     try {
-      await axios.put(`http://localhost:8000/inventario/inventario/modulo/${producto}`, {
+      await axios.put(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${producto}`, {
         cantidad: parseInt(editarData.cantidad),
         precio: parseFloat(editarData.precio),
         modulo: moduloSeleccionado
@@ -87,7 +87,7 @@ const InventarioPorModulo = () => {
   const eliminarProducto = async (id: number) => {
     if (!window.confirm("¿Eliminar este producto del módulo?")) return;
     try {
-      await axios.delete(`http://localhost:8000/inventario/inventario/modulo/${id}?modulo=${moduloSeleccionado}`, config);
+      await axios.delete(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${id}?modulo=${moduloSeleccionado}`, config);
       cargarInventario();
     } catch {
       alert("Error al eliminar");

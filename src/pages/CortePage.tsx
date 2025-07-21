@@ -18,7 +18,7 @@ const CortePage = () => {
   useEffect(() => {
     const cargarResumen = async () => {
       try {
-        const res = await axios.get('http://localhost:8000/ventas/corte-general', config);
+        const res = await axios.get('${process.env.REACT_APP_API_URL}/ventas/corte-general', config);
         setResumen(res.data);
       } catch (err) {
         console.error("Error al obtener datos del corte", err);
