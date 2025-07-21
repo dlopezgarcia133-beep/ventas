@@ -41,7 +41,7 @@ const FormularioVentaMultiple = () => {
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const res = await axios.get('${process.env.REACT_APP_API_URL}/inventario/inventario/general/productos-nombres', config);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/inventario/inventario/general/productos-nombres`, config);
         setProductos(res.data);
       } catch (err) {
         console.error("Error al cargar productos:", err);
@@ -69,7 +69,7 @@ const FormularioVentaMultiple = () => {
   
    const cargarVentas = async () => {
   try {
-    const res = await axios.get("${process.env.REACT_APP_API_URL}/ventas/ventas", config);
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/ventas`, config);
     const todas = res.data;
     
     // Solo ventas con producto definido (no teléfonos)
@@ -107,7 +107,7 @@ const FormularioVentaMultiple = () => {
 
   const enviarCarrito = async () => {
     try {
-      await axios.post("${process.env.REACT_APP_API_URL}/ventas/ventas/multiples", {
+      await axios.post(`${process.env.REACT_APP_API_URL}/ventas/ventas/multiples`, {
         productos: carrito,
         correo_cliente: correo
       }, config);
@@ -140,7 +140,7 @@ const FormularioVentaMultiple = () => {
   const handleSubmit = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.post("${process.env.REACT_APP_API_URL}/ventas/venta_chips", {
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/ventas/venta_chips`, {
         tipo_chip: tipoChip,
         numero_telefono: numero,
         monto_recarga: parseFloat(recarga),
@@ -193,7 +193,7 @@ const registrarVentaTelefono = async () => {
   }
 
   try {
-    await axios.post("${process.env.REACT_APP_API_URL}/ventas/venta_telefonos", {
+    await axios.post(`${process.env.REACT_APP_API_URL}/ventas/venta_telefonos`, {
       marca: telefonoMarca,
       modelo: telefonoModelo,
       tipo: telefonoTipo,

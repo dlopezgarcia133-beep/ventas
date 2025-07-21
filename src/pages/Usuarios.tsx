@@ -20,7 +20,7 @@ const UsuariosAdmin = () => {
 
   const cargarModulos = async () => {
   try {
-    const res = await axios.get("${process.env.REACT_APP_API_URL}/registro/modulos", config);
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/registro/modulos`, config);
     setModulos(res.data);
   } catch (error) {
     console.error("Error al cargar módulos", error);
@@ -29,7 +29,7 @@ const UsuariosAdmin = () => {
 
   const cargarUsuarios = async () => {
     try {
-      const res = await axios.get("${process.env.REACT_APP_API_URL}/registro/usuarios", config);
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/registro/usuarios`, config);
       setUsuarios(res.data);
     } catch (err) {
       alert("Error al cargar usuarios");

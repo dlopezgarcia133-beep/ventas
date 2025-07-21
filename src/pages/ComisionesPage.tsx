@@ -26,7 +26,7 @@ const TablaComisiones = () => {
     const config = {
     headers: {Authorization: `Bearer ${token}`,},
 };
-    const res = await axios.get("${process.env.REACT_APP_API_URL}/comisiones/comisiones", config);
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/comisiones/comisiones`, config);
     setComisiones(res.data);
   };
 
@@ -36,7 +36,7 @@ const TablaComisiones = () => {
     const config = {
       headers: { Authorization: `Bearer ${token}` },
     };
-    await axios.post("${process.env.REACT_APP_API_URL}/comisiones/comisiones", { producto, cantidad: parseFloat(cantidad) }, config);
+    await axios.post(`${process.env.REACT_APP_API_URL}/comisiones/comisiones`, { producto, cantidad: parseFloat(cantidad) }, config);
     setProducto("");
     setCantidad("");
     cargarComisiones();

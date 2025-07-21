@@ -16,7 +16,7 @@ const ChipsAdmin = () => {
 
   const fetchChips = async () => {
     try {
-      const res = await axios.get('${process.env.REACT_APP_API_URL}/ventas/venta_chips', {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/venta_chips`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setChips(res.data);

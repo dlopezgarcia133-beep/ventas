@@ -24,7 +24,7 @@ const InventarioPorModulo = () => {
   const config = { headers: { Authorization: `Bearer ${token}` } };
 
   const cargarModulos = async () => {
-    const res = await axios.get("${process.env.REACT_APP_API_URL}/registro/modulos", config);
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/registro/modulos`, config);
     setModulos(res.data);
   };
 
@@ -45,7 +45,7 @@ const InventarioPorModulo = () => {
   precio: parseFloat(nuevo.precio),
   modulo: moduloSeleccionado
 });
-      await axios.post("${process.env.REACT_APP_API_URL}/inventario/inventario/modulo", {
+      await axios.post(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo`, {
         producto: nuevo.producto,
         clave: nuevo.clave,
         cantidad: parseInt(nuevo.cantidad),
@@ -53,7 +53,7 @@ const InventarioPorModulo = () => {
         modulo: moduloSeleccionado,
       }, config);
     } else {
-      await axios.post("${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/modulo", {
+      await axios.post(`${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/modulo`, {
         marca: nuevoTelefono.marca,
         modelo: nuevoTelefono.modelo,
         cantidad: parseInt(nuevo.cantidad),

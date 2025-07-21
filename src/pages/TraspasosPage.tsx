@@ -20,18 +20,18 @@ const TraspasosEncargado = () => {
   };
 
   const cargarModulos = async () => {
-    const res = await axios.get("${process.env.REACT_APP_API_URL}/registro/modulos", config);
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/registro/modulos`, config);
     setModulos(res.data.map((mod: any) => mod.nombre));
   };
 
   const cargarTraspasos = async () => {
-    const res = await axios.get("${process.env.REACT_APP_API_URL}/traspasos/traspasos", config);
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/traspasos/traspasos`, config);
     setTraspasos(res.data);
   };
 
   const solicitarTraspaso = async () => {
     try {
-      await axios.post("${process.env.REACT_APP_API_URL}/traspasos/traspasos", {
+      await axios.post(`${process.env.REACT_APP_API_URL}/traspasos/traspasos`, {
         producto,
         cantidad: parseInt(cantidad),
         modulo_destino: destino,

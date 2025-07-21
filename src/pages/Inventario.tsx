@@ -23,23 +23,23 @@ const InventarioAdmin = () => {
   const config = { headers: { Authorization: `Bearer ${token}` } };
 
   const cargarInventario = async () => {
-    const resProd = await axios.get('${process.env.REACT_APP_API_URL}/inventario/inventario/general', config);
+    const resProd = await axios.get(`${process.env.REACT_APP_API_URL}/inventario/inventario/general`, config);
     setProductos(resProd.data);
-    const resTel = await axios.get('${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general', config);
+    const resTel = await axios.get(`${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general`, config);
     setTelefonos(resTel.data);
   };
 
   const agregar = async () => {
     try {
       if (tipo === 'producto') {
-        await axios.post('${process.env.REACT_APP_API_URL}/inventario/inventario/general', {
+        await axios.post(`${process.env.REACT_APP_API_URL}/inventario/inventario/general`, {
           producto: nuevo.producto,
           clave: nuevo.clave,
           precio: parseFloat(nuevo.precio),
           cantidad: parseInt(nuevo.cantidad)
         }, config);
       } else {
-        await axios.post('${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general', {
+        await axios.post(`${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general`, {
           marca: nuevo.marca,
           modelo: nuevo.modelo,
           precio: parseFloat(nuevo.precio),
