@@ -24,7 +24,7 @@ const LoginPage: React.FC = () => {
     
       localStorage.setItem('token', response.data.access_token);
 
-      navegacion('/dashboard')
+      navegacion('/ventas')
 
     } catch (err) {
       setError('Credenciales inválidas. Intenta nuevamente.');
