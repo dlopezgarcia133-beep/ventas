@@ -15,15 +15,18 @@ const ChipsAdmin = () => {
 
 
   const fetchChips = async () => {
-    try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/venta_chips`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setChips(res.data);
-    } catch (error) {
-      console.error("Error al cargar chips:", error);
-    }
-  };
+  try {
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/venta_chips`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const sinValidados = res.data.filter((chip: VentaChip) => !chip.validado);
+    setChips(sinValidados);
+  } catch (error) {
+    console.error("Error al cargar chips:", error);
+  }
+};
+
 
   const validarChip = async (id: number) => {
     try {
@@ -71,7 +74,7 @@ const ChipsAdmin = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {chips.map((chip) => (
+                  {chips.filter(chip => !chip.validado).map((chip) => (
                     <TableRow key={chip.id}>
                       <TableCell>{chip.empleado?.username ?? "Empleado eliminado"}</TableCell>
                       <TableCell>{chip.tipo_chip}</TableCell>
@@ -159,7 +162,7 @@ const ChipsAdmin = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {chips.map((chip) => (
+                  {chips.filter(chip => !chip.validado).map((chip) => (
                     <TableRow key={chip.id}>
                       <TableCell>{chip.empleado && chip.empleado.username? chip.empleado.username: "Empleado eliminado"}</TableCell>
                       <TableCell>{chip.tipo_chip}</TableCell>

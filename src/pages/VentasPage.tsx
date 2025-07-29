@@ -15,6 +15,7 @@ const FormularioVentaMultiple = () => {
   const [producto, setProducto] = useState('');
   const [precio, setPrecio] = useState<number | null>(null);
   const [cantidad, setCantidad] = useState<number>(1);
+  const [metodoPago, setMetodoPago] = useState('');
   const [correo, setCorreo] = useState('');
   const [carrito, setCarrito] = useState<ProductoEnVenta[]>([]);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
@@ -109,12 +110,14 @@ const FormularioVentaMultiple = () => {
     try {
       await axios.post(`${process.env.REACT_APP_API_URL}/ventas/ventas/multiples`, {
         productos: carrito,
-        correo_cliente: correo
+        correo_cliente: correo,
+        metodo_pago: metodoPago,
       }, config);
 
       setMensaje({ tipo: 'success', texto: 'Venta registrada con éxito.' });
       setCarrito([]);
       setCorreo('');
+      
     } catch (err: any) {
       console.error(err);
     const msg = err?.response?.data?.detail || 'Error al registrar la venta ';
@@ -255,6 +258,18 @@ const registrarVentaTelefono = async () => {
           fullWidth
           margin="normal"
         />
+          <TextField
+            select
+            label="Método de pago"
+            value={metodoPago}
+            onChange={(e) => setMetodoPago(e.target.value)}
+            fullWidth
+            margin="normal"
+            required
+          >
+            <MenuItem value="efectivo">Efectivo</MenuItem>
+            <MenuItem value="tarjeta">Tarjeta</MenuItem>
+          </TextField>
 
         <Button
           variant="outlined"

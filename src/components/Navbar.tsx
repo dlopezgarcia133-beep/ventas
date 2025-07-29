@@ -8,10 +8,24 @@ const Navbar = () => {
   const navigate = useNavigate();
   const rol = obtenerRolDesdeToken();
 
-  const cerrarSesion = () => {
+  const cerrarSesion = async () => {
+  const token = localStorage.getItem("token");
+
+  try {
+    await fetch(`${process.env.REACT_APP_API_URL}/logout`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.error("Error al registrar salida:", error);
+  } finally {
     localStorage.removeItem("token");
     navigate("/");
-  };
+  }
+};
+
 
   return (
     <AppBar position="static" color="primary">

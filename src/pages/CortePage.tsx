@@ -35,6 +35,29 @@ const CortePage = () => {
 
   const totalFinal = (resumen?.total_general || 0) + totalAdicional;
 
+  const guardarCorte = async () => {
+  try {
+    const payload = {
+      fecha: new Date().toISOString().split('T')[0],
+      total_efectivo: (resumen?.ventas_productos?.efectivo || 0) + (resumen?.ventas_telefonos?.efectivo || 0),
+      total_tarjeta: (resumen?.ventas_productos?.tarjeta || 0) + (resumen?.ventas_telefonos?.tarjeta || 0),
+      adicional_recargas: parseFloat(recargas || '0'),
+      adicional_transporte: parseFloat(transporte || '0'),
+      adicional_otros: parseFloat(otros || '0'),
+      total_sistema: resumen?.total_general || 0,
+      total_general: totalFinal
+    };
+
+    await axios.post(`${process.env.REACT_APP_API_URL}/cortes`, payload, config);
+
+    alert("✅ Corte del día guardado correctamente");
+  } catch (error) {
+    console.error("Error al guardar el corte:", error);
+    alert("❌ Hubo un error al guardar el corte");
+  }
+};
+
+
   return (
     <Box sx={{ p: 4 }}>
       <Typography variant="h4" gutterBottom>
@@ -105,7 +128,24 @@ const CortePage = () => {
         </Grid>
 
       </Grid>
+      <Box textAlign="right" mt={4}>
+        <button
+          onClick={guardarCorte}
+          style={{
+            backgroundColor: '#1976d2',
+            color: 'white',
+            padding: '10px 20px',
+            border: 'none',
+            borderRadius: '5px',
+            fontWeight: 'bold',
+            cursor: 'pointer'
+          }}
+        >
+          💾 Guardar Corte del Día
+        </button>
+      </Box>
     </Box>
+    
   );
 };
 
