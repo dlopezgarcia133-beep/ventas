@@ -12,7 +12,7 @@ const Navbar = () => {
   const token = localStorage.getItem("token");
 
   try {
-    await fetch(`${process.env.REACT_APP_API_URL}/logout`, {
+    await fetch(`${process.env.REACT_APP_API_URL}/asistencias/logout`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
