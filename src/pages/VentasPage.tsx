@@ -5,13 +5,13 @@ import {
   FormControlLabel,Switch,Slide
 } from '@mui/material';
 import axios from 'axios';
-import { ProductoEnVenta, Venta } from '../Types';
+import { ProductoEnVenta, Venta, VentaTelefono } from '../Types';
 import { useNavigate } from 'react-router-dom';
 
 const FormularioVentaMultiple = () => {
   const [productos, setProductos] = useState<string[]>([]);
   const [ventas, setVentas] = useState<Venta[]>([]);
-  const [ventasTelefonos, setVentasTelefonos] = useState<Venta[]>([]);
+  const [ventasTelefonos, setVentasTelefonos] = useState<VentaTelefono[]>([]);
   const [producto, setProducto] = useState('');
   const [precio, setPrecio] = useState<number | null>(null);
   const [cantidad, setCantidad] = useState<number>(1);
@@ -136,6 +136,18 @@ const FormularioVentaMultiple = () => {
   }
 };
 
+const cancelarVentaTelefono = async (id: number) => {
+  try {
+    await axios.put(`${process.env.REACT_APP_API_URL}/venta_telefonos/${id}/cancelar`, {}, config);
+    setVentasTelefonos((prev) =>
+      prev.map((venta) => (venta.id === id ? { ...venta, cancelada: true } : venta))
+    );
+  } catch (err) {
+    console.error("Error al cancelar la venta", err);
+  }
+};
+
+
   const handleChange = () => {
     setChecked(!checked);
   };
@@ -168,18 +180,19 @@ const FormularioVentaMultiple = () => {
   };
 
   useEffect(() => {
-  const fetchTelefonosDisponibles = async () => {
+  const fetchVentasTelefonos = async () => {
     try {
-      const modulo = localStorage.getItem("modulo"); // o usa el módulo del usuario logueado
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/inventario_telefonos/modulo?modulo=${modulo}`, config);
-      const disponibles = res.data;
-      setTelefonosDisponibles(disponibles);  // Guarda lista de { marca, modelo, cantidad }
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/ventas/ventas_telefonos`, 
+        config
+      );
+      setVentasTelefonos(res.data);
     } catch (err) {
-      console.error("Error al cargar inventario de teléfonos", err);
+      console.error("Error al cargar ventas de teléfonos", err);
     }
   };
 
-  fetchTelefonosDisponibles();
+  fetchVentasTelefonos();
 }, []);
 
 
@@ -200,6 +213,7 @@ const registrarVentaTelefono = async () => {
       marca: telefonoMarca,
       modelo: telefonoModelo,
       tipo: telefonoTipo,
+      metodo_pago: metodoPago,
       precio_venta: parseFloat(telefonoPrecio),
       correo_cliente: correo || null
     }, config);
@@ -208,6 +222,7 @@ const registrarVentaTelefono = async () => {
     setTelefonoMarca('');
     setTelefonoModelo('');
     setTelefonoTipo('');
+    setMetodoPago('');
     setTelefonoPrecio('');
   } catch (err: any) {
     console.error(err);
@@ -432,6 +447,18 @@ const registrarVentaTelefono = async () => {
       fullWidth
       margin="normal"
     />
+    <TextField
+  select
+  label="Método de pago"
+  value={metodoPago}
+  onChange={(e) => setMetodoPago(e.target.value)}
+  fullWidth
+  margin="normal"
+  required
+>
+  <MenuItem value="efectivo">💵 Efectivo</MenuItem>
+  <MenuItem value="tarjeta">💳 Tarjeta</MenuItem>
+</TextField>
 
     <Button
       variant="contained"
@@ -528,10 +555,10 @@ const registrarVentaTelefono = async () => {
               <tbody>
                 {ventasTelefonos.map((v) => (
                   <tr key={v.id}>
-                    <td style={{ padding: 8 }}>{v.producto}</td>
-                    <td style={{ padding: 8 }}>{v.cantidad}</td>
+                    <td style={{ padding: 8 }}>{v.marca}</td>
+                    <td style={{ padding: 8 }}>{v.modelo}</td>
                     <td style={{ padding: 8 }}>
-                      ${typeof v.precio_unitario === "number" ? v.precio_unitario.toFixed(2) : "0.00"}
+                      ${typeof v.precio_venta === "number" ? v.precio_venta.toFixed(2) : "0.00"}
                     </td>
                     <td style={{ padding: 8 }}>
                       ${typeof v.total === "number" ? v.total.toFixed(2) : "0.00"}

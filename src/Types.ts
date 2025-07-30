@@ -17,6 +17,20 @@ export interface Venta {
   fecha: string;
   cancelada: boolean;
 }
+
+export interface VentaTelefono {
+  id: number;
+  marca: string;
+  modelo: string;
+  tipo?: string;
+  precio_venta: number;
+  total: number;
+  comision: number;
+  metodo_pago: string;
+  fecha: string;
+  hora: string;
+  cancelada?: boolean;
+}
   
 export interface ProductoEnVenta {
     id: number;
@@ -113,6 +127,8 @@ export interface VentaChip {
     username: string;
   };
 }
+
+
 
 export interface ComisionData {
   inicio_ciclo: string;
