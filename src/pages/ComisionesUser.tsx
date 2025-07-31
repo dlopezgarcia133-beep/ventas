@@ -27,7 +27,7 @@ const ComisionesUsuario = () => {
 
   const fetchCicloPorFechas = async () => {
     if (!inicio || !fin) return;
-    const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/comisiones/ciclo_por_fechas`, {
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/comisiones/comisiones/ciclo_por_fechas`, {
       params: {
         inicio: dayjs(inicio).format("YYYY-MM-DD"),
         fin: dayjs(fin).format("YYYY-MM-DD")
