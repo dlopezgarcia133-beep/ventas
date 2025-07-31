@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Box, Paper, Typography, Grid, TextField, Divider, Alert
+  Box, Paper, Typography, TextField, Divider, Alert
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import axios from 'axios';
 
 const CortePage = () => {
