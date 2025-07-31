@@ -95,7 +95,8 @@ const eliminarComision = async (producto: string) => {
 
 const fetchCicloPorFechas = async () => {
     if (!inicio || !fin) return;
-    const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/comisiones/ciclo_por_fechas`, {
+    try {
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/comisiones/comisiones/ciclo_por_fechas`, {
       params: {
         inicio: dayjs(inicio).format("YYYY-MM-DD"),
         fin: dayjs(fin).format("YYYY-MM-DD")
@@ -103,6 +104,10 @@ const fetchCicloPorFechas = async () => {
       headers: { Authorization: `Bearer ${token}` },
     });
     setData(res.data);
+  } catch (err) {
+    console.error("Error al obtener comisiones:", err);
+    setData(null); // o setData({ error: true }) para manejarlo visualmente
+  }
   };
 
   useEffect(() => {
