@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
-  Box,Button,Container,IconButton,Paper,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,
+  Box,Button,Container,Divider,IconButton,Paper,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import { Delete, Edit, Save } from "@mui/icons-material";
 import dayjs, { Dayjs } from 'dayjs';
 import { ComisionData } from "../Types";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 
 
@@ -115,6 +119,38 @@ const fetchCicloPorFechas = async () => {
 
   return (
     <Container sx={{ mt: 4 }}>
+
+      <ToggleButtonGroup
+        value={modo}
+        exclusive
+        onChange={(_, v) => v && setModo(v)}
+        sx={{ mb: 2 }}
+      >
+        <ToggleButton value="actual">Ciclo Actual</ToggleButton>
+        <ToggleButton value="personalizado">Buscar por Fechas</ToggleButton>
+      </ToggleButtonGroup>
+
+      {modo === "personalizado" && (
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker label="Inicio del ciclo" value={inicio} onChange={setInicio} />
+            <DatePicker label="Fin del ciclo" value={fin} onChange={setFin} />
+          </LocalizationProvider>
+          <Button variant="contained" onClick={handleBuscar}>Buscar</Button>
+        </Box>
+      )}
+
+      {!data ? <Typography>Cargando...</Typography> : (
+        <>
+          <Typography variant="h6" gutterBottom>
+            Ciclo de comisión: {data.inicio_ciclo} al {data.fin_ciclo}
+          </Typography>
+          <Typography variant="subtitle1">
+            Pago programado para el: <strong>{data.fecha_pago}</strong>
+          </Typography>
+          <Divider sx={{ my: 2 }} />
+
+
       <Typography variant="h5" gutterBottom>
         Gestión de Comisiones
       </Typography>
@@ -200,6 +236,8 @@ const fetchCicloPorFechas = async () => {
           </TableBody>
         </Table>
       </TableContainer>
+        </>
+      )}
     </Container>
   );
 };
