@@ -4,10 +4,11 @@ import {
   Box, Typography, Paper, Divider, Button,
   Table, TableBody, TableCell, TableHead, TableRow, ToggleButtonGroup, ToggleButton
 } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { ComisionData } from "../Types";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 const ComisionesUsuario = () => {
   const [data, setData] = useState<ComisionData | null>(null);
@@ -58,8 +59,10 @@ const ComisionesUsuario = () => {
 
       {modo === "personalizado" && (
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker label="Inicio del ciclo" value={inicio} onChange={setInicio} />
           <DatePicker label="Fin del ciclo" value={fin} onChange={setFin} />
+          </LocalizationProvider>
           <Button variant="contained" onClick={handleBuscar}>Buscar</Button>
         </Box>
       )}
