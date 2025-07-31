@@ -6,6 +6,8 @@ import {
   Typography,
 } from "@mui/material";
 import { Delete, Edit, Save } from "@mui/icons-material";
+import dayjs, { Dayjs } from 'dayjs';
+import { ComisionData } from "../Types";
 
 
 
@@ -16,10 +18,15 @@ type Comision = {
 
 const TablaComisiones = () => {
   const [comisiones, setComisiones] = useState<Comision[]>([]);
+  const [data, setData] = useState<ComisionData | null>(null);
   const [producto, setProducto] = useState("");
   const [cantidad, setCantidad] = useState("");
   const [editando, setEditando] = useState<string | null>(null);
   const [nuevaCantidad, setNuevaCantidad] = useState("");
+  const [modo, setModo] = useState<'actual' | 'personalizado'>('actual');
+  const [inicio, setInicio] = useState<Dayjs | null>(null);
+  const [fin, setFin] = useState<Dayjs | null>(null);
+  const token = localStorage.getItem("token");
 
   const cargarComisiones = async () => {
     const token = localStorage.getItem('token');
@@ -73,6 +80,34 @@ const eliminarComision = async (producto: string) => {
     alert("Error al eliminar comisión");
   }
 };
+
+ const fetchCicloActual = async () => {
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/comisiones/ciclo`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setData(res.data);
+  };
+
+
+const fetchCicloPorFechas = async () => {
+    if (!inicio || !fin) return;
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/comisiones/ciclo_por_fechas`, {
+      params: {
+        inicio: dayjs(inicio).format("YYYY-MM-DD"),
+        fin: dayjs(fin).format("YYYY-MM-DD")
+      },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setData(res.data);
+  };
+
+  useEffect(() => {
+    if (modo === "actual") fetchCicloActual();
+  }, [modo]);
+
+  const handleBuscar = () => {
+    if (modo === "personalizado") fetchCicloPorFechas();
+  };
 
   useEffect(() => {
     cargarComisiones();
