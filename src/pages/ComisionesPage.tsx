@@ -125,7 +125,7 @@ const fetchCicloPorFechas = async () => {
 useEffect(() => {
   const cargarUsuarios = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/usuarios`, {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/registro/usuarios`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsuarios(res.data);
