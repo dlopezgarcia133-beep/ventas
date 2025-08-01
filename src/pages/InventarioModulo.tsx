@@ -72,7 +72,7 @@ const InventarioPorModulo = () => {
 
   const guardarEdicion = async (producto: string) => {
     try {
-      await axios.put(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${producto}`, {
+      await axios.put(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${encodeURIComponent(producto)}`, {
         cantidad: parseInt(editarData.cantidad),
         precio: parseFloat(editarData.precio),
         modulo: moduloSeleccionado
