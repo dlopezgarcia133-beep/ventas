@@ -30,6 +30,9 @@ const TablaComisiones = () => {
   const [modo, setModo] = useState<'actual' | 'personalizado'>('actual');
   const [inicio, setInicio] = useState<Dayjs | null>(null);
   const [fin, setFin] = useState<Dayjs | null>(null);
+  const [usuarios, setUsuarios] = useState<{ id: number; nombre: string }[]>([]);
+  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<number | null>(null)
+  const [rol, setRol] = useState<string | null>(null);
   const token = localStorage.getItem("token");
 
   const cargarComisiones = async () => {
@@ -85,34 +88,71 @@ const eliminarComision = async (producto: string) => {
   }
 };
 
- const fetchCicloActual = async () => {
-    const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/comisiones/ciclo`, {
+const fetchCicloActual = async () => {
+  try {
+    const endpoint = empleadoSeleccionado
+      ? `${process.env.REACT_APP_API_URL}/ventas/comisiones/ciclo/${empleadoSeleccionado}`
+      : `${process.env.REACT_APP_API_URL}/ventas/comisiones/ciclo`;
+
+    const res = await axios.get(endpoint, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setData(res.data);
-  };
-
+  } catch (err) {
+    console.error("Error al obtener comisiones actuales", err);
+    setData(null);
+  }
+};
 
 const fetchCicloPorFechas = async () => {
-    if (!inicio || !fin) return;
-    try {
+  if (!inicio || !fin) return;
+  try {
     const res = await axios.get(`${process.env.REACT_APP_API_URL}/comisiones/comisiones/ciclo_por_fechas`, {
       params: {
         inicio: dayjs(inicio).format("YYYY-MM-DD"),
-        fin: dayjs(fin).format("YYYY-MM-DD")
+        fin: dayjs(fin).format("YYYY-MM-DD"),
+        empleado_id: empleadoSeleccionado ?? undefined,
       },
       headers: { Authorization: `Bearer ${token}` },
     });
     setData(res.data);
   } catch (err) {
-    console.error("Error al obtener comisiones:", err);
-    setData(null); // o setData({ error: true }) para manejarlo visualmente
+    console.error("Error al obtener comisiones por fechas:", err);
+    setData(null);
   }
+};
+
+
+useEffect(() => {
+  const cargarUsuarios = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/usuarios`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUsuarios(res.data);
+    } catch (err) {
+      console.warn("No se pudo cargar usuarios (probablemente no eres admin)");
+    }
   };
+
+  const obtenerRol = () => {
+    const payload = token ? JSON.parse(atob(token.split('.')[1])) : null;
+    if (payload?.rol) {
+      setRol(payload.rol);
+    }
+  };
+
+  obtenerRol();
+  cargarUsuarios();
+}, []);
 
   useEffect(() => {
     if (modo === "actual") fetchCicloActual();
   }, [modo]);
+
+  useEffect(() => {
+  if (modo === "actual") fetchCicloActual();
+}, [modo, empleadoSeleccionado]);
 
   const handleBuscar = () => {
     if (modo === "personalizado") fetchCicloPorFechas();
@@ -134,6 +174,26 @@ const fetchCicloPorFechas = async () => {
         <ToggleButton value="actual">Ciclo Actual</ToggleButton>
         <ToggleButton value="personalizado">Buscar por Fechas</ToggleButton>
       </ToggleButtonGroup>
+
+      {rol === 'admin' && (
+        <Box sx={{ mb: 2 }}>
+          <TextField
+            select
+            label="Seleccionar Empleado"
+            value={empleadoSeleccionado ?? ""}
+            onChange={(e) => setEmpleadoSeleccionado(Number(e.target.value))}
+            SelectProps={{ native: true }}
+            fullWidth
+          >
+            <option value="">(Tú mismo)</option>
+            {usuarios.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.nombre}
+              </option>
+            ))}
+          </TextField>
+        </Box>
+      )}
 
       {modo === "personalizado" && (
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
