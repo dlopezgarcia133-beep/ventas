@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { Delete, Edit, Save } from "@mui/icons-material";
 import dayjs, { Dayjs } from 'dayjs';
-import { ComisionData } from "../Types";
+import { ComisionData, Usuario } from "../Types";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
@@ -30,7 +30,7 @@ const TablaComisiones = () => {
   const [modo, setModo] = useState<'actual' | 'personalizado'>('actual');
   const [inicio, setInicio] = useState<Dayjs | null>(null);
   const [fin, setFin] = useState<Dayjs | null>(null);
-  const [usuarios, setUsuarios] = useState<{ id: number; nombre: string }[]>([]);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<number | null>(null)
   const token = localStorage.getItem("token");
 
@@ -179,7 +179,7 @@ useEffect(() => {
             <option value="">(Tú mismo)</option>
             {usuarios.map((u) => (
               <option key={u.id} value={u.id}>
-                {u.nombre}
+                {u.username}
               </option>
             ))}
           </TextField>
