@@ -32,7 +32,6 @@ const TablaComisiones = () => {
   const [fin, setFin] = useState<Dayjs | null>(null);
   const [usuarios, setUsuarios] = useState<{ id: number; nombre: string }[]>([]);
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<number | null>(null)
-  const [rol, setRol] = useState<string | null>(null);
   const token = localStorage.getItem("token");
 
   const cargarComisiones = async () => {
@@ -135,14 +134,6 @@ useEffect(() => {
     }
   };
 
-  const obtenerRol = () => {
-    const payload = token ? JSON.parse(atob(token.split('.')[1])) : null;
-    if (payload?.rol) {
-      setRol(payload.rol);
-    }
-  };
-
-  obtenerRol();
   cargarUsuarios();
 }, []);
 
@@ -175,7 +166,7 @@ useEffect(() => {
         <ToggleButton value="personalizado">Buscar por Fechas</ToggleButton>
       </ToggleButtonGroup>
 
-      {rol === 'admin' && (
+      
         <Box sx={{ mb: 2 }}>
           <TextField
             select
@@ -193,7 +184,6 @@ useEffect(() => {
             ))}
           </TextField>
         </Box>
-      )}
 
       {modo === "personalizado" && (
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
