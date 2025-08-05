@@ -92,31 +92,47 @@ const validarChip = async (id: number, comision?: number) => {
   <TableCell>{chip.hora}</TableCell>
   <TableCell>
     {chip.tipo_chip === "Activacion" && !chip.validado ? (
-      <input
-        type="number"
-        placeholder="Comisión"
-        value={chip.comision || ""}
-        onChange={(e) =>
-          setChips((prev) =>
-            prev.map((c) =>
-              c.id === chip.id
-                ? { ...c, comision: parseFloat(e.target.value) }
-                : c
-            )
+  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+    <input
+      type="number"
+      placeholder="Comisión"
+      value={chip.comision || ""}
+      onChange={(e) =>
+        setChips((prev) =>
+          prev.map((c) =>
+            c.id === chip.id
+              ? { ...c, comision: parseFloat(e.target.value) }
+              : c
           )
-        }
-        style={{ width: "80px" }}
-      />
-    ) : chip.validado ? (
-      <Typography color="green">${chip.comision}</Typography>
-    ) : (
-      <Checkbox
-      checked={chip.validado}
-      onChange={() => validarChip(chip.id, chip.comision)}
-      disabled={chip.validado}
-      color="success"
+        )
+      }
+      style={{ width: "80px" }}
     />
-    )}
+    <button
+      onClick={() => validarChip(chip.id, chip.comision)}
+      disabled={!chip.comision}
+      style={{
+        padding: "4px 8px",
+        backgroundColor: "#1976d2",
+        color: "white",
+        border: "none",
+        borderRadius: "4px",
+        cursor: "pointer",
+      }}
+    >
+      Validar
+    </button>
+  </div>
+) : chip.validado ? (
+  <Typography color="green">${chip.comision}</Typography>
+) : (
+  <Checkbox
+    checked={chip.validado}
+    onChange={() => validarChip(chip.id, chip.comision)}
+    disabled={chip.validado}
+    color="success"
+  />
+)}
   </TableCell>
   <TableCell>
   {chip.validado ? (
