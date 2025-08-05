@@ -104,16 +104,13 @@ const ChipsAdmin = () => {
     ) : chip.validado ? (
       <Typography color="green">${chip.comision}</Typography>
     ) : (
-      "-"
-    )}
-  </TableCell>
-  <TableCell>
-    <Checkbox
+      <Checkbox
       checked={chip.validado}
       onChange={() => validarChip(chip.id, chip.comision)}
       disabled={chip.validado}
       color="success"
     />
+    )}
   </TableCell>
   <TableCell>
   {chip.validado ? (
