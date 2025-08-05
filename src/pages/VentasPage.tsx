@@ -361,11 +361,11 @@ const registrarVentaTelefono = async () => {
               margin="normal"
             >
               <MenuItem value="Chip Azul">Chip Azul</MenuItem>
-              <MenuItem value="Chip Telcel">Chip Telcel</MenuItem>
+              <MenuItem value="Chip ATO">Chip ATO</MenuItem>
               <MenuItem value="Portabilidad">Portabilidad</MenuItem>
               <MenuItem value="Chip Cero">Chip Cero (Cadenas)</MenuItem>
-              <MenuItem value="Chip">Chip  (Cadenas)</MenuItem>
-              <MenuItem value="Activacion Tel.">Activacion Tel. (Cadenas)</MenuItem>
+              <MenuItem value="Chip Preactivado">Chip  (Cadenas)</MenuItem>
+              <MenuItem value="Activacion">Activacion (Cadenas)</MenuItem>
             </TextField>
 
             <TextField

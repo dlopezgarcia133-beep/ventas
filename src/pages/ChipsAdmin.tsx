@@ -28,24 +28,25 @@ const ChipsAdmin = () => {
 };
 
 
-  const validarChip = async (id: number) => {
-    try {
-      await axios.put(
-        `${process.env.REACT_APP_API_URL}/ventas/venta_chips/${id}/validar`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setChips((prev) =>
-        prev.map((chip) =>
-          chip.id === id ? { ...chip, validado: true } : chip
-        )
-      );
-    } catch (error) {
-      console.error("Error al validar chip:", error);
-    }
-  };
+  const validarChip = async (id: number, comision?: number) => {
+  try {
+    await axios.put(
+      `${process.env.REACT_APP_API_URL}/ventas/venta_chips/${id}/validar`,
+      { comision_manual: comision },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    setChips((prev) =>
+      prev.map((chip) =>
+        chip.id === id ? { ...chip, validado: true } : chip
+      )
+    );
+  } catch (error) {
+    console.error("Error al validar chip:", error);
+    alert("Error al validar chip");
+  }
+};
 
   useEffect(() => {
     fetchChips();
@@ -76,56 +77,44 @@ const ChipsAdmin = () => {
                 <TableBody>
                   {chips.filter(chip => !chip.validado).map((chip) => (
                     <TableRow key={chip.id}>
-                      <TableCell>{chip.empleado?.username ?? "Empleado eliminado"}</TableCell>
-                      <TableCell>{chip.tipo_chip}</TableCell>
-                      <TableCell>{chip.numero_telefono}</TableCell>
-                      <TableCell>${chip.monto_recarga.toFixed(2)}</TableCell>
-                      <TableCell>{chip.fecha}</TableCell>
-                      <TableCell>{chip.hora}</TableCell>
-                      <TableCell>
-  <Checkbox
-    checked={chip.validado}
-    onChange={() => validarChip(chip.id)}
-    disabled={chip.validado}
-    color="success"
-  />
-</TableCell>
-<TableCell>
-  {chip.validado ? (
-    <Typography color="green">${chip.comision}</Typography>
-  ) : (
-    <select
-      value={chip.descripcion_rechazo || ''}
-      onChange={async (e) => {
-        const motivo = e.target.value;
-        try {
-          await axios.put(
-            `${process.env.REACT_APP_API_URL}/ventas/venta_chips/${chip.id}/motivo_rechazo`,
-            { descripcion: motivo },
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
+  <TableCell>{chip.empleado?.username ?? "Empleado eliminado"}</TableCell>
+  <TableCell>{chip.tipo_chip}</TableCell>
+  <TableCell>{chip.numero_telefono}</TableCell>
+  <TableCell>${chip.monto_recarga.toFixed(2)}</TableCell>
+  <TableCell>{chip.fecha}</TableCell>
+  <TableCell>{chip.hora}</TableCell>
+  <TableCell>
+    {chip.tipo_chip === "Activacion" && !chip.validado ? (
+      <input
+        type="number"
+        placeholder="Comisión"
+        value={chip.comision || ""}
+        onChange={(e) =>
           setChips((prev) =>
             prev.map((c) =>
-              c.id === chip.id ? { ...c, descripcion_rechazo: motivo } : c
+              c.id === chip.id
+                ? { ...c, comision: parseFloat(e.target.value) }
+                : c
             )
-          );
-        } catch (err) {
-          console.error("Error al enviar motivo de rechazo:", err);
-          alert("Error al enviar motivo de rechazo");
+          )
         }
-      }}
-    >
-      <option value="">Rechazar con motivo</option>
-      <option value="Falta de evidencia">Falta de evidencia</option>
-      <option value="Número inválido">Número inválido</option>
-      <option value="Datos incompletos">Datos incompletos</option>
-    </select>
-  )}
-</TableCell>
-
-                    </TableRow>
+        style={{ width: "80px" }}
+      />
+    ) : chip.validado ? (
+      <Typography color="green">${chip.comision}</Typography>
+    ) : (
+      "-"
+    )}
+  </TableCell>
+  <TableCell>
+    <Checkbox
+      checked={chip.validado}
+      onChange={() => validarChip(chip.id, chip.comision)}
+      disabled={chip.validado}
+      color="success"
+    />
+  </TableCell>
+</TableRow>
                   ))}
                   {chips.length === 0 && (
                     <TableRow>
