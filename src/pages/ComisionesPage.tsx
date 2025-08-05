@@ -97,10 +97,11 @@ const fetchCicloActual = async () => {
       headers: { Authorization: `Bearer ${token}` },
     });
     setData(res.data);
-  } catch (err) {
-    console.error("Error al obtener comisiones actuales", err);
-    setData(null);
-  }
+  } catch (err: any) {
+  console.error("Error al obtener comisiones actuales", err);
+  alert(err.response?.data?.detail || "Error al obtener datos del ciclo");
+  setData(null);
+}
 };
 
 const fetchCicloPorFechas = async () => {
@@ -180,7 +181,7 @@ useEffect(() => {
             {usuarios.map((u) => (
               <option key={u.id} value={u.id}>
                 {u.username}
-              </option>
+              </option> 
             ))}
           </TextField>
         </Box>
@@ -205,6 +206,83 @@ useEffect(() => {
           </Typography>
           <Divider sx={{ my: 2 }} />
 
+        {/* ACCESORIOS */}
+<Typography variant="subtitle1">🧩 Accesorios: ${data.total_accesorios.toFixed(2)}</Typography>
+<Table size="small" sx={{ mb: 2 }}>
+  <TableHead>
+    <TableRow>
+      <TableCell>Producto</TableCell>
+      <TableCell>Cantidad</TableCell>
+      <TableCell>Comisión</TableCell>
+      <TableCell>Fecha</TableCell>
+      <TableCell>Hora</TableCell>
+    </TableRow>
+  </TableHead>
+  <TableBody>
+    {data.ventas_accesorios.map((v, i) => (
+      <TableRow key={i}>
+        <TableCell>{v.producto}</TableCell>
+        <TableCell>{v.cantidad}</TableCell>
+        <TableCell>${v.comision.toFixed(2)}</TableCell>
+        <TableCell>{v.fecha}</TableCell>
+        <TableCell>{v.hora}</TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+
+{/* TELÉFONOS */}
+<Typography variant="subtitle1">📱 Teléfonos: ${data.total_telefonos.toFixed(2)}</Typography>
+<Table size="small" sx={{ mb: 2 }}>
+  <TableHead>
+    <TableRow>
+      <TableCell>Marca</TableCell>
+      <TableCell>Modelo</TableCell>
+      <TableCell>Tipo</TableCell>
+      <TableCell>Comisión</TableCell>
+      <TableCell>Fecha</TableCell>
+      <TableCell>Hora</TableCell>
+    </TableRow>
+  </TableHead>
+  <TableBody>
+    {data.ventas_telefonos.map((v, i) => (
+      <TableRow key={i}>
+        <TableCell>{v.marca}</TableCell>
+        <TableCell>{v.modelo}</TableCell>
+        <TableCell>{v.tipo}</TableCell>
+        <TableCell>${v.comision.toFixed(2)}</TableCell>
+        <TableCell>{v.fecha}</TableCell>
+        <TableCell>{v.hora}</TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+
+{/* CHIPS */}
+<Typography variant="subtitle1">🔌 Chips: ${data.total_chips.toFixed(2)}</Typography>
+<Table size="small" sx={{ mb: 2 }}>
+  <TableHead>
+    <TableRow>
+      <TableCell>Tipo</TableCell>
+      <TableCell>Comisión</TableCell>
+      <TableCell>Fecha</TableCell>
+      <TableCell>Hora</TableCell>
+    </TableRow>
+  </TableHead>
+  <TableBody>
+    {data.ventas_chips && data.ventas_chips.map((v, i) => (
+      <TableRow key={i}>
+        <TableCell>{v.tipo_chip}</TableCell>
+        <TableCell>${v.comision.toFixed(2)}</TableCell>
+        <TableCell>{v.fecha}</TableCell>
+        <TableCell>{v.hora}</TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+
+<Divider sx={{ my: 2 }} />
+<Typography variant="h6">💵 Total: ${data.total_general.toFixed(2)}</Typography>
 
       <Typography variant="h5" gutterBottom>
         Gestión de Comisiones

@@ -28,7 +28,12 @@ const ChipsAdmin = () => {
 };
 
 
-  const validarChip = async (id: number, comision?: number) => {
+const validarChip = async (id: number, comision?: number) => {
+  if (comision === undefined || comision === null) {
+    alert("Por favor ingresa una comisión antes de validar el chip.");
+    return;
+  }
+
   try {
     await axios.put(
       `${process.env.REACT_APP_API_URL}/ventas/venta_chips/${id}/validar`,
@@ -47,6 +52,7 @@ const ChipsAdmin = () => {
     alert("Error al validar chip");
   }
 };
+
 
   useEffect(() => {
     fetchChips();
