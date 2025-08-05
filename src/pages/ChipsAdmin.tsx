@@ -71,6 +71,7 @@ const ChipsAdmin = () => {
                     <TableCell>Fecha</TableCell>
                     <TableCell>Hora</TableCell>
                     <TableCell>Validado</TableCell>
+                    <TableCell>Descripcion</TableCell>
                     
                   </TableRow>
                 </TableHead>
@@ -114,6 +115,40 @@ const ChipsAdmin = () => {
       color="success"
     />
   </TableCell>
+  <TableCell>
+  {chip.validado ? (
+    <Typography color="green">${chip.comision}</Typography>
+  ) : (
+    <select
+      value={chip.descripcion_rechazo || ''}
+      onChange={async (e) => {
+        const motivo = e.target.value;
+        try {
+          await axios.put(
+            `${process.env.REACT_APP_API_URL}/ventas/venta_chips/${chip.id}/motivo_rechazo`,
+            { descripcion: motivo },
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          setChips((prev) =>
+            prev.map((c) =>
+              c.id === chip.id ? { ...c, descripcion_rechazo: motivo } : c
+            )
+          );
+        } catch (err) {
+          console.error("Error al enviar motivo de rechazo:", err);
+          alert("Error al enviar motivo de rechazo");
+        }
+      }}
+    >
+      <option value="">Rechazar con motivo</option>
+      <option value="Falta de evidencia">Falta de evidencia</option>
+      <option value="Número inválido">Número inválido</option>
+      <option value="Datos incompletos">Datos incompletos</option>
+    </select>
+  )}
+</TableCell>
 </TableRow>
                   ))}
                   {chips.length === 0 && (
