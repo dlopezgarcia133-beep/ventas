@@ -10,7 +10,7 @@ import { InventarioModulo, Modulo } from '../Types';
 
 const InventarioPorModulo = () => {
   const [modulos, setModulos] = useState<Modulo[]>([]);
-  const [moduloSeleccionado, setModuloSeleccionado] = useState('');
+  const [moduloSeleccionado, setModuloSeleccionado] = useState<number | ''>('');
   const [filtro, setFiltro] = useState('');
   const [inventario, setInventario] = useState<InventarioModulo[]>([]);
   const [nuevo, setNuevo] = useState({ producto: '', clave: '', cantidad: '', precio: '' });
@@ -75,7 +75,7 @@ const InventarioPorModulo = () => {
       await axios.put(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${encodeURIComponent(producto)}`, {
         cantidad: parseInt(editarData.cantidad),
         precio: parseFloat(editarData.precio),
-        modulo: moduloSeleccionado
+        modulo_id: moduloSeleccionado
       }, config);
       setEditando(null);
       cargarInventario();
@@ -114,12 +114,12 @@ const InventarioPorModulo = () => {
         select
         label="Selecciona Módulo"
         value={moduloSeleccionado}
-        onChange={(e) => setModuloSeleccionado(e.target.value)}
+        onChange={(e) => setModuloSeleccionado(e.target.value === '' ? '' : Number(e.target.value))}
         fullWidth
         sx={{ mb: 3 }}
       >
         {modulos.map((m) => (
-          <MenuItem key={m.id} value={m.nombre}>{m.nombre}</MenuItem>
+          <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
         ))}
       </TextField>
       
