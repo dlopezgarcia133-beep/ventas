@@ -110,6 +110,7 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
                 ))}
               </select>
             </Box>
+            <Button href="/chips_invalidos">Ver Chips Rechazados</Button>
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
@@ -134,7 +135,7 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
   <TableCell>${chip.monto_recarga.toFixed(2)}</TableCell>
   <TableCell>{chip.fecha}</TableCell>
   <TableCell>{chip.hora}</TableCell>
-  <Button href="/chips-rechazados">Ver Chips Rechazados</Button>
+  
 
   <TableCell>
     {chip.tipo_chip === "Activacion" && !chip.validado ? (
