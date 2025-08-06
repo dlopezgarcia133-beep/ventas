@@ -30,7 +30,7 @@ const InventarioPorModulo = () => {
 
   const cargarInventario = async () => {
     if (!moduloSeleccionado) return;
-    const res = await axios.get(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo?modulo=${moduloSeleccionado}`, config);
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo?modulo_id=${moduloSeleccionado}`, config);
      console.log("Inventario recibido:", res.data);
     setInventario(res.data);
   };
