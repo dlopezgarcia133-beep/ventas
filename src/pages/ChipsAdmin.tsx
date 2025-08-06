@@ -1,23 +1,32 @@
 import React, { useEffect, useState } from "react";
 import {
   TableContainer,Paper,Table,TableHead,TableRow,TableCell,TableBody,Checkbox,Typography,Box,
+  Button,
+  Link,
 } from "@mui/material";
 import axios from "axios";
-import { VentaChip } from "../Types";
+import { Usuario, VentaChip } from "../Types";
 import { obtenerRolDesdeToken } from "../components/Token";
 
 
 const ChipsAdmin = () => {
   const [chips, setChips] = useState<VentaChip[]>([]);
   const token = localStorage.getItem("token");
-
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<number | null>(null);
   const rol = obtenerRolDesdeToken();
 
 
   const fetchChips = async () => {
   try {
+    const params: any = {};
+    if (empleadoSeleccionado) {
+      params.empleado_id = empleadoSeleccionado;
+    }
+
     const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/venta_chips`, {
       headers: { Authorization: `Bearer ${token}` },
+      params,
     });
 
     const sinValidados = res.data.filter((chip: VentaChip) => !chip.validado);
@@ -27,17 +36,33 @@ const ChipsAdmin = () => {
   }
 };
 
+useEffect(() => {
+  const cargarUsuarios = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/registro/usuarios`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUsuarios(res.data);
+    } catch (err) {
+      console.warn("No se pudo cargar usuarios (probablemente no eres admin)");
+    }
+  };
 
-const validarChip = async (id: number, comision?: number) => {
-  if (comision === undefined || comision === null) {
-    alert("Por favor ingresa una comisión antes de validar el chip.");
+  cargarUsuarios();
+}, []);
+
+
+
+const validarChip = async (id: number, tipo_chip: string, comision?: number) => {
+  if (tipo_chip === "Activacion" && (comision === undefined || comision === null)) {
+    alert("Por favor ingresa una comisión para chips de tipo Activación.");
     return;
   }
 
   try {
     await axios.put(
       `${process.env.REACT_APP_API_URL}/ventas/venta_chips/${id}/validar`,
-      { comision_manual: comision },
+      { comision_manual: comision }, // siempre la mandas aunque sea null
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -54,9 +79,12 @@ const validarChip = async (id: number, comision?: number) => {
 };
 
 
+
+
+
   useEffect(() => {
-    fetchChips();
-  }, []);
+  fetchChips();
+}, [empleadoSeleccionado]);
 
   return (
     <Box sx={{ mt: 4 }}>
@@ -66,6 +94,22 @@ const validarChip = async (id: number, comision?: number) => {
             <Typography variant="h5" gutterBottom>
               Validación de Chips Vendidos
             </Typography>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle1">Filtrar por empleado:</Typography>
+              <select
+                value={empleadoSeleccionado ?? ""}
+                onChange={(e) =>
+                  setEmpleadoSeleccionado(e.target.value ? Number(e.target.value) : null)
+                }
+              >
+                <option value="">(Todos los empleados)</option>
+                {usuarios.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.username}
+                  </option>
+                ))}
+              </select>
+            </Box>
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
@@ -82,7 +126,7 @@ const validarChip = async (id: number, comision?: number) => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {chips.filter(chip => !chip.validado).map((chip) => (
+                  {chips.filter(chip => !chip.validado && !chip.descripcion_rechazo).map((chip) => (
                     <TableRow key={chip.id}>
   <TableCell>{chip.empleado?.username ?? "Empleado eliminado"}</TableCell>
   <TableCell>{chip.tipo_chip}</TableCell>
@@ -90,6 +134,8 @@ const validarChip = async (id: number, comision?: number) => {
   <TableCell>${chip.monto_recarga.toFixed(2)}</TableCell>
   <TableCell>{chip.fecha}</TableCell>
   <TableCell>{chip.hora}</TableCell>
+  <Button href="/chips-rechazados">Ver Chips Rechazados</Button>
+
   <TableCell>
     {chip.tipo_chip === "Activacion" && !chip.validado ? (
   <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
@@ -109,7 +155,7 @@ const validarChip = async (id: number, comision?: number) => {
       style={{ width: "80px" }}
     />
     <button
-      onClick={() => validarChip(chip.id, chip.comision)}
+      onClick={() => validarChip(chip.id, chip.tipo_chip, chip.comision_manual)}
       disabled={!chip.comision}
       style={{
         padding: "4px 8px",
@@ -128,7 +174,7 @@ const validarChip = async (id: number, comision?: number) => {
 ) : (
   <Checkbox
     checked={chip.validado}
-    onChange={() => validarChip(chip.id, chip.comision)}
+    onChange={() => validarChip(chip.id, chip.tipo_chip, chip.comision_manual)}
     disabled={chip.validado}
     color="success"
   />
@@ -162,9 +208,9 @@ const validarChip = async (id: number, comision?: number) => {
       }}
     >
       <option value="">Rechazar con motivo</option>
-      <option value="Falta de evidencia">Falta de evidencia</option>
-      <option value="Número inválido">Número inválido</option>
-      <option value="Datos incompletos">Datos incompletos</option>
+      <option value="Falta de evidencia">Preactivado</option>
+      <option value="Número inválido">No tiene Recarga</option>
+      <option value="Datos incompletos">No existe</option>
     </select>
   )}
 </TableCell>

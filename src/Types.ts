@@ -122,6 +122,7 @@ export interface VentaChip {
   hora: string;
   validado: boolean;
   comision: number;
+  comision_manual: number;
   descripcion_rechazo: string;
   empleado?: {
     username: string;
@@ -149,13 +150,15 @@ export interface ComisionData {
     marca: string;
     modelo: string;
     tipo: string;
-    comision: number;
+    comision: number
     fecha: string;
     hora: string;
   }[];
   ventas_chips: {
     tipo_chip: string;
+    numero_telefono: string;
     comision: number;
+    comision_manual: number;
     fecha: string;
     hora: string;
   }[];

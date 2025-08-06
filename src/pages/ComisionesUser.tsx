@@ -149,6 +149,7 @@ const ComisionesUsuario = () => {
               {data.ventas_chips && data.ventas_chips.map((v, i) => (
                 <TableRow key={i}>
                   <TableCell>{v.tipo_chip}</TableCell>
+                  <TableCell>{v.numero_telefono}</TableCell>
                   <TableCell>${v.comision.toFixed(2)}</TableCell>
                   <TableCell>{v.fecha}</TableCell>
                   <TableCell>{v.hora}</TableCell>

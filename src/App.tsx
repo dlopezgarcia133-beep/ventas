@@ -13,6 +13,7 @@ import ChipsAdmin from './pages/ChipsAdmin';
 import CortePage from './pages/CortePage';
 import InventarioTelefonosGeneral from './pages/InventariosTelefonos';
 import ComisionesUser from './pages/ComisionesUser';
+import ChipsRechazados from './pages/ChipsInvalidos';
 
 const App: React.FC = () => {
   const routes = useRoutes([
@@ -28,7 +29,8 @@ const App: React.FC = () => {
     { path: '/inventario/modulo', element: <InventarioPorModulo /> },
     { path: '/ventas/chips', element: <ChipsAdmin/>}, 
     { path: '/corte', element: <CortePage/>},
-    { path: 'inventario_telefonos', element: <InventarioTelefonosGeneral/> }
+    { path: '/inventario_telefonos', element: <InventarioTelefonosGeneral/> },
+    { path: '/chips_invalidos', element: <ChipsRechazados/> }, 
   ]);
 
   return routes;
