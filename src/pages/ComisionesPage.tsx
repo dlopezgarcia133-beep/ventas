@@ -18,6 +18,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 type Comision = {
   producto: string;
   cantidad: number;
+  numero_telefono?: string;
 };
 
 const TablaComisiones = () => {
@@ -264,6 +265,7 @@ useEffect(() => {
   <TableHead>
     <TableRow>
       <TableCell>Tipo</TableCell>
+      <TableCell>Número</TableCell>
       <TableCell>Comisión</TableCell>
       <TableCell>Fecha</TableCell>
       <TableCell>Hora</TableCell>
@@ -273,6 +275,7 @@ useEffect(() => {
     {data.ventas_chips && data.ventas_chips.map((v, i) => (
       <TableRow key={i}>
         <TableCell>{v.tipo_chip}</TableCell>
+        <TableCell>{v.numero_telefono}</TableCell>
         <TableCell>${v.comision.toFixed(2)}</TableCell>
         <TableCell>{v.fecha}</TableCell>
         <TableCell>{v.hora}</TableCell>

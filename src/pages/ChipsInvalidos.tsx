@@ -24,7 +24,7 @@ const ChipsRechazados = () => {
 
   return (
     <TableContainer component={Paper} sx={{ mt: 4 }}>
-      <Typography variant="h6" sx={{ p: 2 }}>Chips Rechazados</Typography>
+      <Typography variant="h6" sx={{ p: 2 }}>Chips Invalidos</Typography>
       <Table>
         <TableHead>
           <TableRow>

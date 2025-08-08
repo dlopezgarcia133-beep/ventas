@@ -140,6 +140,7 @@ const ComisionesUsuario = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Tipo</TableCell>
+                <TableCell>Número</TableCell>
                 <TableCell>Comisión</TableCell>
                 <TableCell>Fecha</TableCell>
                 <TableCell>Hora</TableCell>
