@@ -9,7 +9,7 @@ const ChipsRechazados = () => {
 
   const fetchRechazados = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/chips_rechazados`, {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/ventas/chips_rechazados`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRechazados(res.data);
