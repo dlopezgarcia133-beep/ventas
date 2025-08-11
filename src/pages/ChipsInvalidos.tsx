@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { VentaChip } from "../Types";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Checkbox } from "@mui/material";
+import { Usuario, VentaChip } from "../Types";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Checkbox, Box } from "@mui/material";
 
 const ChipsRechazados = () => {
   const [rechazados, setRechazados] = useState<VentaChip[]>([]);
   const [chips, setChips] = useState<VentaChip[]>([]);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<number | null>(null);
   const token = localStorage.getItem("token");
 
   const fetchRechazados = async () => {
     try {
+      const params: any = {};
+      if (empleadoSeleccionado) {
+      params.empleado_id = empleadoSeleccionado;
+    }
       const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/ventas/chips_rechazados`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -18,6 +24,22 @@ const ChipsRechazados = () => {
       console.error("Error al obtener chips rechazados:", err);
     }
   };
+
+  useEffect(() => {
+    const cargarUsuarios = async () => {
+      try {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/registro/usuarios`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUsuarios(res.data);
+      } catch (err) {
+        console.warn("No se pudo cargar usuarios (probablemente no eres admin)");
+      }
+    };
+  
+    cargarUsuarios();
+  }, []);
+
 
   const validarChip = async (id: number, tipo_chip: string, comision?: number) => {
     if (tipo_chip === "Activacion" && (comision === undefined || comision === null)) {
@@ -51,6 +73,22 @@ const ChipsRechazados = () => {
   return (
     <TableContainer component={Paper} sx={{ mt: 4 }}>
       <Typography variant="h6" sx={{ p: 2 }}>Chips Invalidos</Typography>
+      <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle1">Filtrar por empleado:</Typography>
+                    <select
+                      value={empleadoSeleccionado ?? ""}
+                      onChange={(e) =>
+                        setEmpleadoSeleccionado(e.target.value ? Number(e.target.value) : null)
+                      }
+                    >
+                      <option value="">(Todos los empleados)</option>
+                      {usuarios.map((u) => (
+                        <option key={u.id} value={u.id}>
+                          {u.username}
+                        </option>
+                      ))}
+                    </select>
+                  </Box>
       <Table>
         <TableHead>
           <TableRow>
