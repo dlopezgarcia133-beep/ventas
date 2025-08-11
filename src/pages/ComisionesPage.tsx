@@ -97,6 +97,9 @@ const fetchCicloActual = async () => {
     const res = await axios.get(endpoint, {
       headers: { Authorization: `Bearer ${token}` },
     });
+
+    console.log("Empleado seleccionado:", empleadoSeleccionado);
+    console.log("Datos recibidos ciclo actual:", res.data);
     setData(res.data);
   } catch (err: any) {
   console.error("Error al obtener comisiones actuales", err);
@@ -108,15 +111,15 @@ const fetchCicloActual = async () => {
 const fetchCicloPorFechas = async () => {
   if (!inicio || !fin) return;
 
-  try {
-    const params: any = {
-      inicio: dayjs(inicio).format("YYYY-MM-DD"),
-      fin: dayjs(fin).format("YYYY-MM-DD"),
-    };
-    if (empleadoSeleccionado) {
-      params.empleado_id = empleadoSeleccionado;
-    }
+  const params: any = {
+    inicio: dayjs(inicio).format("YYYY-MM-DD"),
+    fin: dayjs(fin).format("YYYY-MM-DD"),
+  };
+  if (empleadoSeleccionado) {
+    params.empleado_id = empleadoSeleccionado;
+  }
 
+  try {
     const res = await axios.get(
       `${process.env.REACT_APP_API_URL}/comisiones/comisiones/ciclo_por_fechas`,
       {

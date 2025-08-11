@@ -54,8 +54,11 @@ useEffect(() => {
 
 
 const validarChip = async (id: number, tipo_chip: string, comision?: number) => {
-  if (tipo_chip === "Activacion" && (comision === undefined || comision === null)) {
-    alert("Por favor ingresa una comisión para chips de tipo Activación.");
+  if (
+    tipo_chip === "Activacion" && 
+    (comision === undefined || comision === null || isNaN(Number(comision)) || Number(comision) <= 0)
+  ) {
+    alert("Por favor ingresa una comisión válida para chips de tipo Activación.");
     return;
   }
 
