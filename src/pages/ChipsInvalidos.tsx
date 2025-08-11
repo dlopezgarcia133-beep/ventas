@@ -68,7 +68,7 @@ const ChipsRechazados = () => {
 
   useEffect(() => {
     fetchRechazados();
-  }, []);
+  }, [empleadoSeleccionado]);
 
   return (
     <TableContainer component={Paper} sx={{ mt: 4 }}>
