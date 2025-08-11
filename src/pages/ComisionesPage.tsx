@@ -107,22 +107,46 @@ const fetchCicloActual = async () => {
 
 const fetchCicloPorFechas = async () => {
   if (!inicio || !fin) return;
+
   try {
-    const res = await axios.get(`${process.env.REACT_APP_API_URL}/comisiones/comisiones/ciclo_por_fechas`, {
-      params: {
-        inicio: dayjs(inicio).format("YYYY-MM-DD"),
-        fin: dayjs(fin).format("YYYY-MM-DD"),
-        empleado_id: empleadoSeleccionado ?? undefined,
-      },
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const params: any = {
+      inicio: dayjs(inicio).format("YYYY-MM-DD"),
+      fin: dayjs(fin).format("YYYY-MM-DD"),
+    };
+    if (empleadoSeleccionado) {
+      params.empleado_id = empleadoSeleccionado;
+    }
+
+    const res = await axios.get(
+      `${process.env.REACT_APP_API_URL}/comisiones/comisiones/ciclo_por_fechas`,
+      {
+        params,
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     setData(res.data);
-  } catch (err) {
-    console.error("Error al obtener comisiones por fechas:", err);
-    setData(null);
+
+  } catch (err: any) {
+    if (err.response?.status === 404) {
+      // No hay comisiones, mostramos datos vacíos
+      setData({
+        inicio_ciclo: params.inicio,
+        fin_ciclo: params.fin,
+        fecha_pago: "-",
+        total_accesorios: 0,
+        total_telefonos: 0,
+        total_chips: 0,
+        total_general: 0,
+        ventas_accesorios: [],
+        ventas_telefonos: [],
+        ventas_chips: [],
+      });
+    } else {
+      console.error("Error al obtener comisiones por fechas:", err);
+      setData(null);
+    }
   }
 };
-
 
 useEffect(() => {
   const cargarUsuarios = async () => {
