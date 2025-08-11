@@ -119,6 +119,8 @@ const fetchCicloPorFechas = async () => {
     params.empleado_id = empleadoSeleccionado;
   }
 
+  console.log("Consultando:", `${process.env.REACT_APP_API_URL}/comisiones/ciclo_por_fechas`, params);
+  
   try {
     const res = await axios.get(
       `${process.env.REACT_APP_API_URL}/comisiones/comisiones/ciclo_por_fechas`,
