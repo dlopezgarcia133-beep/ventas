@@ -21,7 +21,7 @@ const ChipsRechazados = () => {
         `${process.env.REACT_APP_API_URL}/ventas/ventas/chips_rechazados`,
         {
           headers: { Authorization: `Bearer ${token}` },
-          params, // 👈 Aquí enviamos el empleado_id al backend
+          params, 
         }
       );
 
@@ -46,30 +46,14 @@ const ChipsRechazados = () => {
     cargarUsuarios();
   }, []);
 
-  const validarChip = async (id: number, tipo_chip: string, comision?: number) => {
-    if (tipo_chip === "Activacion" && (comision === undefined || comision === null)) {
-      alert("Por favor ingresa una comisión para chips de tipo Activación.");
-      return;
-    }
-  
-    try {
-      await axios.put(
-        `${process.env.REACT_APP_API_URL}/ventas/venta_chips/${id}/validar`,
-        { comision_manual: comision },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setChips((prev) =>
-        prev.map((chip) =>
-          chip.id === id ? { ...chip, validado: true } : chip
-        )
-      );
-    } catch (error) {
-      console.error("Error al validar chip:", error);
-      alert("Error al validar chip");
-    }
-  };
+  const revertirRechazo = async (id: number) => {
+  try {
+    await axios.put(`https://ato-appservidor.onrender.com/ventas/revertir_rechazo/${id}`);
+    setRechazados(prev => prev.filter(c => c.id !== id)); 
+  } catch (error) {
+    console.error("Error al revertir rechazo", error);
+  }
+};
 
   useEffect(() => {
     fetchRechazados();
@@ -112,48 +96,12 @@ const ChipsRechazados = () => {
               <TableCell>{chip.fecha}</TableCell>
               <TableCell>{chip.descripcion_rechazo}</TableCell>
               <TableCell>
-                {chip.tipo_chip === "Activacion" && !chip.validado ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                    <input
-                      type="number"
-                      placeholder="Comisión"
-                      value={chip.comision || ""}
-                      onChange={(e) =>
-                        setChips((prev) =>
-                          prev.map((c) =>
-                            c.id === chip.id
-                              ? { ...c, comision: parseFloat(e.target.value) }
-                              : c
-                          )
-                        )
-                      }
-                      style={{ width: "80px" }}
-                    />
-                    <button
-                      onClick={() => validarChip(chip.id, chip.tipo_chip, chip.comision_manual)}
-                      disabled={!chip.comision}
-                      style={{
-                        padding: "4px 8px",
-                        backgroundColor: "#1976d2",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Validar
-                    </button>
-                  </div>
-                ) : chip.validado ? (
-                  <Typography color="green">${chip.comision}</Typography>
-                ) : (
                   <Checkbox
-                    checked={chip.validado}
-                    onChange={() => validarChip(chip.id, chip.tipo_chip, chip.comision_manual)}
-                    disabled={chip.validado}
+                    checked={false} // siempre desmarcado porque no es validación
+                    onChange={() => revertirRechazo(chip.id)}
                     color="success"
                   />
-                )}
+                
               </TableCell>
             </TableRow>
           ))}
