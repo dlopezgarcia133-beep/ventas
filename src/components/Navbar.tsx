@@ -1,51 +1,75 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { obtenerRolDesdeToken } from "./Token";
 
-
 const Navbar = () => {
   const navigate = useNavigate();
-  const rol = obtenerRolDesdeToken();
-  const usuario = localStorage.getItem("usuario");
-  const modulo = localStorage.getItem("modulo");
-  const rolM = localStorage.getItem("rol");
+  const rolToken = obtenerRolDesdeToken();
+
+  const [usuario, setUsuario] = useState(localStorage.getItem("usuario") || "");
+  const [modulo, setModulo] = useState(localStorage.getItem("modulo") || "");
+  const [rolM, setRolM] = useState(localStorage.getItem("rol") || "");
+
+  // 🔹 Actualizar datos cuando cambie localStorage (después del login)
+  useEffect(() => {
+    const actualizarDatos = () => {
+      setUsuario(localStorage.getItem("usuario") || "");
+      setModulo(localStorage.getItem("modulo") || "");
+      setRolM(localStorage.getItem("rol") || "");
+    };
+
+    window.addEventListener("storage", actualizarDatos);
+    actualizarDatos();
+
+    return () => {
+      window.removeEventListener("storage", actualizarDatos);
+    };
+  }, []);
+
   const cerrarSesion = async () => {
-  const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-  try {
-    await fetch(`${process.env.REACT_APP_API_URL}/asistencias/logout`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-  } catch (error) {
-    console.error("Error al registrar salida:", error);
-  } finally {
-    localStorage.removeItem("token");
-    navigate("/");
-  }
-};
-
+    try {
+      await fetch(`${process.env.REACT_APP_API_URL}/asistencias/logout`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      console.error("Error al registrar salida:", error);
+    } finally {
+      localStorage.clear();
+      setUsuario("");
+      setModulo("");
+      setRolM("");
+      navigate("/");
+    }
+  };
 
   return (
     <AppBar position="static" color="primary">
-      <Toolbar sx={{ display: "flex",  justifyContent: "space-between" }}>
-        <Typography variant="h6" color="inherit" component={Link} to="/ventas" sx={{ textDecoration: "none" }}>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Typography
+          variant="h6"
+          color="inherit"
+          component={Link}
+          to="/ventas"
+          sx={{ textDecoration: "none" }}
+        >
           ATO
-
           <Typography
             variant="body2"
             component="span"
-            sx={{ fontSize: "0.85rem", color: "#ccc" }}
+            sx={{ fontSize: "0.85rem", color: "#ccc", marginLeft: "8px" }}
           >
             {usuario} {modulo} {rolM}
-  </Typography>
+          </Typography>
         </Typography>
 
-        <Box sx={{ paddingTop: "64px" }}>
-          {rol === "admin" && (
+        <Box>
+          {rolToken === "admin" && (
             <>
               <Button color="inherit" component={Link} to="/comisiones">
                 Comisiones
@@ -65,7 +89,7 @@ const Navbar = () => {
             </>
           )}
 
-          {rol === "encargado" && (
+          {rolToken === "encargado" && (
             <>
               <Button color="inherit" component={Link} to="/traspasos">
                 Traspasos
@@ -85,7 +109,7 @@ const Navbar = () => {
             </>
           )}
 
-          {rol === "asesor" && (
+          {rolToken === "asesor" && (
             <>
               <Button color="inherit" component={Link} to="/ventas">
                 Ventas
