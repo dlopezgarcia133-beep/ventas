@@ -48,7 +48,7 @@ const ChipsRechazados = () => {
 
   const revertirRechazo = async (id: number) => {
   try {
-    await axios.put(`https://ato-appservidor.onrender.com/ventas/revertir_rechazo/${id}`);
+    await axios.put(`${process.env.REACT_APP_API_URL}/ventas/ventas/revertir_rechazo/${id}`);
     setRechazados(prev => prev.filter(c => c.id !== id)); 
   } catch (error) {
     console.error("Error al revertir rechazo", error);
