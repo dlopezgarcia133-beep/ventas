@@ -153,7 +153,7 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
         setChips((prev) =>
           prev.map((c) =>
             c.id === chip.id
-              ? { ...c, comision: parseFloat(e.target.value) }
+              ? { ...c, comision_manual: parseFloat(e.target.value) }
               : c
           )
         )
