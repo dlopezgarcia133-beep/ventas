@@ -40,7 +40,7 @@ const Navbar = () => {
             component="span"
             sx={{ fontSize: "0.85rem", color: "#ccc" }}
           >
-            ({usuario}) {modulo} ({rol})
+            {usuario} {modulo} {rolM}
   </Typography>
         </Typography>
 
