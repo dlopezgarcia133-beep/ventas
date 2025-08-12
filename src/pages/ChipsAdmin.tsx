@@ -161,7 +161,7 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
       style={{ width: "80px" }}
     />
     <button
-      onClick={() => validarChip(chip.id, chip.tipo_chip, chip.comision_manual)}
+      onClick={() => validarChip(chip.id, chip.tipo_chip, chip.comision)}
       disabled={!chip.comision}
       style={{
         padding: "4px 8px",
