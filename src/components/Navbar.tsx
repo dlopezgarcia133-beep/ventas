@@ -62,9 +62,9 @@ const Navbar = () => {
           <Typography
             variant="body2"
             component="span"
-            sx={{ fontSize: "1rem", color: "#fffefeff", marginLeft: "8px" }}
+            sx={{ fontSize: "1rem", color: "#fffefeff", marginLeft: "25px" }}
           >
-            {usuario} {modulo} {rolM}
+            {usuario}, {modulo}, {rolM}
           </Typography>
         </Typography>
 
