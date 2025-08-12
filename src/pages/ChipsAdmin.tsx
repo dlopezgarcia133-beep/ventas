@@ -30,6 +30,12 @@ const ChipsAdmin = () => {
     });
 
     const sinValidados = res.data.filter((chip: VentaChip) => !chip.validado);
+
+    sinValidados.sort((a: VentaChip, b: VentaChip) => {
+      const fechaA = new Date(`${a.fecha}T${a.hora}`);
+      const fechaB = new Date(`${b.fecha}T${b.hora}`);
+      return fechaB.getTime() - fechaA.getTime(); // descendente
+    });
     setChips(sinValidados);
   } catch (error) {
     console.error("Error al cargar chips:", error);

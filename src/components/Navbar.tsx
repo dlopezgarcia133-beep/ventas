@@ -7,7 +7,9 @@ import { obtenerRolDesdeToken } from "./Token";
 const Navbar = () => {
   const navigate = useNavigate();
   const rol = obtenerRolDesdeToken();
-
+  const usuario = localStorage.getItem("usuario");
+  const modulo = localStorage.getItem("modulo");
+  const rolM = localStorage.getItem("rol");
   const cerrarSesion = async () => {
   const token = localStorage.getItem("token");
 
@@ -32,6 +34,14 @@ const Navbar = () => {
       <Toolbar sx={{ display: "flex",  justifyContent: "space-between" }}>
         <Typography variant="h6" color="inherit" component={Link} to="/ventas" sx={{ textDecoration: "none" }}>
           ATO
+
+          <Typography
+            variant="body2"
+            component="span"
+            sx={{ fontSize: "0.85rem", color: "#ccc" }}
+          >
+            ({usuario}) {modulo} ({rol})
+  </Typography>
         </Typography>
 
         <Box sx={{ paddingTop: "64px" }}>

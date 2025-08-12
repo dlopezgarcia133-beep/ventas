@@ -249,7 +249,7 @@ useEffect(() => {
     </TableRow>
   </TableHead>
   <TableBody>
-    {data.ventas_accesorios.map((v, i) => (
+    {data.ventas_accesorios .sort((a, b) => new Date(`${b.fecha} ${b.hora}`).getTime() - new Date(`${a.fecha} ${a.hora}`).getTime()).map((v, i) => (
       <TableRow key={i}>
         <TableCell>{v.producto}</TableCell>
         <TableCell>{v.cantidad}</TableCell>
@@ -275,7 +275,7 @@ useEffect(() => {
     </TableRow>
   </TableHead>
   <TableBody>
-    {data.ventas_telefonos.map((v, i) => (
+    {data.ventas_telefonos .sort((a, b) => new Date(`${b.fecha} ${b.hora}`).getTime() - new Date(`${a.fecha} ${a.hora}`).getTime()).map((v, i) => (
       <TableRow key={i}>
         <TableCell>{v.marca}</TableCell>
         <TableCell>{v.modelo}</TableCell>
@@ -301,7 +301,13 @@ useEffect(() => {
     </TableRow>
   </TableHead>
   <TableBody>
-    {data.ventas_chips && data.ventas_chips.map((v, i) => (
+    {data.ventas_chips &&
+  [...data.ventas_chips]
+    .sort((a, b) => {
+      const fechaA = new Date(`${a.fecha} ${a.hora}`);
+      const fechaB = new Date(`${b.fecha} ${b.hora}`);
+      return fechaB.getTime() - fechaA.getTime(); // Descendente
+    }).map((v, i) => (
       <TableRow key={i}>
         <TableCell>{v.tipo_chip}</TableCell>
         <TableCell>{v.numero_telefono}</TableCell>
