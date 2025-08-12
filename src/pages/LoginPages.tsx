@@ -22,7 +22,15 @@ const LoginPage: React.FC = () => {
         },
       });
     
-      localStorage.setItem('token', response.data.access_token);
+    localStorage.setItem('token', response.data.access_token);
+
+    localStorage.setItem("token", response.data.access_token);
+    localStorage.setItem("usuario", response.data.usuario || "");
+    localStorage.setItem("modulo", response.data.modulo || "");
+    localStorage.setItem("rol", response.data.rol || "");
+
+    // 🔹 Dispara evento para que Navbar se actualice
+    window.dispatchEvent(new Event("storage"));
 
       navegacion('/ventas')
 
