@@ -317,6 +317,9 @@ const registrarVentaTelefono = async () => {
             </ul>
           )}
         </Box>
+        <Box mt={2}>
+          <Typography variant="h6">Total: ${carrito.reduce((acc, p) => acc + p.precio_unitario * p.cantidad, 0).toFixed(2)}</Typography>
+        </Box>
 
         <Button
           variant="contained"
