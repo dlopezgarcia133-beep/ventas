@@ -487,6 +487,7 @@ const registrarVentaTelefono = async () => {
             <Box p={2} component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
+                  <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Nombre</th>
                   <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Producto</th>
                   <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Cantidad</th>
                   <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Precio</th>
@@ -500,6 +501,7 @@ const registrarVentaTelefono = async () => {
               <tbody>
                 {ventas.map((v) => (
                   <tr key={v.id}>
+                    <td style={{ padding: 8 }}>{v.empleado?.username}</td>
                     <td style={{ padding: 8 }}>{v.producto}</td>
                     <td style={{ padding: 8 }}>{v.cantidad}</td>
                     <td style={{ padding: 8 }}>
@@ -507,9 +509,6 @@ const registrarVentaTelefono = async () => {
                     </td>
                     <td style={{ padding: 8 }}>
                       ${typeof v.total === "number" ? v.total.toFixed(2) : "0.00"}
-                    </td>
-                    <td style={{ padding: 8 }}>
-                      ${typeof v.comision === "number" ? v.comision.toFixed(2) : "0.00"}
                     </td>
                     <td style={{ padding: 8 }}>{new Date(v.fecha).toLocaleString()}</td>
                     <td style={{ padding: 8 }}>{v.cancelada ? 'Cancelada' : 'Activa'}</td>

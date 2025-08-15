@@ -71,8 +71,12 @@ const CortePage = () => {
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>🛍️ Ventas de Productos</Typography>
             <Divider sx={{ mb: 2 }} />
-            <Typography>💵 Efectivo: ${resumen?.ventas_productos?.efectivo.toFixed(2) || '0.00'}</Typography>
-            <Typography>💳 Tarjeta: ${resumen?.ventas_productos?.tarjeta.toFixed(2) || '0.00'}</Typography>
+            <Typography>
+              💵 Efectivo: ${(resumen?.ventas_productos?.efectivo ?? 0).toFixed(2)}
+            </Typography>
+            <Typography>
+              💳 Tarjeta: ${(resumen?.ventas_productos?.tarjeta ?? 0).toFixed(2)}
+            </Typography>
           </Paper>
         </Grid>
 
@@ -80,8 +84,13 @@ const CortePage = () => {
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>📱 Ventas de Teléfonos</Typography>
             <Divider sx={{ mb: 2 }} />
-            <Typography>💵 Efectivo: ${resumen?.ventas_telefonos?.efectivo.toFixed(2) || '0.00'}</Typography>
-            <Typography>💳 Tarjeta: ${resumen?.ventas_telefonos?.tarjeta.toFixed(2) || '0.00'}</Typography>
+            <Typography>
+              💵 Efectivo: ${(resumen?.ventas_telefonos?.efectivo ?? 0).toFixed(2)}
+            </Typography>
+            <Typography>
+              💳 Tarjeta: ${(resumen?.ventas_telefonos?.tarjeta ?? 0).toFixed(2)}
+            </Typography>
+
           </Paper>
         </Grid>
 
@@ -120,7 +129,9 @@ const CortePage = () => {
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>📊 Totales</Typography>
             <Divider sx={{ mb: 2 }} />
-            <Typography>Total del Sistema: ${resumen?.total_general?.toFixed(2) || '0.00'}</Typography>
+            <Typography>
+              Total del Sistema: ${(resumen?.total_general ?? 0).toFixed(2)}
+            </Typography>
             <Typography>Total Adicional Manual: ${totalAdicional.toFixed(2)}</Typography>
             <Alert severity="info" sx={{ mt: 2 }}>
               <strong>Total General del Día:</strong> ${totalFinal.toFixed(2)}

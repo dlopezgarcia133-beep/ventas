@@ -16,6 +16,9 @@ export interface Venta {
   comision: number;
   fecha: string;
   cancelada: boolean;
+  empleado?: {
+    username: string;
+  };
 }
 
 export interface VentaTelefono {
