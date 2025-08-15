@@ -49,7 +49,7 @@ const CortePage = () => {
       total_general: totalFinal
     };
 
-    await axios.post(`${process.env.REACT_APP_API_URL}/cortes`, payload, config);
+    await axios.post(`${process.env.REACT_APP_API_URL}/ventas/cortes`, payload, config);
 
     alert("✅ Corte del día guardado correctamente");
   } catch (error) {
