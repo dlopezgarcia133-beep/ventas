@@ -236,7 +236,7 @@ const eliminarItem = async (item: any) => {
         
       )}
       <button 
-  onClick={() => navigate("/diferencias")}
+  onClick={() => navigate("/inventario/diferencias")}
   className="bg-blue-600 text-white px-4 py-2 rounded"
 >
   Reporte de inventarios
