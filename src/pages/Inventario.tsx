@@ -233,7 +233,14 @@ const eliminarItem = async (item: any) => {
             </TableBody>
           </Table>
         </TableContainer>
+        
       )}
+      <button 
+  onClick={() => navigate("/diferencias")}
+  className="bg-blue-600 text-white px-4 py-2 rounded"
+>
+  Reporte de inventarios
+</button>
     </Container>
   );
 };

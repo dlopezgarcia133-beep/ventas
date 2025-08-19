@@ -166,3 +166,14 @@ export interface ComisionData {
     hora: string;
   }[];
 }
+
+
+export interface Diferencia {
+  marca?: string;
+  modelo?: string;
+  producto?: string;
+  clave: string;
+  sistema: number;
+  fisico: number;
+  diferencia: number;
+}
