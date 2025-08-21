@@ -16,13 +16,13 @@ const DiferenciasInventario = () => {
   const cargarDiferencias = async () => {
     try {
       const resProd = await axios.get(
-        `${process.env.REACT_APP_API_URL}/reportes/diferencias`,
+        `${process.env.REACT_APP_API_URL}/inventario/reportes/diferencias`,
         config
       );
       setDiferenciasProd(resProd.data);
 
       const resTel = await axios.get(
-        `${process.env.REACT_APP_API_URL}/reportes/diferencias_telefonos`,
+        `${process.env.REACT_APP_API_URL}/inventario/reportes/diferencias_telefonos`,
         config
       );
       setDiferenciasTel(resTel.data);
@@ -46,7 +46,7 @@ const DiferenciasInventario = () => {
     try {
       const endpoint =
         tipo === "productos"
-          ? "/upload/"
+          ? "inventario/upload/"
           : "/inventario/telefonos/fisico/upload";
 
       await axios.post(
