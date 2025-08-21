@@ -9,8 +9,6 @@ import { Diferencia } from "../Types";
 const DiferenciasInventario = () => {
   const [diferenciasProd, setDiferenciasProd] = useState<Diferencia[]>([]);
   const [diferenciasTel, setDiferenciasTel] = useState<Diferencia[]>([]);
-  const [file, setFile] = useState<File | null>(null);
-  const [uploadMessage, setUploadMessage] = useState("");
 
   const token = localStorage.getItem("token");
   const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -37,38 +35,35 @@ const DiferenciasInventario = () => {
     cargarDiferencias();
   }, []);
 
-  // Manejar selección de archivo
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFile(e.target.files[0]);
-    }
-  };
+  // Manejar upload de Excel
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, tipo: "productos" | "telefonos") => {
+    if (!e.target.files || e.target.files.length === 0) return;
 
-  // Subir archivo Excel
-  const handleUpload = async () => {
-    if (!file) {
-      setUploadMessage("Selecciona un archivo Excel");
-      return;
-    }
-
+    const file = e.target.files[0];
     const formData = new FormData();
     formData.append("file", file);
 
     try {
+      const endpoint =
+        tipo === "productos"
+          ? "/upload/"
+          : "/inventario/telefonos/fisico/upload";
+
       await axios.post(
-        `${process.env.REACT_APP_API_URL}/inventario/upload/`,
+        `${process.env.REACT_APP_API_URL}${endpoint}`,
         formData,
         {
           headers: {
             ...config.headers,
-            "Content-Type": "multipart/form-data",
-          },
+            "Content-Type": "multipart/form-data"
+          }
         }
       );
-      setUploadMessage("Archivo cargado exitosamente 🎉");
-      cargarDiferencias(); // refresca las diferencias después de subir
+
+      alert(`Inventario físico de ${tipo} cargado correctamente`);
+      cargarDiferencias();
     } catch (err: any) {
-      setUploadMessage(err.response?.data?.detail || "Error al cargar archivo ❌");
+      alert(err.response?.data?.detail || "Error al subir archivo");
     }
   };
 
@@ -98,7 +93,12 @@ const DiferenciasInventario = () => {
               <TableCell>{item.fisico}</TableCell>
               <TableCell
                 style={{
-                  color: item.diferencia === 0 ? "black" : item.diferencia > 0 ? "green" : "red",
+                  color:
+                    item.diferencia === 0
+                      ? "black"
+                      : item.diferencia > 0
+                      ? "green"
+                      : "red",
                   fontWeight: "bold"
                 }}
               >
@@ -124,27 +124,21 @@ const DiferenciasInventario = () => {
         Reporte de Diferencias
       </Typography>
 
-      <Button variant="contained" onClick={cargarDiferencias} sx={{ mb: 2 }}>
+      <Button variant="contained" onClick={cargarDiferencias} sx={{ mb: 2, mr: 2 }}>
         Refrescar
       </Button>
 
-      {/* Subida de inventario físico */}
-      <div style={{ marginBottom: "20px" }}>
-        <input
-          type="file"
-          accept=".xlsx,.xls"
-          onChange={handleFileChange}
-          style={{ marginRight: "10px" }}
-        />
-        <Button variant="outlined" onClick={handleUpload}>
-          Subir Inventario Físico
-        </Button>
-        {uploadMessage && (
-          <Typography variant="body2" sx={{ mt: 1 }}>
-            {uploadMessage}
-          </Typography>
-        )}
-      </div>
+      {/* Subir inventario físico de productos */}
+      <Button variant="outlined" component="label" sx={{ mb: 2, mr: 2 }}>
+        Subir Excel Productos
+        <input type="file" hidden onChange={(e) => handleUpload(e, "productos")} />
+      </Button>
+
+      {/* Subir inventario físico de teléfonos */}
+      <Button variant="outlined" component="label" sx={{ mb: 2 }}>
+        Subir Excel Teléfonos
+        <input type="file" hidden onChange={(e) => handleUpload(e, "telefonos")} />
+      </Button>
 
       {renderTabla("Productos", diferenciasProd)}
       {renderTabla("Teléfonos", diferenciasTel)}
