@@ -549,7 +549,7 @@ useEffect(() => {
           Buscar
         </Button>
         
-{user?.rol === "admin" && (
+{user?.is_admin && (
   <>
     <label htmlFor="modulo" className="block font-medium mb-1">
       Selecciona Módulo
@@ -569,7 +569,6 @@ useEffect(() => {
     </select>
   </>
 )}
-
 
       </div>
       
