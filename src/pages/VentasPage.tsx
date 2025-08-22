@@ -256,11 +256,11 @@ const registrarVentaTelefono = async () => {
 useEffect(() => {
   const fetchUserAndModulos = async () => {
     try {
-      const resUser = await axios.get(`${process.env.REACT_APP_API_URL}/auth/me`, config);
+      const resUser = await axios.get(`${process.env.REACT_APP_API_URL}/auth/token`, config);
       setUser(resUser.data);
 
       if (resUser.data.is_admin) {
-        const resModulos = await axios.get(`${process.env.REACT_APP_API_URL}/modulos`, config);
+        const resModulos = await axios.get(`${process.env.REACT_APP_API_URL}/registro/modulos`, config);
         setModulos(resModulos.data);
       }
     } catch (err) {
