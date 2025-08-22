@@ -256,16 +256,22 @@ const registrarVentaTelefono = async () => {
 useEffect(() => {
   const fetchUserAndModulos = async () => {
     try {
-      const token = localStorage.getItem("token"); // o donde lo guardes
-        if (token) {
-      const decoded: any = jwt_decode(token);
-      setUser(decoded);
+      const token = localStorage.getItem("token");
+      if (token) {
+        const resUser = await axios.get(
+          `${process.env.REACT_APP_API_URL}/auth/usuarios/me`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setUser(resUser.data);
 
-      if (decoded.data.is_admin) {
-        const resModulos = await axios.get(`${process.env.REACT_APP_API_URL}/registro/modulos`, config);
-        setModulos(resModulos.data);
+        if (resUser.data.is_admin) {
+          const resModulos = await axios.get(
+            `${process.env.REACT_APP_API_URL}/registro/modulos`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setModulos(resModulos.data);
+        }
       }
-    }
     } catch (err) {
       console.error("Error al cargar usuario/modulos:", err);
     }
@@ -273,6 +279,7 @@ useEffect(() => {
 
   fetchUserAndModulos();
 }, []);
+
 
 useEffect(() => {
     fetchVentas();
