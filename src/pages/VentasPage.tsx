@@ -539,7 +539,9 @@ useEffect(() => {
         </Button>
         
       </div>
-      {user?.is_admin && (
+      
+      <div>
+{user?.is_admin && (
   <TextField
     select
     label="Módulo"
@@ -555,8 +557,6 @@ useEffect(() => {
     ))}
   </TextField>
 )}
-      <div>
-
       </div>
           <Paper>
             <Box p={2} component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
