@@ -32,6 +32,9 @@ const FormularioVentaMultiple = () => {
   const [telefonosDisponibles, setTelefonosDisponibles] = useState<
   { marca: string; modelo: string; cantidad: number }[]
 >([]);
+  const [moduloId, setModuloId] = useState<string>('');
+  const [modulos, setModulos] = useState<{ id: string; nombre: string }[]>([]);
+  const [user, setUser] = useState<{ is_admin?: boolean } | null>(null);
   const Container = useRef<HTMLElement>(null);
   const navigate = useNavigate();
 
@@ -244,7 +247,9 @@ const registrarVentaTelefono = async () => {
 };
 
 
-
+useEffect(() => {
+    fetchVentas();
+  }, []);
 
   useEffect(() => {
     cargarVentas();
@@ -509,6 +514,22 @@ const registrarVentaTelefono = async () => {
           Buscar
         </Button>
       </div>
+      {user?.is_admin && (
+  <TextField
+    select
+    label="Módulo"
+    value={moduloId}
+    onChange={(e) => setModuloId(e.target.value)}
+    style={{ minWidth: 200 }}
+  >
+    <MenuItem value="">Todos</MenuItem>
+    {modulos.map((m) => (
+      <MenuItem key={m.id} value={m.id}>
+        {m.nombre}
+      </MenuItem>
+    ))}
+  </TextField>
+)}
           <Paper>
             <Box p={2} component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
