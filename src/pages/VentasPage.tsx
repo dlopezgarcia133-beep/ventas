@@ -256,13 +256,16 @@ const registrarVentaTelefono = async () => {
 useEffect(() => {
   const fetchUserAndModulos = async () => {
     try {
-      const resUser = await axios.get(`${process.env.REACT_APP_API_URL}/auth/token`, config);
-      setUser(resUser.data);
+      const token = localStorage.getItem("token"); // o donde lo guardes
+        if (token) {
+      const decoded: any = jwt_decode(token);
+      setUser(decoded);
 
-      if (resUser.data.is_admin) {
+      if (decoded.data.is_admin) {
         const resModulos = await axios.get(`${process.env.REACT_APP_API_URL}/registro/modulos`, config);
         setModulos(resModulos.data);
       }
+    }
     } catch (err) {
       console.error("Error al cargar usuario/modulos:", err);
     }
@@ -303,7 +306,7 @@ useEffect(() => {
           value={precio !== null ? `$${precio.toFixed(2)}` : ''}
           margin="normal"
           fullWidth
-        
+          InputProps={{ readOnly: true }}
         />
 
         <TextField
@@ -681,4 +684,8 @@ useEffect(() => {
 
 export default FormularioVentaMultiple;
 
+
+function jwt_decode(token: string): any {
+  throw new Error('Function not implemented.');
+}
 
