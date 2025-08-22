@@ -537,24 +537,24 @@ useEffect(() => {
         >
           Buscar
         </Button>
-
-        {user?.is_admin && (
-  <TextField
-    select
-    label="Módulo"
-    value={moduloId}
-    onChange={(e) => setModuloId(Number(e.target.value))}
-    style={{ minWidth: 200, marginLeft: "1rem" }}
-  >
-    <MenuItem value="">Todos</MenuItem>
-    {modulos.map((m: any) => (
-      <MenuItem key={m.id} value={m.id}>
-        {m.nombre}
-      </MenuItem>
-    ))}
-  </TextField>
-)}
         
+
+      <label htmlFor="modulo" className="block font-medium mb-1">
+        Selecciona Módulo
+      </label>
+      <select
+        id="modulo"
+        value={moduloId}
+        onChange={(e) => setModuloId(e.target.value)}
+        className="border p-2 rounded w-full mb-4"
+      >
+        <option value="">-- Selecciona un módulo --</option>
+        {modulos.map((m) => (
+          <option key={m.id} value={m.id}>
+            {m.nombre}
+          </option>
+        ))}
+      </select>
       </div>
       
       
