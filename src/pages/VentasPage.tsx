@@ -33,7 +33,7 @@ const FormularioVentaMultiple = () => {
   const [telefonosDisponibles, setTelefonosDisponibles] = useState<
     { marca: string; modelo: string; cantidad: number }[]
   >([]);
-  const [moduloId, setModuloId] = useState<number | string>('');
+  const [moduloId, setModuloId] = useState<number | null>(null);
   const [rol, setRol] = useState<Usuario["rol"] | null>(null);
   const [modulos, setModulos] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
@@ -549,15 +549,15 @@ useEffect(() => {
           Buscar
         </Button>
         
-{user?.is_admin && (
+{user?.is_admin && modulos.length > 0 && (
   <>
     <label htmlFor="modulo" className="block font-medium mb-1">
       Selecciona Módulo
     </label>
     <select
       id="modulo"
-      value={moduloId}
-      onChange={(e) => setModuloId(e.target.value)}
+      value={moduloId ?? ""}
+      onChange={(e) => setModuloId(e.target.value ? Number(e.target.value) : null)}
       className="border p-2 rounded w-full mb-4"
     >
       <option value="">-- Selecciona un módulo --</option>
