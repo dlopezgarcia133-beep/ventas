@@ -28,6 +28,7 @@ const FormularioVentaMultiple = () => {
   const [telefonoChecked, setTelefonoChecked] = useState(false);
   const [telefonoTipo, setTelefonoTipo] = useState('');
   const [telefonoPrecio, setTelefonoPrecio] = useState('');
+   const [fecha, setFecha] = useState("");
   const [telefonosDisponibles, setTelefonosDisponibles] = useState<
   { marca: string; modelo: string; cantidad: number }[]
 >([]);
@@ -37,6 +38,17 @@ const FormularioVentaMultiple = () => {
   const token = localStorage.getItem("token");
   const config = {
     headers: { Authorization: `Bearer ${token}` },
+  };
+
+  const fetchVentas = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/ventas/ventas", {
+        params: { fecha }
+      });
+      setVentas(res.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {
@@ -72,7 +84,7 @@ const FormularioVentaMultiple = () => {
   try {
     const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/ventas`, config);
     const todas = res.data;
-    
+    console.log("Ventas cargadas:", todas);
     // Solo ventas con producto definido (no teléfonos)
     const generales = todas.filter((v: Venta) => v.producto);
 
@@ -138,7 +150,7 @@ const FormularioVentaMultiple = () => {
 
 const cancelarVentaTelefono = async (id: number) => {
   try {
-    await axios.put(`${process.env.REACT_APP_API_URL}/venta_telefonos/${id}/cancelar`, {}, config);
+    await axios.put(`${process.env.REACT_APP_API_URL}/inventario/telefonos`, {}, config);
     setVentasTelefonos((prev) =>
       prev.map((venta) => (venta.id === id ? { ...venta, cancelada: true } : venta))
     );
@@ -262,7 +274,7 @@ const registrarVentaTelefono = async () => {
           value={precio !== null ? `$${precio.toFixed(2)}` : ''}
           margin="normal"
           fullWidth
-          InputProps={{ readOnly: true }}
+        
         />
 
         <TextField
@@ -483,6 +495,20 @@ const registrarVentaTelefono = async () => {
           <TableContainer>
         <Box mt={5}>
           <Typography variant="h6" gutterBottom>Ventas Realizadas</Typography>
+           <div style={{ marginBottom: "1rem" }}>
+        <TextField
+          type="date"
+          value={fecha}
+          onChange={(e) => setFecha(e.target.value)}
+        />
+        <Button
+          variant="contained"
+          onClick={fetchVentas}
+          style={{ marginLeft: "1rem" }}
+        >
+          Buscar
+        </Button>
+      </div>
           <Paper>
             <Box p={2} component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
@@ -492,7 +518,6 @@ const registrarVentaTelefono = async () => {
                   <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Cantidad</th>
                   <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Precio</th>
                   <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Total</th>
-                  <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Comisión</th>
                   <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Fecha</th>
                   <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Estado</th>
                   <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Acciones</th>
@@ -576,7 +601,7 @@ const registrarVentaTelefono = async () => {
                         size="small"
                         color="error"
                         disabled={v.cancelada}
-                        onClick={() => cancelarVenta(v.id)}
+                        onClick={() => cancelarVentaTelefono(v.id)}
                       >
                         Cancelar
                       </Button>
