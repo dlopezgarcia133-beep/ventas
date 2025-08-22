@@ -5,8 +5,9 @@ import {
   FormControlLabel,Switch,Slide
 } from '@mui/material';
 import axios from 'axios';
-import { Modulo, ProductoEnVenta, Venta, VentaTelefono } from '../Types';
+import { Modulo, ProductoEnVenta, Usuario, Venta, VentaTelefono } from '../Types';
 import { useNavigate } from 'react-router-dom';
+import UsuariosAdmin from './Usuarios';
 
 const FormularioVentaMultiple = () => {
   const [productos, setProductos] = useState<string[]>([]);
@@ -33,7 +34,7 @@ const FormularioVentaMultiple = () => {
     { marca: string; modelo: string; cantidad: number }[]
   >([]);
   const [moduloId, setModuloId] = useState<number | string>('');
-  // You may need to fetch modulos and user from context, props, or API
+  const [rol, setRol] = useState<Usuario["rol"] | null>(null);
   const [modulos, setModulos] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
   const Container = useRef<HTMLElement>(null);
@@ -256,21 +257,21 @@ const registrarVentaTelefono = async () => {
 useEffect(() => {
   const fetchUserAndModulos = async () => {
     try {
-      const token = localStorage.getItem("token");
       if (token) {
-        const resUser = await axios.get(
+        const resUser = await axios.get<Usuario>(
           `${process.env.REACT_APP_API_URL}/auth/usuarios/me`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setUser(resUser.data);
 
-        if (resUser.data.is_admin) {
-          const resModulos = await axios.get(
-            `${process.env.REACT_APP_API_URL}/registro/modulos`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          setModulos(resModulos.data);
-        }
+        // Aquí guardamos el rol del usuario directamente
+        setRol(resUser.data.rol);
+
+        const resModulos = await axios.get(
+          `${process.env.REACT_APP_API_URL}/registro/modulos`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setModulos(resModulos.data);
       }
     } catch (err) {
       console.error("Error al cargar usuario/modulos:", err);
@@ -548,23 +549,28 @@ useEffect(() => {
           Buscar
         </Button>
         
+{user?.rol === "admin" && (
+  <>
+    <label htmlFor="modulo" className="block font-medium mb-1">
+      Selecciona Módulo
+    </label>
+    <select
+      id="modulo"
+      value={moduloId}
+      onChange={(e) => setModuloId(e.target.value)}
+      className="border p-2 rounded w-full mb-4"
+    >
+      <option value="">-- Selecciona un módulo --</option>
+      {modulos.map((m) => (
+        <option key={m.id} value={m.id}>
+          {m.nombre}
+        </option>
+      ))}
+    </select>
+  </>
+)}
 
-      <label htmlFor="modulo" className="block font-medium mb-1">
-        Selecciona Módulo
-      </label>
-      <select
-        id="modulo"
-        value={moduloId}
-        onChange={(e) => setModuloId(e.target.value)}
-        className="border p-2 rounded w-full mb-4"
-      >
-        <option value="">-- Selecciona un módulo --</option>
-        {modulos.map((m) => (
-          <option key={m.id} value={m.id}>
-            {m.nombre}
-          </option>
-        ))}
-      </select>
+
       </div>
       
       
