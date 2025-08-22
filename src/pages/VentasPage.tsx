@@ -5,7 +5,7 @@ import {
   FormControlLabel,Switch,Slide
 } from '@mui/material';
 import axios from 'axios';
-import { ProductoEnVenta, Venta, VentaTelefono } from '../Types';
+import { Modulo, ProductoEnVenta, Venta, VentaTelefono } from '../Types';
 import { useNavigate } from 'react-router-dom';
 
 const FormularioVentaMultiple = () => {
@@ -28,13 +28,14 @@ const FormularioVentaMultiple = () => {
   const [telefonoChecked, setTelefonoChecked] = useState(false);
   const [telefonoTipo, setTelefonoTipo] = useState('');
   const [telefonoPrecio, setTelefonoPrecio] = useState('');
-   const [fecha, setFecha] = useState("");
+  const [fecha, setFecha] = useState("");
   const [telefonosDisponibles, setTelefonosDisponibles] = useState<
-  { marca: string; modelo: string; cantidad: number }[]
->([]);
-  const [moduloId, setModuloId] = useState<string>('');
-  const [modulos, setModulos] = useState<{ id: string; nombre: string }[]>([]);
-  const [user, setUser] = useState<{ is_admin?: boolean } | null>(null);
+    { marca: string; modelo: string; cantidad: number }[]
+  >([]);
+  const [moduloId, setModuloId] = useState<number | string>('');
+  // You may need to fetch modulos and user from context, props, or API
+  const [modulos, setModulos] = useState<any[]>([]);
+  const [user, setUser] = useState<any>(null);
   const Container = useRef<HTMLElement>(null);
   const navigate = useNavigate();
 
@@ -44,15 +45,19 @@ const FormularioVentaMultiple = () => {
   };
 
   const fetchVentas = async () => {
-    try {
-      const res = await axios.get("http://localhost:8000/ventas/ventas", {
-        params: { fecha }
-      });
-      setVentas(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  try {
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/ventas`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params: {
+        fecha: fecha || undefined,
+        modulo_id: user?.is_admin ? moduloId || undefined : undefined,
+      },
+    });
+    setVentas(res.data);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   useEffect(() => {
     const fetchProductos = async () => {
@@ -246,6 +251,24 @@ const registrarVentaTelefono = async () => {
   }
 };
 
+
+useEffect(() => {
+  const fetchUserAndModulos = async () => {
+    try {
+      const resUser = await axios.get(`${process.env.REACT_APP_API_URL}/auth/me`, config);
+      setUser(resUser.data);
+
+      if (resUser.data.is_admin) {
+        const resModulos = await axios.get(`${process.env.REACT_APP_API_URL}/modulos`, config);
+        setModulos(resModulos.data);
+      }
+    } catch (err) {
+      console.error("Error al cargar usuario/modulos:", err);
+    }
+  };
+
+  fetchUserAndModulos();
+}, []);
 
 useEffect(() => {
     fetchVentas();
@@ -514,16 +537,17 @@ useEffect(() => {
           Buscar
         </Button>
       </div>
+      
       {user?.is_admin && (
   <TextField
     select
     label="Módulo"
     value={moduloId}
-    onChange={(e) => setModuloId(e.target.value)}
-    style={{ minWidth: 200 }}
+    onChange={(e) => setModuloId(Number(e.target.value))}
+    style={{ minWidth: 200, marginLeft: "1rem" }}
   >
     <MenuItem value="">Todos</MenuItem>
-    {modulos.map((m) => (
+    {modulos.map((m: any) => (
       <MenuItem key={m.id} value={m.id}>
         {m.nombre}
       </MenuItem>
