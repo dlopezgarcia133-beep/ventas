@@ -44,7 +44,7 @@ const FormularioVentaMultiple = () => {
     headers: { Authorization: `Bearer ${token}` },
   };
 
-  const fetchVentas = async () => {
+ const fetchVentas = async () => {
   try {
     const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/ventas`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -58,6 +58,7 @@ const FormularioVentaMultiple = () => {
     console.error(err);
   }
 };
+
 
   useEffect(() => {
     const fetchProductos = async () => {
@@ -272,7 +273,7 @@ useEffect(() => {
 
 useEffect(() => {
     fetchVentas();
-  }, []);
+  }, [fecha, moduloId, user]);
 
   useEffect(() => {
     cargarVentas();
@@ -536,8 +537,8 @@ useEffect(() => {
         >
           Buscar
         </Button>
+        
       </div>
-      
       {user?.is_admin && (
   <TextField
     select
@@ -554,6 +555,9 @@ useEffect(() => {
     ))}
   </TextField>
 )}
+      <div>
+
+      </div>
           <Paper>
             <Box p={2} component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
