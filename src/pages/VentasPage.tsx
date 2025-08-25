@@ -541,13 +541,7 @@ useEffect(() => {
           value={fecha}
           onChange={(e) => setFecha(e.target.value)}
         />
-        <Button
-          variant="contained"
-          onClick={fetchVentas}
-          style={{ marginLeft: "1rem" }}
-        >
-          Buscar
-        </Button>
+        
         
 {user?.is_admin && modulos.length > 0 && (
   <>
@@ -569,6 +563,13 @@ useEffect(() => {
     </select>
   </>
 )}
+<Button
+          variant="contained"
+          onClick={fetchVentas}
+          style={{ marginLeft: "1rem" }}
+        >
+          Buscar
+        </Button>
 
       </div>
       
