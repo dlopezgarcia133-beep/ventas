@@ -7,25 +7,17 @@ import axios from "axios";
 import { Diferencia } from "../Types";
 
 const DiferenciasInventario = () => {
-  const [diferenciasProd, setDiferenciasProd] = useState<Diferencia[]>([]);
-  const [diferenciasTel, setDiferenciasTel] = useState<Diferencia[]>([]);
-
+  const [diferencias, setDiferencias] = useState<Diferencia[]>([]);
   const token = localStorage.getItem("token");
   const config = { headers: { Authorization: `Bearer ${token}` } };
 
   const cargarDiferencias = async () => {
     try {
-      const resProd = await axios.get(
+      const res = await axios.get(
         `${process.env.REACT_APP_API_URL}/inventario/reportes/diferencias`,
         config
       );
-      setDiferenciasProd(resProd.data);
-
-      const resTel = await axios.get(
-        `${process.env.REACT_APP_API_URL}/inventario/reportes/diferencias_telefonos`,
-        config
-      );
-      setDiferenciasTel(resTel.data);
+      setDiferencias(res.data);
     } catch (err: any) {
       alert(err.response?.data?.detail || "Error al cargar diferencias");
     }
@@ -35,8 +27,8 @@ const DiferenciasInventario = () => {
     cargarDiferencias();
   }, []);
 
-  // Manejar upload de Excel
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, tipo: "productos" | "telefonos") => {
+  // Subir un solo Excel
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
 
     const file = e.target.files[0];
@@ -44,13 +36,8 @@ const DiferenciasInventario = () => {
     formData.append("file", file);
 
     try {
-      const endpoint =
-        tipo === "productos"
-          ? "inventario/upload/"
-          : "/inventario/telefonos/fisico/upload";
-
       await axios.post(
-        `${process.env.REACT_APP_API_URL}${endpoint}`,
+        `${process.env.REACT_APP_API_URL}/inventario/fisico/upload`,
         formData,
         {
           headers: {
@@ -60,23 +47,25 @@ const DiferenciasInventario = () => {
         }
       );
 
-      alert(`Inventario físico de ${tipo} cargado correctamente`);
+      alert("Inventario físico cargado correctamente");
       cargarDiferencias();
     } catch (err: any) {
       alert(err.response?.data?.detail || "Error al subir archivo");
     }
   };
 
-  const renderTabla = (titulo: string, datos: Diferencia[]) => (
+  // Una sola tabla
+  const renderTabla = (datos: Diferencia[]) => (
     <TableContainer component={Paper} sx={{ mt: 3 }}>
       <Typography variant="h6" sx={{ m: 2 }}>
-        {titulo}
+        Diferencias de Inventario
       </Typography>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Nombre</TableCell>
+            <TableCell>Producto</TableCell>
             <TableCell>Clave</TableCell>
+            <TableCell>Tipo</TableCell>
             <TableCell>En Sistema</TableCell>
             <TableCell>Físico</TableCell>
             <TableCell>Diferencia</TableCell>
@@ -85,10 +74,9 @@ const DiferenciasInventario = () => {
         <TableBody>
           {datos.map((item, i) => (
             <TableRow key={i}>
-              <TableCell>
-                {item.producto || `${item.marca} ${item.modelo}`}
-              </TableCell>
+              <TableCell>{item.producto}</TableCell>
               <TableCell>{item.clave}</TableCell>
+              <TableCell>{item.tipo}</TableCell>
               <TableCell>{item.sistema}</TableCell>
               <TableCell>{item.fisico}</TableCell>
               <TableCell
@@ -108,7 +96,7 @@ const DiferenciasInventario = () => {
           ))}
           {datos.length === 0 && (
             <TableRow>
-              <TableCell colSpan={5} align="center">
+              <TableCell colSpan={6} align="center">
                 Sin diferencias
               </TableCell>
             </TableRow>
@@ -128,22 +116,13 @@ const DiferenciasInventario = () => {
         Refrescar
       </Button>
 
-      {/* Subir inventario físico de productos */}
-      <Button variant="outlined" component="label" sx={{ mb: 2, mr: 2 }}>
-        Subir Excel Productos
-        <input type="file" hidden onChange={(e) => handleUpload(e, "productos")} />
-      </Button>
-
-      {/* Subir inventario físico de teléfonos */}
+      {/* Subir inventario físico (unificado) */}
       <Button variant="outlined" component="label" sx={{ mb: 2 }}>
-        Subir Excel Teléfonos
-        <input type="file" hidden onChange={(e) => handleUpload(e, "telefonos")} />
+        Subir Excel Inventario
+        <input type="file" hidden onChange={handleUpload} />
       </Button>
 
-      {renderTabla("Productos", diferenciasProd)}
-      {renderTabla("Teléfonos", diferenciasTel)}
+      {renderTabla(diferencias)}
     </Container>
   );
 };
-
-export default DiferenciasInventario;

@@ -172,6 +172,7 @@ export interface Diferencia {
   marca?: string;
   modelo?: string;
   producto?: string;
+  tipo?: string;
   clave: string;
   sistema: number;
   fisico: number;
