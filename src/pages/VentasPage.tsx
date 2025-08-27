@@ -219,37 +219,39 @@ const cancelarVentaTelefono = async (id: number) => {
 
 
 const registrarVentaTelefono = async () => {
-  const telefono = telefonosDisponibles.find(
-    (t) =>
-      t.marca.toLowerCase().trim() === telefonoMarca.toLowerCase().trim() &&
-      t.modelo.toLowerCase().trim() === telefonoModelo.toLowerCase().trim()
-  );
-
-  if (!telefono || telefono.cantidad <= 0) {
-    setMensaje({ tipo: 'error', texto: 'Este teléfono no está disponible en el inventario del módulo.' });
+  if (!telefonoMarca || !telefonoModelo || !telefonoPrecio) {
+    setMensaje({ tipo: "error", texto: "Faltan datos del teléfono." });
     return;
   }
 
   try {
-    await axios.post(`${process.env.REACT_APP_API_URL}/ventas/venta_telefonos`, {
-      marca: telefonoMarca,
-      modelo: telefonoModelo,
-      tipo: telefonoTipo,
-      metodo_pago: metodoPago,
-      precio_venta: parseFloat(telefonoPrecio),
-      correo_cliente: correo || null
-    }, config);
+    await axios.post(
+      `${process.env.REACT_APP_API_URL}/ventas/ventas`,
+      {
+        productos: [
+          {
+            producto: `${telefonoMarca} ${telefonoModelo}`, // se guarda en "producto"
+            cantidad: 1,
+            precio_unitario: parseFloat(telefonoPrecio),
+            tipo_producto: "TELEFONO", // 👈 clave para diferenciarlos
+          },
+        ],
+        metodo_pago: metodoPago,
+        correo_cliente: correo || null,
+      },
+      config
+    );
 
-    setMensaje({ tipo: 'success', texto: 'Venta de teléfono registrada correctamente' });
-    setTelefonoMarca('');
-    setTelefonoModelo('');
-    setTelefonoTipo('');
-    setMetodoPago('');
-    setTelefonoPrecio('');
+    setMensaje({ tipo: "success", texto: "Venta de teléfono registrada correctamente" });
+    setTelefonoMarca("");
+    setTelefonoModelo("");
+    setTelefonoTipo("");
+    setMetodoPago("");
+    setTelefonoPrecio("");
   } catch (err: any) {
     console.error(err);
-    const msg = err?.response?.data?.detail || 'Error al registrar la venta de teléfono';
-    setMensaje({ tipo: 'error', texto: msg });
+    const msg = err?.response?.data?.detail || "Error al registrar la venta de teléfono";
+    setMensaje({ tipo: "error", texto: msg });
   }
 };
 
@@ -628,62 +630,52 @@ useEffect(() => {
       </TableContainer>
 
        <TableContainer>
-        <Box mt={5}>
-          <Typography variant="h6" gutterBottom>Ventas Telefonos</Typography>
-          <Paper>
-            <Box p={2} component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Producto</th>
-                  <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Cantidad</th>
-                  <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Precio</th>
-                  <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Total</th>
-                  <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Comisión</th>
-                  <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Fecha</th>
-                  <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Estado</th>
-                  <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ventasTelefonos.map((v) => (
-                  <tr key={v.id}>
-                    <td style={{ padding: 8 }}>{v.marca}</td>
-                    <td style={{ padding: 8 }}>{v.modelo}</td>
-                    <td style={{ padding: 8 }}>
-                      ${typeof v.precio_venta === "number" ? v.precio_venta.toFixed(2) : "0.00"}
-                    </td>
-                    <td style={{ padding: 8 }}>
-                      ${typeof v.total === "number" ? v.total.toFixed(2) : "0.00"}
-                    </td>
-                    <td style={{ padding: 8 }}>
-                      ${typeof v.comision === "number" ? v.comision.toFixed(2) : "0.00"}
-                    </td>
-                    <td style={{ padding: 8 }}>{new Date(v.fecha).toLocaleString()}</td>
-                    <td style={{ padding: 8 }}>{v.cancelada ? 'Cancelada' : 'Activa'}</td>
-                    <td style={{ padding: 8 }}>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        color="error"
-                        disabled={v.cancelada}
-                        onClick={() => cancelarVentaTelefono(v.id)}
-                      >
-                        Cancelar
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-                {ventas.length === 0 && (
-                  <tr>
-                    <td colSpan={8} style={{ padding: 8, textAlign: 'center' }}>No hay ventas registradas</td>
-                  </tr>
-                )}
-                </tbody>
-                </Box>
-          </Paper>
-        </Box>
+  <Box mt={5}>
+    <Typography variant="h6" gutterBottom>Ventas Teléfonos</Typography>
+    <Paper>
+      <Box p={2} component="table" sx={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr>
+            <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Producto</th>
+            <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Precio</th>
+            <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Fecha</th>
+            <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Estado</th>
+            <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ventasTelefonos.map((v) => (
+            <tr key={v.id}>
+              <td style={{ padding: 8 }}>{`${v.marca} ${v.modelo}`}</td>
+              <td style={{ padding: 8 }}>
+                ${typeof v.precio_venta === "number" ? v.precio_venta.toFixed(2) : "0.00"}
+              </td>
+              <td style={{ padding: 8 }}>{new Date(v.fecha).toLocaleDateString()}</td>
+              <td style={{ padding: 8 }}>{v.cancelada ? "Cancelada" : "Activa"}</td>
+              <td style={{ padding: 8 }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="error"
+                  disabled={v.cancelada}
+                  onClick={() => cancelarVenta(v.id)}
+                >
+                  Cancelar
+                </Button>
+              </td>
+            </tr>
+          ))}
+          {ventasTelefonos.length === 0 && (
+            <tr>
+              <td colSpan={7} style={{ padding: 8, textAlign: "center" }}>No hay ventas de teléfonos</td>
+            </tr>
+          )}
+        </tbody>
+      </Box>
+    </Paper>
+  </Box>
+</TableContainer>
 
-      </TableContainer>
     
       <Button
       variant="contained"

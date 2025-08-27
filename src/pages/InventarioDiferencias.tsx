@@ -126,3 +126,5 @@ const DiferenciasInventario = () => {
     </Container>
   );
 };
+
+export default DiferenciasInventario;
