@@ -69,7 +69,7 @@ const CortePage = () => {
 
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>🛍️ Ventas de Productos</Typography>
+            <Typography variant="h6" gutterBottom>🛍️ Ventas de Accesorios</Typography>
             <Divider sx={{ mb: 2 }} />
             <Typography>
               💵 Efectivo: ${(resumen?.ventas_productos?.efectivo ?? 0).toFixed(2)}
@@ -99,7 +99,7 @@ const CortePage = () => {
             <Typography variant="h6" gutterBottom>📝 Montos Adicionales</Typography>
             <Divider sx={{ mb: 2 }} />
             <TextField
-              label="Recargas de Celular"
+              label="Recargas de Telcel"
               type="number"
               value={recargas}
               onChange={(e) => setRecargas(e.target.value)}
@@ -107,7 +107,7 @@ const CortePage = () => {
               margin="normal"
             />
             <TextField
-              label="Tarjetas de Transporte"
+              label="Recargas YOVOY"
               type="number"
               value={transporte}
               onChange={(e) => setTransporte(e.target.value)}
@@ -115,7 +115,7 @@ const CortePage = () => {
               margin="normal"
             />
             <TextField
-              label="Otros Ingresos"
+              label="Centro de Pagos"
               type="number"
               value={otros}
               onChange={(e) => setOtros(e.target.value)}

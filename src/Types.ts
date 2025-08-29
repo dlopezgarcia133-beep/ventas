@@ -14,8 +14,10 @@ export interface Venta {
   precio_unitario: number;
   total: number;
   comision: number;
+  tipo_venta: string;
   fecha: string;
   cancelada: boolean;
+  tipo:"accesorio" | "telefono";
   empleado?: {
     username: string;
   };

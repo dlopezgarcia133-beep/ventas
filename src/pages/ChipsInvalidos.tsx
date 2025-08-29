@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Usuario, VentaChip } from "../Types";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Checkbox, Box } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Checkbox, Box, IconButton } from "@mui/material";
+import { Delete } from "@mui/icons-material";
 
 const ChipsRechazados = () => {
   const [rechazados, setRechazados] = useState<VentaChip[]>([]);
@@ -55,6 +56,17 @@ const ChipsRechazados = () => {
   }
 };
 
+const eliminarChip = async (id: number) => {
+    try {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/ventas/eliminar_chip/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setRechazados(prev => prev.filter(c => c.id !== id));
+    } catch (error) {
+      console.error("Error al eliminar chip", error);
+    }
+  };
+
   useEffect(() => {
     fetchRechazados();
   }, [empleadoSeleccionado]);
@@ -83,6 +95,7 @@ const ChipsRechazados = () => {
           <TableRow>
             <TableCell>Empleado</TableCell>
             <TableCell>Número</TableCell>
+            <TableCell>Tipo Chip</TableCell>
             <TableCell>Fecha</TableCell>
             <TableCell>Motivo de Rechazo</TableCell>
             <TableCell>Validar</TableCell>
@@ -93,8 +106,13 @@ const ChipsRechazados = () => {
             <TableRow key={chip.id}>
               <TableCell>{chip.empleado?.username ?? "Empleado eliminado"}</TableCell>
               <TableCell>{chip.numero_telefono}</TableCell>
+              <TableCell>{chip.tipo_chip}</TableCell>
               <TableCell>{chip.fecha}</TableCell>
               <TableCell>{chip.descripcion_rechazo}</TableCell>
+              <TableCell>
+                <IconButton color="error"
+                  onClick={() => eliminarChip(chip.id)}> <Delete/></IconButton>
+              </TableCell>
               <TableCell>
                   <Checkbox
                     checked={false} // siempre desmarcado porque no es validación

@@ -12,7 +12,8 @@ import UsuariosAdmin from './Usuarios';
 const FormularioVentaMultiple = () => {
   const [productos, setProductos] = useState<string[]>([]);
   const [ventas, setVentas] = useState<Venta[]>([]);
-  const [ventasTelefonos, setVentasTelefonos] = useState<VentaTelefono[]>([]);
+  const ventasAccesorios = ventas.filter((v) => v.tipo === "accesorio");
+  const ventasTelefonos = ventas.filter((v) => v.tipo === "telefono");
   const [producto, setProducto] = useState('');
   const [precio, setPrecio] = useState<number | null>(null);
   const [cantidad, setCantidad] = useState<number>(1);
@@ -27,12 +28,11 @@ const FormularioVentaMultiple = () => {
   const [telefonoMarca, setTelefonoMarca] = useState('');
   const [telefonoModelo, setTelefonoModelo] = useState('');
   const [telefonoChecked, setTelefonoChecked] = useState(false);
-  const [telefonoTipo, setTelefonoTipo] = useState('');
+  const [telefonoTipo_venta, setTelefonoTipo_venta] = useState('');
   const [telefonoPrecio, setTelefonoPrecio] = useState('');
   const [fecha, setFecha] = useState("");
-  const [telefonosDisponibles, setTelefonosDisponibles] = useState<
-    { marca: string; modelo: string; cantidad: number }[]
-  >([]);
+  const [opcionesTelefonos, setOpcionesTelefonos] = useState<any[]>([]);
+  const [buscando, setBuscando] = useState(false);
   const [moduloId, setModuloId] = useState<number | null>(null);
   const [rol, setRol] = useState<Usuario["rol"] | null>(null);
   const [modulos, setModulos] = useState<any[]>([]);
@@ -90,25 +90,31 @@ const FormularioVentaMultiple = () => {
     fetchPrecio();
   }, [producto]);
   
-   const cargarVentas = async () => {
+  const cargarVentas = async () => {
   try {
-    const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/ventas`, config);
+    const res = await axios.get(
+      `${process.env.REACT_APP_API_URL}/ventas/ventas`,
+      config
+    );
+
     const todas = res.data;
     console.log("Ventas cargadas:", todas);
-    // Solo ventas con producto definido (no teléfonos)
-    const generales = todas.filter((v: Venta) => v.producto);
 
-    // Solo ventas de teléfonos (donde no hay producto, pero hay marca/modelo)
-    const telefonos = todas.filter((v: Venta) => !v.producto);
+    // Aquí sí filtras de la respuesta, no del state
+    const ventasAccesorios = todas.filter((v: any) => v.tipo === "accesorio");
+    const ventasTelefonos = todas.filter((v: any) => v.tipo === "telefono");
 
-    setVentas(generales);
-    setVentasTelefonos(telefonos);
+    // Guardas todas las ventas en el state principal
+    setVentas(todas);
+
+
   } catch (err: any) {
     console.error(err);
-    const msg = err?.response?.data?.detail || 'Error al cargar las ventas';
-    setMensaje({ tipo: 'error', texto: msg });
+    const msg = err?.response?.data?.detail || "Error al cargar las ventas";
+    setMensaje({ tipo: "error", texto: msg });
   }
 };
+
   
 
   const agregarAlCarrito = () => {
@@ -158,16 +164,7 @@ const FormularioVentaMultiple = () => {
   }
 };
 
-const cancelarVentaTelefono = async (id: number) => {
-  try {
-    await axios.put(`${process.env.REACT_APP_API_URL}/inventario/telefonos`, {}, config);
-    setVentasTelefonos((prev) =>
-      prev.map((venta) => (venta.id === id ? { ...venta, cancelada: true } : venta))
-    );
-  } catch (err) {
-    console.error("Error al cancelar la venta", err);
-  }
-};
+
 
 
   const handleChange = () => {
@@ -201,21 +198,7 @@ const cancelarVentaTelefono = async (id: number) => {
     }
   };
 
-  useEffect(() => {
-  const fetchVentasTelefonos = async () => {
-    try {
-      const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/ventas/ventas_telefonos`, 
-        config
-      );
-      setVentasTelefonos(res.data);
-    } catch (err) {
-      console.error("Error al cargar ventas de teléfonos", err);
-    }
-  };
-
-  fetchVentasTelefonos();
-}, []);
+  
 
 
 const registrarVentaTelefono = async () => {
@@ -233,7 +216,8 @@ const registrarVentaTelefono = async () => {
             producto: `${telefonoMarca} ${telefonoModelo}`, // se guarda en "producto"
             cantidad: 1,
             precio_unitario: parseFloat(telefonoPrecio),
-            tipo_producto: "TELEFONO", // 👈 clave para diferenciarlos
+            tipo: "telefono", // 👈 clave para diferenciarlos
+            tipo_venta: telefonoTipo_venta // nuevo campo para tipo de venta
           },
         ],
         metodo_pago: metodoPago,
@@ -245,13 +229,34 @@ const registrarVentaTelefono = async () => {
     setMensaje({ tipo: "success", texto: "Venta de teléfono registrada correctamente" });
     setTelefonoMarca("");
     setTelefonoModelo("");
-    setTelefonoTipo("");
+    setTelefonoTipo_venta("");
     setMetodoPago("");
     setTelefonoPrecio("");
   } catch (err: any) {
     console.error(err);
     const msg = err?.response?.data?.detail || "Error al registrar la venta de teléfono";
     setMensaje({ tipo: "error", texto: msg });
+  }
+};
+
+const buscarTelefonos = async (texto: string) => {
+  if (!texto || texto.length < 2) { // solo busca si tiene 2+ caracteres
+    setOpcionesTelefonos([]);
+    return;
+  }
+
+  setBuscando(true);
+  try {
+    const res = await axios.get(
+      `${process.env.REACT_APP_API_URL}/inventario/buscar?query=${encodeURIComponent(texto)}`,
+      config
+    );
+    setOpcionesTelefonos(res.data);
+  } catch (err) {
+    console.error("Error buscando teléfonos", err);
+    setOpcionesTelefonos([]);
+  } finally {
+    setBuscando(false);
   }
 };
 
@@ -288,9 +293,7 @@ useEffect(() => {
     fetchVentas();
   }, [fecha, moduloId, user]);
 
-  useEffect(() => {
-    cargarVentas();
-  }, []);
+ 
 
   return (
     <Grid container spacing={ 2 } sx={{ mt: 2 }}>
@@ -470,31 +473,37 @@ useEffect(() => {
   <Paper sx={{ borderRadius: 2, boxShadow: 3, p: 3, mt: 2, backgroundColor: '#fdfdfd' }}>
     <Typography variant="h6" gutterBottom>Venta de Teléfono</Typography>
 
-    <TextField
-      label="Marca"
-      value={telefonoMarca}
-      onChange={(e) => setTelefonoMarca(e.target.value)}
-      fullWidth
-      margin="normal"
-    />
-    <TextField
-      label="Modelo"
-      value={telefonoModelo}
-      onChange={(e) => setTelefonoModelo(e.target.value)}
-      fullWidth
-      margin="normal"
-    />
+    <Autocomplete
+  freeSolo
+  loading={buscando}
+  options={opcionesTelefonos.map((t) => `${t.producto}`)} // el backend devuelve producto = "MARCA MODELO"
+  value={`${telefonoMarca} ${telefonoModelo}`.trim()}
+  onInputChange={(e, newValue) => {
+    buscarTelefonos(newValue); // busca en backend
+  }}
+  onChange={(e, newValue) => {
+    if (typeof newValue === "string") {
+      // separa en marca y modelo
+      const partes = newValue.split(" ");
+      setTelefonoMarca(partes[0] || "");
+      setTelefonoModelo(partes.slice(1).join(" ") || "");
+    }
+  }}
+  renderInput={(params) => (
+    <TextField {...params} label="Teléfono (marca + modelo)" fullWidth margin="normal" />
+  )}
+/>
     <TextField
               select
               label="Tipo"
-              value={telefonoTipo}
-              onChange={(e) => setTelefonoTipo(e.target.value)}
+              value={telefonoTipo_venta}
+              onChange={(e) => setTelefonoTipo_venta(e.target.value)}
               fullWidth
               margin="normal"
             >
-              <MenuItem value="Chip Azul">Contado</MenuItem>
-              <MenuItem value="Chip Telcel">Pajoy</MenuItem>
-              <MenuItem value="Portabilidad">Paguitos</MenuItem>
+              <MenuItem value="Contado">Contado</MenuItem>
+              <MenuItem value="Pajoy">Pajoy</MenuItem>
+              <MenuItem value="Paguitos">Paguitos</MenuItem>
             </TextField>
     <TextField
       label="Precio"
@@ -522,7 +531,7 @@ useEffect(() => {
       color="secondary"
       fullWidth
       onClick={registrarVentaTelefono}
-      disabled={!telefonoMarca || !telefonoModelo || !telefonoTipo || !telefonoPrecio}
+      disabled={!telefonoMarca || !telefonoModelo || !telefonoTipo_venta || !telefonoPrecio}
       sx={{ mt: 2 }}
     >
       Registrar Venta Teléfono
@@ -637,6 +646,7 @@ useEffect(() => {
         <thead>
           <tr>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Producto</th>
+            <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Tipo</th>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Precio</th>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Fecha</th>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Estado</th>
@@ -646,9 +656,10 @@ useEffect(() => {
         <tbody>
           {ventasTelefonos.map((v) => (
             <tr key={v.id}>
-              <td style={{ padding: 8 }}>{`${v.marca} ${v.modelo}`}</td>
+              <td style={{ padding: 8 }}>{v.producto}</td>
+              <td style={{ padding: 8 }}>{v.tipo_venta}</td>
               <td style={{ padding: 8 }}>
-                ${typeof v.precio_venta === "number" ? v.precio_venta.toFixed(2) : "0.00"}
+                ${typeof v.precio_unitario === "number" ? v.precio_unitario.toFixed(2) : "0.00"}
               </td>
               <td style={{ padding: 8 }}>{new Date(v.fecha).toLocaleDateString()}</td>
               <td style={{ padding: 8 }}>{v.cancelada ? "Cancelada" : "Activa"}</td>
