@@ -89,6 +89,29 @@ const Navbar = () => {
             </>
           )}
 
+          {rolToken === "contador" && (
+            <>
+              <Button color="inherit" component={Link} to="/comisiones">
+                Comisiones
+              </Button>
+              <Button color="inherit" component={Link} to="/traspasos/admin">
+                Traspasos
+              </Button>
+              <Button color="inherit" component={Link} to="/usuarios">
+                Usuarios
+              </Button>
+              <Button color="inherit" component={Link} to="/inventario">
+                Inventario
+              </Button>
+              <Button color="inherit" component={Link} to="/ventas/chips">
+                Chips
+              </Button>
+              <Button color="inherit" component={Link} to="/cortes">
+                Reportes
+              </Button>
+            </>
+          )}
+
           {rolToken === "encargado" && (
             <>
               <Button color="inherit" component={Link} to="/traspasos">

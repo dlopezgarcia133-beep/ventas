@@ -98,6 +98,7 @@ const eliminarChip = async (id: number) => {
             <TableCell>Tipo Chip</TableCell>
             <TableCell>Fecha</TableCell>
             <TableCell>Motivo de Rechazo</TableCell>
+            <TableCell>Eliminar</TableCell>
             <TableCell>Validar</TableCell>
           </TableRow>
         </TableHead>

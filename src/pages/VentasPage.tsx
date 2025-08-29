@@ -293,6 +293,16 @@ useEffect(() => {
     fetchVentas();
   }, [fecha, moduloId, user]);
 
+
+
+  const totalVentas = ventas
+  .filter(v => !v.cancelada)
+  .reduce((acc, v) => acc + (typeof v.total === 'number' ? v.total : 0), 0);
+
+// Calcular total para ventasTelefonos (solo activas)
+const totalVentasTelefonos = ventasTelefonos
+  .filter(v => !v.cancelada)
+  .reduce((acc, v) => acc + (typeof v.precio_unitario === 'number' ? v.precio_unitario : 0), 0);
  
 
   return (
@@ -473,26 +483,26 @@ useEffect(() => {
   <Paper sx={{ borderRadius: 2, boxShadow: 3, p: 3, mt: 2, backgroundColor: '#fdfdfd' }}>
     <Typography variant="h6" gutterBottom>Venta de Teléfono</Typography>
 
-    <Autocomplete
-  freeSolo
-  loading={buscando}
-  options={opcionesTelefonos.map((t) => `${t.producto}`)} // el backend devuelve producto = "MARCA MODELO"
-  value={`${telefonoMarca} ${telefonoModelo}`.trim()}
-  onInputChange={(e, newValue) => {
-    buscarTelefonos(newValue); // busca en backend
-  }}
-  onChange={(e, newValue) => {
-    if (typeof newValue === "string") {
-      // separa en marca y modelo
-      const partes = newValue.split(" ");
-      setTelefonoMarca(partes[0] || "");
-      setTelefonoModelo(partes.slice(1).join(" ") || "");
-    }
-  }}
-  renderInput={(params) => (
-    <TextField {...params} label="Teléfono (marca + modelo)" fullWidth margin="normal" />
-  )}
-/>
+              <Autocomplete
+                freeSolo
+                loading={buscando}
+                options={opcionesTelefonos.map((t) => `${t.producto}`)} // el backend devuelve producto = "MARCA MODELO"
+                value={`${telefonoMarca} ${telefonoModelo}`.trim()}
+                onInputChange={(e, newValue) => {
+                  buscarTelefonos(newValue); // busca en backend
+                }}
+                onChange={(e, newValue) => {
+                  if (typeof newValue === "string") {
+                    // separa en marca y modelo
+                    const partes = newValue.split(" ");
+                    setTelefonoMarca(partes[0] || "");
+                    setTelefonoModelo(partes.slice(1).join(" ") || "");
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Teléfono (marca + modelo)" fullWidth margin="normal" />
+                )}
+              />
     <TextField
               select
               label="Tipo"
@@ -634,6 +644,11 @@ useEffect(() => {
                 </tbody>
                 </Box>
           </Paper>
+          <Box mt={2} textAlign="right">
+            <Typography variant="subtitle1" fontWeight="bold">
+              Total Ventas Accesorios: ${totalVentas.toFixed(2)}
+            </Typography>
+          </Box>
         </Box>
 
       </TableContainer>
@@ -684,6 +699,11 @@ useEffect(() => {
         </tbody>
       </Box>
     </Paper>
+    <Box mt={2} textAlign="right">
+      <Typography variant="subtitle1" fontWeight="bold">
+        Total Ventas Teléfonos: ${totalVentasTelefonos.toFixed(2)}
+      </Typography>
+    </Box>
   </Box>
 </TableContainer>
 

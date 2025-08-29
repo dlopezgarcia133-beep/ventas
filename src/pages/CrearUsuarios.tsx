@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
-  Box, Button, Container, MenuItem, TextField, Typography, Alert, Paper
+  Box, Button, Container, MenuItem, TextField, Typography, Alert, Paper,
+  Menu
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -96,6 +97,7 @@ const CrearUsuario = () => {
           <MenuItem value="admin">Admin</MenuItem>
           <MenuItem value="encargado">Encargado</MenuItem>
           <MenuItem value="asesor">Asesor</MenuItem>
+          <MenuItem value="contador">Contador</MenuItem>
         </TextField>
 
         {rol !== "admin" && (
