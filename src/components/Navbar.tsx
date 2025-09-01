@@ -86,6 +86,9 @@ const Navbar = () => {
               <Button color="inherit" component={Link} to="/ventas/chips">
                 Chips
               </Button>
+              <Button color="inherit" component={Link} to="/corte">
+                Cortes
+              </Button>
             </>
           )}
 
@@ -106,8 +109,8 @@ const Navbar = () => {
               <Button color="inherit" component={Link} to="/ventas/chips">
                 Chips
               </Button>
-              <Button color="inherit" component={Link} to="/cortes">
-                Reportes
+              <Button color="inherit" component={Link} to="/corte">
+                Cortes
               </Button>
             </>
           )}
