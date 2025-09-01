@@ -147,7 +147,7 @@ const CortePage = () => {
   }, []);
 
   useEffect(() => {
-    if (rolToken === 'contador') {
+    if (rolToken === 'contador' || rolToken === 'admin') {
       cargarCortesFiltrados();
     }
   }, [filtroModulo, filtroFecha]);

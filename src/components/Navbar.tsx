@@ -71,6 +71,9 @@ const Navbar = () => {
         <Box>
           {rolToken === "admin" && (
             <>
+            <Button color="inherit" component={Link} to="/corte">
+                Cortes
+              </Button>
               <Button color="inherit" component={Link} to="/comisiones">
                 Comisiones
               </Button>
@@ -86,14 +89,15 @@ const Navbar = () => {
               <Button color="inherit" component={Link} to="/ventas/chips">
                 Chips
               </Button>
-              <Button color="inherit" component={Link} to="/corte">
-                Cortes
-              </Button>
+              
             </>
           )}
 
           {rolToken === "contador" && (
             <>
+            <Button color="inherit" component={Link} to="/corte">
+                Cortes
+              </Button>
               <Button color="inherit" component={Link} to="/comisiones">
                 Comisiones
               </Button>
@@ -109,9 +113,7 @@ const Navbar = () => {
               <Button color="inherit" component={Link} to="/ventas/chips">
                 Chips
               </Button>
-              <Button color="inherit" component={Link} to="/corte">
-                Cortes
-              </Button>
+              
             </>
           )}
 
