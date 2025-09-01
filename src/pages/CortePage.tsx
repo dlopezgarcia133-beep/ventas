@@ -120,7 +120,7 @@ const CortePage = () => {
       if (filtroModulo) params.modulo_id = filtroModulo;
       if (filtroFecha) params.fecha = filtroFecha;
 
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/cortes`, {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/ventas/cortes`, {
         ...config,
         params,
       });
