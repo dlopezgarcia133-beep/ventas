@@ -154,7 +154,7 @@ const CortePage = () => {
 
   return (
     <>
-      {rolToken === 'contador' ? (
+      {rolToken === 'contador' || 'admin' ? (
         <Box sx={{ p: 4 }}>
           <Typography variant="h4" gutterBottom>🧾 Cortes Registrados</Typography>
 
