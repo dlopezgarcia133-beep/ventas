@@ -132,7 +132,7 @@ const CortePage = () => {
   };
 
   useEffect(() => {
-    if (rolToken === 'contador') {
+    if (rolToken === 'contador' || rolToken === 'admin') {
       const cargarModulos = async () => {
         try {
           const res = await axios.get(`${process.env.REACT_APP_API_URL}/registro/modulos`, config);
@@ -154,7 +154,7 @@ const CortePage = () => {
 
   return (
     <>
-      {rolToken === 'contador' || 'admin' ? (
+      {rolToken === 'contador' || rolToken === 'admin' ? (
         <Box sx={{ p: 4 }}>
           <Typography variant="h4" gutterBottom>🧾 Cortes Registrados</Typography>
 
