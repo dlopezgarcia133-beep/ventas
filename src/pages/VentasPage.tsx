@@ -486,14 +486,14 @@ const totalVentasTelefonos = ventasTelefonos
               <Autocomplete
                 freeSolo
                 loading={buscando}
-                options={opcionesTelefonos.map((t) => `${t.producto}`)} // el backend devuelve producto = "MARCA MODELO"
+                options={opcionesTelefonos}
                 value={`${telefonoMarca} ${telefonoModelo}`.trim()}
                 onInputChange={(e, newValue) => {
-                  buscarTelefonos(newValue); // busca en backend
+                  buscarTelefonos(newValue);
                 }}
                 onChange={(e, newValue) => {
                   if (typeof newValue === "string") {
-                    // separa en marca y modelo
+                    // separa en marca y modelo solo aquí
                     const partes = newValue.split(" ");
                     setTelefonoMarca(partes[0] || "");
                     setTelefonoModelo(partes.slice(1).join(" ") || "");
