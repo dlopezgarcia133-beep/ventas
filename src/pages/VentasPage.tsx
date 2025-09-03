@@ -12,8 +12,8 @@ import UsuariosAdmin from './Usuarios';
 const FormularioVentaMultiple = () => {
   const [productos, setProductos] = useState<string[]>([]);
   const [ventas, setVentas] = useState<Venta[]>([]);
-  const ventasAccesorios = ventas.filter((v) => v.tipo === "accesorio");
-  const ventasTelefonos = ventas.filter((v) => v.tipo === "telefono");
+  const ventasAccesorios = ventas.filter((v) => v.tipo_producto === "accesorio");
+  const ventasTelefonos = ventas.filter((v) => v.tipo_producto === "telefono");
   const [producto, setProducto] = useState('');
   const [precio, setPrecio] = useState<number | null>(null);
   const [cantidad, setCantidad] = useState<number>(1);
@@ -216,7 +216,7 @@ const registrarVentaTelefono = async () => {
             producto: `${telefonoMarca} ${telefonoModelo}`, // se guarda en "producto"
             cantidad: 1,
             precio_unitario: parseFloat(telefonoPrecio),
-            tipo: "telefono", // 👈 clave para diferenciarlos
+            tipo_producto: "telefono", // 👈 clave para diferenciarlos
             tipo_venta: telefonoTipo_venta // nuevo campo para tipo de venta
           },
         ],

@@ -22,15 +22,25 @@ const CorteVisual = ({ corte }: { corte: any }) => {
 
       
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6">🛍️ Ventas de Accesorios</Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Typography>💵 Efectivo: ${(corte.total_efectivo || 0).toFixed(2)}</Typography>
-            <Typography>💳 Tarjeta: ${(corte.total_tarjeta || 0).toFixed(2)}</Typography>
-          </Paper>
-        </Grid>
+      <Grid item xs={12} md={6}>
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h6">🛍️ Ventas de Accesorios</Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Typography>💵 Efectivo: ${(corte.accesorios_efectivo || 0).toFixed(2)}</Typography>
+          <Typography>💳 Tarjeta: ${(corte.accesorios_tarjeta || 0).toFixed(2)}</Typography>
+          <Typography><strong>Total:</strong> ${(corte.accesorios_total || 0).toFixed(2)}</Typography>
+        </Paper>
+      </Grid>
+
+      <Grid item xs={12} md={6}>
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h6">📱 Ventas de Teléfonos</Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Typography>💵 Efectivo: ${(corte.telefonos_efectivo || 0).toFixed(2)}</Typography>
+          <Typography>💳 Tarjeta: ${(corte.telefonos_tarjeta || 0).toFixed(2)}</Typography>
+          <Typography><strong>Total:</strong> ${(corte.telefonos_total || 0).toFixed(2)}</Typography>
+        </Paper>
+      </Grid>
 
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 3 }}>
@@ -53,7 +63,7 @@ const CorteVisual = ({ corte }: { corte: any }) => {
             </Alert>
           </Paper>
         </Grid>
-      </Grid>
+      
     </Box>
   );
 };
@@ -94,27 +104,43 @@ const CortePage = () => {
   const totalFinal = (resumen?.total_general || 0) + totalAdicional;
 
   const guardarCorte = async () => {
-    try {
-      const payload = {
-        fecha: new Date().toISOString().split('T')[0],
-        total_efectivo: (resumen?.ventas_productos?.efectivo || 0) + (resumen?.ventas_telefonos?.efectivo || 0),
-        total_tarjeta: (resumen?.ventas_productos?.tarjeta || 0) + (resumen?.ventas_telefonos?.tarjeta || 0),
-        adicional_recargas: parseFloat(recargas || '0'),
-        adicional_transporte: parseFloat(transporte || '0'),
-        adicional_otros: parseFloat(otros || '0'),
-        total_sistema: resumen?.total_general || 0,
-        total_general: totalFinal
-      };
+  try {
+    const payload = {
+      fecha: new Date().toISOString().split('T')[0],
 
-      await axios.post(`${process.env.REACT_APP_API_URL}/ventas/cortes`, payload, config);
-      alert("✅ Corte del día guardado correctamente");
-    } catch (error) {
-      console.error("Error al guardar el corte:", error);
-      alert("❌ Hubo un error al guardar el corte");
-    }
-  };
+      // 🔹 Accesorios
+      accesorios_efectivo: resumen?.ventas_productos?.efectivo || 0,
+      accesorios_tarjeta: resumen?.ventas_productos?.tarjeta || 0,
+      accesorios_total: resumen?.ventas_productos?.total || 0,
+
+      // 🔹 Teléfonos
+      telefonos_efectivo: resumen?.ventas_telefonos?.efectivo || 0,
+      telefonos_tarjeta: resumen?.ventas_telefonos?.tarjeta || 0,
+      telefonos_total: resumen?.ventas_telefonos?.total || 0,
+
+      // 🔹 Totales generales (suma de ambos)
+      total_efectivo: (resumen?.ventas_productos?.efectivo || 0) + (resumen?.ventas_telefonos?.efectivo || 0),
+      total_tarjeta: (resumen?.ventas_productos?.tarjeta || 0) + (resumen?.ventas_telefonos?.tarjeta || 0),
+      total_sistema: resumen?.total_general || 0,
+      total_general: totalFinal,
+
+      // 🔹 Adicionales
+      adicional_recargas: parseFloat(recargas || '0'),
+      adicional_transporte: parseFloat(transporte || '0'),
+      adicional_otros: parseFloat(otros || '0'),
+    };
+
+    await axios.post(`${process.env.REACT_APP_API_URL}/ventas/cortes`, payload, config);
+    alert("✅ Corte del día guardado correctamente");
+  } catch (error) {
+    console.error("Error al guardar el corte:", error);
+    alert("❌ Hubo un error al guardar el corte");
+  }
+};
+
 
   const cargarCortesFiltrados = async () => {
+    
     try {
       const params: any = {};
       if (filtroModulo) params.modulo_id = filtroModulo;
@@ -147,10 +173,15 @@ const CortePage = () => {
   }, []);
 
   useEffect(() => {
-    if (rolToken === 'contador' || rolToken === 'admin') {
+  if (rolToken === 'contador' || rolToken === 'admin') {
+    // 👇 si hay un módulo seleccionado o una fecha, carga los cortes
+    if (filtroModulo || filtroFecha) {
       cargarCortesFiltrados();
+    } else {
+      setCortesGuardados([]); // limpia la lista cuando no hay filtros
     }
-  }, [filtroModulo, filtroFecha]);
+  }
+}, [filtroModulo, filtroFecha]);
 
   return (
     <>

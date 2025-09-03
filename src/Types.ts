@@ -17,7 +17,7 @@ export interface Venta {
   tipo_venta: string;
   fecha: string;
   cancelada: boolean;
-  tipo:"accesorio" | "telefono";
+  tipo_producto:"accesorio" | "telefono";
   empleado?: {
     username: string;
   };
