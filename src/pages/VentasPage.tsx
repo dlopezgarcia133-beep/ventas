@@ -202,42 +202,48 @@ const FormularioVentaMultiple = () => {
 
 
 const registrarVentaTelefono = async () => {
-  if (!telefonoMarca || !telefonoModelo || !telefonoPrecio) {
+  if (!telefonoMarca || !telefonoModelo || !telefonoPrecio || !telefonoTipo_venta) {
     setMensaje({ tipo: "error", texto: "Faltan datos del teléfono." });
     return;
   }
 
   try {
+    const ventaPayload = {
+      productos: [
+        {
+          producto: `${telefonoMarca} ${telefonoModelo}`, // 👈 nombre completo del teléfono
+          cantidad: 1, // 👈 siempre 1
+          precio_unitario: parseFloat(telefonoPrecio),
+          tipo_producto: "telefono", // 👈 clave para diferenciarlos
+          tipo_venta: telefonoTipo_venta, // 👈 tipo de venta (prepago, plan, etc.)
+        },
+      ],
+      metodo_pago: metodoPago,
+      correo_cliente: correo?.trim() || null, // 👈 mejor validación
+    };
+
     await axios.post(
       `${process.env.REACT_APP_API_URL}/ventas/ventas`,
-      {
-        productos: [
-          {
-            producto: `${telefonoMarca} ${telefonoModelo}`, // se guarda en "producto"
-            cantidad: 1,
-            precio_unitario: parseFloat(telefonoPrecio),
-            tipo_producto: "telefono", // 👈 clave para diferenciarlos
-            tipo_venta: telefonoTipo_venta // nuevo campo para tipo de venta
-          },
-        ],
-        metodo_pago: metodoPago,
-        correo_cliente: correo || null,
-      },
+      ventaPayload,
       config
     );
 
     setMensaje({ tipo: "success", texto: "Venta de teléfono registrada correctamente" });
+
+    // limpiar campos
     setTelefonoMarca("");
     setTelefonoModelo("");
     setTelefonoTipo_venta("");
     setMetodoPago("");
     setTelefonoPrecio("");
+    setCorreo(""); // 👈 también limpiamos correo si lo usas
   } catch (err: any) {
-    console.error(err);
+    console.error("Error en registrarVentaTelefono:", err);
     const msg = err?.response?.data?.detail || "Error al registrar la venta de teléfono";
     setMensaje({ tipo: "error", texto: msg });
   }
 };
+
 
 const buscarTelefonos = async (texto: string) => {
   if (!texto || texto.length < 2) { // solo busca si tiene 2+ caracteres
