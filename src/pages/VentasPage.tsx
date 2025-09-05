@@ -220,7 +220,8 @@ const registrarVentaTelefono = async () => {
       producto: `${telefonoMarca} ${telefonoModelo}`,
       cantidad: 1,
       precio_unitario: Number(telefonoPrecio),
-      tipo_producto: "telefono", // o null si no aplica
+      tipo_producto: "telefono", 
+      tipo_venta: telefonoTipo_venta,
     },
   ],
   metodo_pago: metodoPago,
@@ -575,12 +576,6 @@ const totalVentasTelefonos = ventasTelefonos
         <Box mt={5}>
           <Typography variant="h6" gutterBottom>Ventas Realizadas</Typography>
            <div style={{ marginBottom: "1rem" }}>
-        <TextField
-          type="date"
-          value={fecha}
-          onChange={(e) => setFecha(e.target.value)}
-        />
-        
         
 {user?.is_admin && modulos.length > 0 && (
   <>
@@ -602,6 +597,13 @@ const totalVentasTelefonos = ventasTelefonos
     </select>
   </>
 )}
+
+<TextField
+          type="date"
+          value={fecha}
+          onChange={(e) => setFecha(e.target.value)}
+        />
+
 <Button
           variant="contained"
           onClick={fetchVentas}
@@ -628,7 +630,7 @@ const totalVentasTelefonos = ventasTelefonos
                 </tr>
               </thead>
               <tbody>
-                {ventas.map((v) => (
+                {ventas.filter((venta) => venta.tipo_producto === "accesorio").map((v) => (
                   <tr key={v.id}>
                     <td style={{ padding: 8 }}>{v.empleado?.username}</td>
                     <td style={{ padding: 8 }}>{v.producto}</td>
@@ -687,7 +689,7 @@ const totalVentasTelefonos = ventasTelefonos
           </tr>
         </thead>
         <tbody>
-          {ventasTelefonos.map((v) => (
+          {ventasTelefonos.filter((venta) => venta.tipo_producto === "telefono").map((v) => (
             <tr key={v.id}>
               <td style={{ padding: 8 }}>{v.producto}</td>
               <td style={{ padding: 8 }}>{v.tipo_venta}</td>

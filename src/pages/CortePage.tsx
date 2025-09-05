@@ -6,7 +6,7 @@ import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { obtenerRolDesdeToken } from '../components/Token';
 
-const CorteVisual = ({ corte }: { corte: any }) => {
+const CorteVisual = ({ corte, ventas }: { corte: any, ventas: any[] }) => {
   const totalAdicional =
     parseFloat(corte.adicional_recargas || '0') +
     parseFloat(corte.adicional_transporte || '0') +
@@ -15,13 +15,13 @@ const CorteVisual = ({ corte }: { corte: any }) => {
   const totalFinal = (corte.total_sistema || 0) + totalAdicional;
 
   return (
-    <Box sx={{ mb: 6 }}>
-      <Typography variant="h5" gutterBottom>
-        Corte del Día ({corte.fecha})
-      </Typography>
+  <Box sx={{ mb: 6 }}>
+    <Typography variant="h5" gutterBottom>
+      Corte del Día ({corte.fecha})
+    </Typography>
 
-      
-
+    {/* Totales */}
+    <Grid container spacing={2}>
       <Grid item xs={12} md={6}>
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6">🛍️ Ventas de Accesorios</Typography>
@@ -42,31 +42,103 @@ const CorteVisual = ({ corte }: { corte: any }) => {
         </Paper>
       </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6">📝 Montos Adicionales</Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Typography>Recargas Telcel: ${corte.adicional_recargas}</Typography>
-            <Typography>Recargas YOVOY: ${corte.adicional_transporte}</Typography>
-            <Typography>Centro de Pagos: ${corte.adicional_otros}</Typography>
-          </Paper>
-        </Grid>
+      <Grid item xs={12} md={6}>
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h6">📝 Montos Adicionales</Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Typography>Recargas Telcel: ${corte.adicional_recargas}</Typography>
+          <Typography>Recargas YOVOY: ${corte.adicional_transporte}</Typography>
+          <Typography>Centro de Pagos: ${corte.adicional_otros}</Typography>
+        </Paper>
+      </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6">📊 Totales</Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Typography>Total del Sistema: ${corte.total_sistema}</Typography>
-            <Typography>Total Adicional: ${totalAdicional.toFixed(2)}</Typography>
-            <Alert severity="info" sx={{ mt: 2 }}>
-              <strong>Total General:</strong> ${totalFinal.toFixed(2)}
-            </Alert>
-          </Paper>
-        </Grid>
-      
+      <Grid item xs={12} md={6}>
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h6">📊 Totales</Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Typography>Total del Sistema: ${corte.total_sistema}</Typography>
+          <Typography>Total Adicional: ${totalAdicional.toFixed(2)}</Typography>
+          <Alert severity="info" sx={{ mt: 2 }}>
+            <strong>Total General:</strong> ${totalFinal.toFixed(2)}
+          </Alert>
+        </Paper>
+      </Grid>
+    </Grid>
+
+    {/* TABLA DE ACCESORIOS */}
+    <Box mt={5}>
+      <Typography variant="h6" gutterBottom>🛍️ Detalle de Ventas Accesorios</Typography>
+      <Paper>
+        <Box p={2} component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Nombre</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Producto</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Cantidad</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Precio</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Total</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Fecha</th>
+
+            </tr>
+          </thead>
+          <tbody>
+            {ventas.filter((v) => v.tipo_producto === "accesorio").map((v) => (
+              <tr key={v.id}>
+                <td style={{ padding: 8 }}>{v.empleado?.username}</td>
+                <td style={{ padding: 8 }}>{v.producto}</td>
+                <td style={{ padding: 8 }}>{v.cantidad}</td>
+                <td style={{ padding: 8 }}>${v.precio_unitario?.toFixed(2)}</td>
+                <td style={{ padding: 8 }}>${v.total?.toFixed(2)}</td>
+                <td style={{ padding: 8 }}>{new Date(v.fecha).toLocaleString()}</td>
+
+              </tr>
+            ))}
+            {ventas.filter((v) => v.tipo_producto === "accesorio").length === 0 && (
+              <tr>
+                <td colSpan={8} style={{ padding: 8, textAlign: "center" }}>No hay ventas de accesorios</td>
+              </tr>
+            )}
+          </tbody>
+        </Box>
+      </Paper>
     </Box>
-  );
-};
+
+    {/* TABLA DE TELÉFONOS */}
+    <Box mt={5}>
+      <Typography variant="h6" gutterBottom>📱 Detalle de Ventas Teléfonos</Typography>
+      <Paper>
+        <Box p={2} component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Producto</th>
+              <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Tipo</th>
+              <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Precio</th>
+              <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Fecha</th>
+              <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Estado</th>
+              <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ventas.filter((v) => v.tipo_producto === "telefono").map((v) => (
+              <tr key={v.id}>
+                <td style={{ padding: 8 }}>{v.producto}</td>
+                <td style={{ padding: 8 }}>{v.tipo_venta}</td>
+                <td style={{ padding: 8 }}>${v.precio_unitario?.toFixed(2)}</td>
+                <td style={{ padding: 8 }}>{new Date(v.fecha).toLocaleDateString()}</td>
+
+              </tr>
+            ))}
+            {ventas.filter((v) => v.tipo_producto === "telefono").length === 0 && (
+              <tr>
+                <td colSpan={6} style={{ padding: 8, textAlign: "center" }}>No hay ventas de teléfonos</td>
+              </tr>
+            )}
+          </tbody>
+        </Box>
+      </Paper>
+    </Box>
+  </Box>
+);}
 
 const CortePage = () => {
   const [resumen, setResumen] = useState<any>(null);
@@ -225,7 +297,7 @@ const CortePage = () => {
             <Typography>No hay cortes registrados aún.</Typography>
           ) : (
             cortesGuardados.map((corte, index) => (
-              <CorteVisual key={index} corte={corte} />
+              <CorteVisual key={index} corte={corte} ventas={corte.ventas || []} />
             ))
           )}
         </Box>
