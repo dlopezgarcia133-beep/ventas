@@ -244,6 +244,7 @@ const registrarVentaTelefono = async () => {
 
     let msg = "Error al registrar la venta de teléfono";
     if (Array.isArray(err?.response?.data?.detail)) {
+      console.table(err.response.data.detail);
       msg = err.response.data.detail.map((e: any) => e.msg).join(" | ");
     } else if (typeof err?.response?.data?.detail === "string") {
       msg = err.response.data.detail;
