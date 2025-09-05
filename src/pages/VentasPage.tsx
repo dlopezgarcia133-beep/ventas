@@ -215,20 +215,19 @@ const registrarVentaTelefono = async () => {
 
   try {
     const ventaPayload = {
-      productos: [
-        {
-          producto: `${telefonoMarca} ${telefonoModelo}`,
-          cantidad: 1,
-          precio_unitario: precio,
-          tipo_producto: "telefono",
-          tipo_venta: telefonoTipo_venta.toLowerCase(),
-        },
-      ],
-      metodo_pago: metodoPago,
-      correo_cliente: correo?.trim() || "",
-    };
+  productos: [
+    {
+      producto: `${telefonoMarca} ${telefonoModelo}`,
+      cantidad: 1,
+      precio_unitario: Number(telefonoPrecio),
+      tipo_producto: "telefono", // o null si no aplica
+    },
+  ],
+  metodo_pago: metodoPago,
+  correo_cliente: correo?.trim() || "",
+};
 
-    await axios.post(`${process.env.REACT_APP_API_URL}/ventas/ventas`, ventaPayload, config);
+await axios.post(`${process.env.REACT_APP_API_URL}/ventas/ventas`, ventaPayload, config);
 
     setMensaje({ tipo: "success", texto: "Venta de teléfono registrada correctamente" });
 
