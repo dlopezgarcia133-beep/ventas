@@ -39,6 +39,8 @@ const FormularioVentaMultiple = () => {
   const [user, setUser] = useState<any>(null);
   const Container = useRef<HTMLElement>(null);
   const navigate = useNavigate();
+  const [totalAccesorios, setTotalAccesorios] = useState(0);
+  const [totalTelefonos, setTotalTelefonos] = useState(0);
 
   const token = localStorage.getItem("token");
   const config = {
@@ -60,6 +62,26 @@ const FormularioVentaMultiple = () => {
   }
 };
 
+
+useEffect(() => {
+  if (ventas.length > 0) {
+    // Filtrar y sumar accesorios
+    const accesorios = ventas.filter(v => v.tipo_producto === "accesorio");
+    const totalAcc = accesorios.reduce(
+      (acc, v) => acc + v.precio_unitario * v.cantidad,
+      0
+    );
+    setTotalAccesorios(totalAcc);
+
+    // Filtrar y sumar teléfonos
+    const telefonos = ventas.filter(v => v.tipo_producto === "telefono");
+    const totalTel = telefonos.reduce(
+      (acc, v) => acc + v.precio_unitario * v.cantidad,
+      0
+    );
+    setTotalTelefonos(totalTel);
+  }
+}, [ventas]);
 
   useEffect(() => {
     const fetchProductos = async () => {
@@ -666,7 +688,7 @@ const totalVentasTelefonos = ventasTelefonos
           </Paper>
           <Box mt={2} textAlign="right">
             <Typography variant="subtitle1" fontWeight="bold">
-              Total Ventas Accesorios: ${totalVentas.toFixed(2)}
+              Total Ventas Accesorios: ${totalAccesorios.toFixed(2)}
             </Typography>
           </Box>
         </Box>
@@ -720,10 +742,10 @@ const totalVentasTelefonos = ventasTelefonos
       </Box>
     </Paper>
     <Box mt={2} textAlign="right">
-      <Typography variant="subtitle1" fontWeight="bold">
-        Total Ventas Teléfonos: ${totalVentasTelefonos.toFixed(2)}
-      </Typography>
-    </Box>
+  <Typography variant="subtitle1" fontWeight="bold">
+    Total Ventas Teléfonos: ${totalTelefonos.toFixed(2)}
+  </Typography>
+</Box>
   </Box>
 </TableContainer>
 
