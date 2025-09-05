@@ -207,42 +207,54 @@ const registrarVentaTelefono = async () => {
     return;
   }
 
+  const precio = Number(telefonoPrecio);
+  if (isNaN(precio) || precio <= 0) {
+    setMensaje({ tipo: "error", texto: "Precio inválido." });
+    return;
+  }
+
   try {
     const ventaPayload = {
       productos: [
         {
-          producto: `${telefonoMarca} ${telefonoModelo}`, // 👈 nombre completo del teléfono
-          cantidad: 1, // 👈 siempre 1
-          precio_unitario: parseFloat(telefonoPrecio),
-          tipo_producto: "telefono", // 👈 clave para diferenciarlos
-          tipo_venta: telefonoTipo_venta, // 👈 tipo de venta (prepago, plan, etc.)
+          producto: `${telefonoMarca} ${telefonoModelo}`,
+          cantidad: 1,
+          precio_unitario: precio,
+          tipo_producto: "telefono",
+          tipo_venta: telefonoTipo_venta.toLowerCase(),
         },
       ],
       metodo_pago: metodoPago,
-      correo_cliente: correo?.trim() || null, // 👈 mejor validación
+      correo_cliente: correo?.trim() || "",
     };
 
-    await axios.post(
-      `${process.env.REACT_APP_API_URL}/ventas/ventas`,
-      ventaPayload,
-      config
-    );
+    await axios.post(`${process.env.REACT_APP_API_URL}/ventas/ventas`, ventaPayload, config);
 
     setMensaje({ tipo: "success", texto: "Venta de teléfono registrada correctamente" });
 
-    // limpiar campos
+    // limpiar
     setTelefonoMarca("");
     setTelefonoModelo("");
     setTelefonoTipo_venta("");
     setMetodoPago("");
     setTelefonoPrecio("");
-    setCorreo(""); // 👈 también limpiamos correo si lo usas
+    setCorreo("");
   } catch (err: any) {
     console.error("Error en registrarVentaTelefono:", err);
-    const msg = err?.response?.data?.detail || "Error al registrar la venta de teléfono";
+
+    let msg = "Error al registrar la venta de teléfono";
+    if (Array.isArray(err?.response?.data?.detail)) {
+      msg = err.response.data.detail.map((e: any) => e.msg).join(" | ");
+    } else if (typeof err?.response?.data?.detail === "string") {
+      msg = err.response.data.detail;
+    } else if (err.message) {
+      msg = err.message;
+    }
+
     setMensaje({ tipo: "error", texto: msg });
   }
 };
+
 
 
 const buscarTelefonos = async (texto: string) => {
