@@ -719,7 +719,16 @@ const totalVentasTelefonos = ventasTelefonos
                 ${typeof v.precio_unitario === "number" ? v.precio_unitario.toFixed(2) : "0.00"}
               </td>
               <td style={{ padding: 8 }}>{new Date(v.fecha).toLocaleDateString()}</td>
-              <td style={{ padding: 8 }}>{v.cancelada ? "Cancelada" : "Activa"}</td>
+              <td style={{ padding: 8 }}>
+                <span
+                  style={{
+                    color: v.cancelada ? "red" : "green",
+                    fontWeight: "bold"
+                  }}
+                >
+                  {v.cancelada ? "Cancelada" : "Activa"}
+                </span>
+              </td>
               <td style={{ padding: 8 }}>
                 <Button
                   variant="outlined"
