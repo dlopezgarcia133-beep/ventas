@@ -66,7 +66,7 @@ const FormularioVentaMultiple = () => {
 useEffect(() => {
   if (ventas.length > 0) {
     // Filtrar y sumar accesorios
-    const accesorios = ventas.filter(v => v.tipo_producto === "accesorio");
+    const accesorios = ventas.filter(v => v.tipo_producto === "accesorio" && !v.cancelada);
     const totalAcc = accesorios.reduce(
       (acc, v) => acc + v.precio_unitario * v.cantidad,
       0
@@ -74,7 +74,7 @@ useEffect(() => {
     setTotalAccesorios(totalAcc);
 
     // Filtrar y sumar teléfonos
-    const telefonos = ventas.filter(v => v.tipo_producto === "telefono");
+    const telefonos = ventas.filter(v => v.tipo_producto === "telefono" && !v.cancelada);
     const totalTel = telefonos.reduce(
       (acc, v) => acc + v.precio_unitario * v.cantidad,
       0
