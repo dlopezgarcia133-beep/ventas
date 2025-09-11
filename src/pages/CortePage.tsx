@@ -174,6 +174,14 @@ const CortePage = () => {
     parseFloat(otros || '0');
 
   const totalFinal = (resumen?.total_general || 0) + totalAdicional;
+  const totalEfectivo =
+  (resumen?.ventas_productos?.efectivo ?? 0) +
+  (resumen?.ventas_telefonos?.efectivo ?? 0) +
+  totalAdicional; // incluye montos adicionales
+
+const totalTarjeta =
+  (resumen?.ventas_productos?.tarjeta ?? 0) +
+  (resumen?.ventas_telefonos?.tarjeta ?? 0);
 
   const guardarCorte = async () => {
   try {
@@ -195,6 +203,7 @@ const CortePage = () => {
       total_tarjeta: (resumen?.ventas_productos?.tarjeta || 0) + (resumen?.ventas_telefonos?.tarjeta || 0),
       total_sistema: resumen?.total_general || 0,
       total_general: totalFinal,
+      
 
       // 🔹 Adicionales
       adicional_recargas: parseFloat(recargas || '0'),
@@ -368,21 +377,31 @@ const CortePage = () => {
               </Paper>
             </Grid>
 
-            {/* Totales */}
-            <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom>📊 Totales</Typography>
-                <Divider sx={{ mb: 2 }} />
-                <Typography>
-                  Total del Sistema: ${(resumen?.total_general ?? 0).toFixed(2)}
-                </Typography>
-                <Typography>Total Adicional Manual: ${totalAdicional.toFixed(2)}</Typography>
-                <Alert severity="info" sx={{ mt: 2 }}>
-                  <strong>Total General del Día:</strong> ${totalFinal.toFixed(2)}
-                </Alert>
-              </Paper>
-            </Grid>
+              {/* Totales */}
+              <Grid item xs={12} md={6}>
+                <Paper sx={{ p: 3 }}>
+                  <Typography variant="h6" gutterBottom>📊 Totales</Typography>
+                  <Divider sx={{ mb: 2 }} />
+                  <Typography>
+                    Total del Sistema: ${(resumen?.total_general ?? 0).toFixed(2)}
+                  </Typography>
+                  <Typography>Total Adicional Manual: ${totalAdicional.toFixed(2)}</Typography>
+
+                  {/* 👇 nuevos totales */}
+                  <Typography sx={{ mt: 2 }}>
+                    💵 Total Efectivo: ${totalEfectivo.toFixed(2)}
+                  </Typography>
+                  <Typography>
+                    💳 Total Tarjeta: ${totalTarjeta.toFixed(2)}
+                  </Typography>
+
+                  <Alert severity="info" sx={{ mt: 2 }}>
+                    <strong>Total General del Día:</strong> ${totalFinal.toFixed(2)}
+                  </Alert>
+                </Paper>
+              </Grid>
           </Grid>
+
 
           <Box textAlign="right" mt={4}>
             <button
