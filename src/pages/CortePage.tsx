@@ -12,7 +12,7 @@ const CorteVisual = ({ corte, ventas }: { corte: any, ventas: any[] }) => {
     parseFloat(corte.adicional_transporte || '0') +
     parseFloat(corte.adicional_otros || '0');
 
-  const totalFinal = (corte.total_general || 0) + totalAdicional;
+  const totalFinal = (corte.total_sistema || 0) + totalAdicional;
 
   const totalEfectivo =
   (corte.accesorios_efectivo || 0) +
@@ -67,7 +67,7 @@ const totalTarjeta =
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6">📊 Totales</Typography>
           <Divider sx={{ mb: 2 }} />
-          <Typography>Total del Sistema: ${corte.total_general}</Typography>
+          <Typography>Total del Sistema: ${corte.total_sistema}</Typography>
           <Typography>Total Adicional: ${totalAdicional.toFixed(2)}</Typography>
 
           <Typography sx={{ mt: 2 }}>
