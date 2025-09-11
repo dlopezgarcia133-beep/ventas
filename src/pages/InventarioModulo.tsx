@@ -16,7 +16,8 @@ const InventarioPorModulo = () => {
   const [nuevo, setNuevo] = useState({ producto: '', clave: '', cantidad: '', precio: '' });
   const [tipo, setTipo] = useState<'producto' | 'telefono'>('producto');
   const [nuevoTelefono, setNuevoTelefono] = useState({ producto: '', clave: '', cantidad: '', precio: '', marca: '', modelo: '' });
-
+  const [selectedItem, setSelectedItem] = useState<any | null>(null);
+  const [nuevaCantidad, setNuevaCantidad] = useState<string>("");
   const [editando, setEditando] = useState<string | null>(null);
   const [editarData, setEditarData] = useState({ cantidad: '', precio: '' });
 
@@ -66,6 +67,35 @@ const InventarioPorModulo = () => {
     cargarInventario();
   } catch (err: any) {
     alert(err.response?.data?.detail || "Error al agregar");
+  }
+};
+
+const actualizarCantidad = async () => {
+  if (!selectedItem) {
+    alert("Selecciona un producto de la tabla primero");
+    return;
+  }
+
+  try {
+    if (selectedItem.tipo === "producto") {
+      await axios.put(
+        `${process.env.REACT_APP_API_URL}/inventario/inventario/general/${selectedItem.id}`,
+        { cantidad: parseInt(nuevaCantidad) },
+        config
+      );
+    } else {
+      await axios.put(
+        `${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general/${selectedItem.id}`,
+        { cantidad: parseInt(nuevaCantidad) },
+        config
+      );
+    }
+
+    setNuevaCantidad("");
+    setSelectedItem(null);
+    cargarInventario();
+  } catch (err: any) {
+    alert(err.response?.data?.detail || "Error al actualizar cantidad");
   }
 };
 
@@ -170,7 +200,13 @@ const InventarioPorModulo = () => {
               </TableHead>
               <TableBody>
                 {productosFiltrados.map((item) => (
-                  <TableRow key={item.id}>
+                  <TableRow
+                    key={item.id}
+                    hover
+                    selected={selectedItem?.id === item.id}
+                    onClick={() => setSelectedItem(item)}
+                    sx={{ cursor: "pointer" }}
+                  >
                     <TableCell>{item.producto}</TableCell>
                     <TableCell>{item.clave}</TableCell>
                     <TableCell>
