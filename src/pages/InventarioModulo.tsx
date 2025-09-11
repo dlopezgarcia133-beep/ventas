@@ -77,19 +77,12 @@ const actualizarCantidad = async () => {
   }
 
   try {
-    if (selectedItem.tipo === "producto") {
       await axios.put(
-        `${process.env.REACT_APP_API_URL}/inventario/inventario/general/${selectedItem.id}`,
+        `${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${selectedItem.id}`,
         { cantidad: parseInt(nuevaCantidad) },
         config
       );
-    } else {
-      await axios.put(
-        `${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general/${selectedItem.id}`,
-        { cantidad: parseInt(nuevaCantidad) },
-        config
-      );
-    }
+  
 
     setNuevaCantidad("");
     setSelectedItem(null);
