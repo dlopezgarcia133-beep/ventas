@@ -154,14 +154,26 @@ const actualizarCantidad = async () => {
       </TextField>
       
 
-       <TextField
-              label="Buscar producto"
-              variant="outlined"
-              value={filtro}
-              onChange={(e) => setFiltro(e.target.value)}
-              fullWidth
-              sx={{ mb: 3 }}
-            />
+      <TextField
+        label="Buscar producto o teléfono"
+        variant="outlined"
+        value={filtro}
+        onChange={(e) => setFiltro(e.target.value)}
+        fullWidth
+        sx={{ mb: 3 }}
+      />
+
+      <Box display="flex" gap={2} mb={3}>
+        <TextField
+          label="Nueva cantidad"
+          type="number"
+          value={nuevaCantidad}
+          onChange={(e) => setNuevaCantidad(e.target.value)}
+        />
+        <Button variant="contained" onClick={actualizarCantidad}>
+          Actualizar Cantidad
+        </Button>
+      </Box>
 
       {moduloSeleccionado && (
         <>
