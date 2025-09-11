@@ -58,6 +58,13 @@ const CorteVisual = ({ corte, ventas }: { corte: any, ventas: any[] }) => {
           <Divider sx={{ mb: 2 }} />
           <Typography>Total del Sistema: ${corte.total_sistema}</Typography>
           <Typography>Total Adicional: ${totalAdicional.toFixed(2)}</Typography>
+
+          <Typography sx={{ mt: 2 }}>
+                    💵 Total Efectivo: ${totalEfectivo.toFixed(2)}
+                  </Typography>
+                  <Typography>
+                    💳 Total Tarjeta: ${totalTarjeta.toFixed(2)}
+                  </Typography>
           <Alert severity="info" sx={{ mt: 2 }}>
             <strong>Total General:</strong> ${totalFinal.toFixed(2)}
           </Alert>
