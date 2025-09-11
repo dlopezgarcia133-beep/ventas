@@ -15,13 +15,15 @@ const CorteVisual = ({ corte, ventas }: { corte: any, ventas: any[] }) => {
   const totalFinal = (corte.total_sistema || 0) + totalAdicional;
 
   const totalEfectivo =
-    (corte.accesorios_efectivo || 0) +
-    (corte.telefonos_efectivo || 0) +
-    totalAdicional;
+  (corte.accesorios_efectivo || 0) +
+  (corte.telefonos_efectivo || 0) +
+  (parseFloat(corte.adicional_recargas || '0') +
+   parseFloat(corte.adicional_transporte || '0') +
+   parseFloat(corte.adicional_otros || '0'));
 
-  const totalTarjeta =
-    (corte.accesorios_tarjeta || 0) +
-    (corte.telefonos_tarjeta || 0);
+const totalTarjeta =
+  (corte.accesorios_tarjeta || 0) +
+  (corte.telefonos_tarjeta || 0);
 
   return (
   <Box sx={{ mb: 6 }}>
@@ -217,7 +219,11 @@ const totalTarjeta =
       // 🔹 Totales generales (suma de ambos)
       total_efectivo: (resumen?.ventas_productos?.efectivo || 0) + (resumen?.ventas_telefonos?.efectivo || 0),
       total_tarjeta: (resumen?.ventas_productos?.tarjeta || 0) + (resumen?.ventas_telefonos?.tarjeta || 0),
-      total_sistema: resumen?.total_general || 0,
+      total_sistema:
+        (resumen?.ventas_productos?.efectivo || 0) +
+        (resumen?.ventas_productos?.tarjeta || 0) +
+        (resumen?.ventas_telefonos?.efectivo || 0) +
+        (resumen?.ventas_telefonos?.tarjeta || 0),
       total_general: totalFinal,
       
 
