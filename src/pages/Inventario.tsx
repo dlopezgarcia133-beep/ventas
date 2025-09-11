@@ -21,6 +21,8 @@ const InventarioAdmin = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const config = { headers: { Authorization: `Bearer ${token}` } };
+  const [selectedItem, setSelectedItem] = useState<any | null>(null);
+  const [nuevaCantidad, setNuevaCantidad] = useState<string>("");
 
   const cargarInventario = async () => {
     const resProd = await axios.get(`${process.env.REACT_APP_API_URL}/inventario/inventario/general`, config);
@@ -83,6 +85,35 @@ const guardarCambios = async (item: any) => {
   }
 };
 
+const actualizarCantidad = async () => {
+  if (!selectedItem) {
+    alert("Selecciona un producto de la tabla primero");
+    return;
+  }
+
+  try {
+    if (selectedItem.tipo === "producto") {
+      await axios.put(
+        `${process.env.REACT_APP_API_URL}/inventario/inventario/general/${selectedItem.id}`,
+        { cantidad: parseInt(nuevaCantidad) },
+        config
+      );
+    } else {
+      await axios.put(
+        `${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general/${selectedItem.id}`,
+        { cantidad: parseInt(nuevaCantidad) },
+        config
+      );
+    }
+
+    setNuevaCantidad("");
+    setSelectedItem(null);
+    cargarInventario();
+  } catch (err: any) {
+    alert(err.response?.data?.detail || "Error al actualizar cantidad");
+  }
+};
+
 
 const eliminarItem = async (item: any) => {
   const confirmar = window.confirm(`¿Eliminar "${item.nombre}" del inventario?`);
@@ -138,6 +169,18 @@ const eliminarItem = async (item: any) => {
         sx={{ mb: 3 }}
       />
 
+      <Box display="flex" gap={2} mb={3}>
+        <TextField
+          label="Nueva cantidad"
+          type="number"
+          value={nuevaCantidad}
+          onChange={(e) => setNuevaCantidad(e.target.value)}
+        />
+        <Button variant="contained" onClick={actualizarCantidad}>
+          Actualizar Cantidad
+        </Button>
+      </Box>
+
       <Box display="flex" gap={2} mb={3} flexWrap="wrap">
         <Select value={tipo} onChange={(e) => setTipo(e.target.value as 'producto' | 'telefono')}>
           <MenuItem value="producto">Producto</MenuItem>
@@ -182,7 +225,13 @@ const eliminarItem = async (item: any) => {
             </TableHead>
             <TableBody>
               {productosFiltrados.map((item) => (
-                <TableRow key={`${item.tipo}-${item.id}`}>
+                <TableRow
+                  key={`${item.tipo}-${item.id}`}
+                  hover
+                  selected={selectedItem?.id === item.id && selectedItem?.tipo === item.tipo}
+                  onClick={() => setSelectedItem(item)}
+                  sx={{ cursor: "pointer" }}
+                >
                   <TableCell>{item.nombre}</TableCell>
                   <TableCell>{item.clave}</TableCell>
                   <TableCell>
