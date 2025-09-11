@@ -14,6 +14,15 @@ const CorteVisual = ({ corte, ventas }: { corte: any, ventas: any[] }) => {
 
   const totalFinal = (corte.total_sistema || 0) + totalAdicional;
 
+  const totalEfectivo =
+    (corte.accesorios_efectivo || 0) +
+    (corte.telefonos_efectivo || 0) +
+    totalAdicional;
+
+  const totalTarjeta =
+    (corte.accesorios_tarjeta || 0) +
+    (corte.telefonos_tarjeta || 0);
+
   return (
   <Box sx={{ mb: 6 }}>
     <Typography variant="h5" gutterBottom>
