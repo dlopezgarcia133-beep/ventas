@@ -70,6 +70,7 @@ const InventarioPorModulo = () => {
   }
 };
 
+
 const actualizarCantidad = async () => {
   if (!selectedItem) {
     alert("Selecciona un producto de la tabla primero");
@@ -78,13 +79,11 @@ const actualizarCantidad = async () => {
 
   try {
       await axios.put(
-        `${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${selectedItem.producto}`,
-        { cantidad: parseInt(nuevaCantidad),
-          modulo_id: selectedItem.modulo_id
-        },
+        `${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${selectedItem.id}`,
+        { cantidad: parseInt(nuevaCantidad), modulo_id: moduloSeleccionado },
         config
       );
-  
+    
 
     setNuevaCantidad("");
     setSelectedItem(null);
