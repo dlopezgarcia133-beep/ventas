@@ -116,6 +116,7 @@ export interface ProductoEnVenta {
   producto: string;
   cantidad: number;
   precio_unitario: number;
+  tipo_producto: "accesorio" | "telefono";
 }
 
 export interface VentaChip {

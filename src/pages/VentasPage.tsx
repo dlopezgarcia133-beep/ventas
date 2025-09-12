@@ -123,8 +123,8 @@ useEffect(() => {
     console.log("Ventas cargadas:", todas);
 
     // Aquí sí filtras de la respuesta, no del state
-    const ventasAccesorios = todas.filter((v: any) => v.tipo === "accesorio");
-    const ventasTelefonos = todas.filter((v: any) => v.tipo === "telefono");
+    const ventasAccesorios = todas.filter((v: any) => v.tipo_producto === "accesorio");
+    const ventasTelefonos = todas.filter((v: any) => v.tipo_producto === "telefono");
 
     // Guardas todas las ventas en el state principal
     setVentas(todas);
@@ -147,7 +147,8 @@ useEffect(() => {
       cantidad,
       precio_unitario: precio,
       id: 0,
-      nombre: ''
+      nombre: '',
+      tipo_producto: "accesorio"
     };
 
     setCarrito([...carrito, nuevo]);
@@ -180,7 +181,7 @@ useEffect(() => {
   try {
     await axios.put(`${process.env.REACT_APP_API_URL}/ventas/ventas/${id}/cancelar`, {}, config);
     alert("Venta cancelada");
-    cargarVentas(); // para recargar la tabla
+    cargarVentas(); 
   } catch (err: any) {
     alert(err.response?.data?.detail || "Error al cancelar la venta");
   }
@@ -652,7 +653,7 @@ const totalVentasTelefonos = ventasTelefonos
                 </tr>
               </thead>
               <tbody>
-                {ventas.filter((venta) => venta.tipo_producto === "accesorio").map((v) => (
+                {ventas.filter((venta) => venta.tipo_producto === "accesorio").map((v)  => (
                   <tr key={v.id}>
                     <td style={{ padding: 8 }}>{v.empleado?.username}</td>
                     <td style={{ padding: 8 }}>{v.producto}</td>
