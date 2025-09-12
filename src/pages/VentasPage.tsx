@@ -123,7 +123,7 @@ useEffect(() => {
     console.log("Ventas cargadas:", todas);
 
     // Aquí sí filtras de la respuesta, no del state
-    const ventasAccesorios = todas.filter((v: any) => v.tipo_producto === "accesorio");
+    const ventasAccesorios = todas.filter((v: any) => v.tipo_producto === "accesorios");
     const ventasTelefonos = todas.filter((v: any) => v.tipo_producto === "telefono");
 
     // Guardas todas las ventas en el state principal
@@ -653,7 +653,7 @@ const totalVentasTelefonos = ventasTelefonos
                 </tr>
               </thead>
               <tbody>
-                {ventas.filter((venta) => venta.tipo_producto === "accesorio").map((v)  => (
+                {ventas.filter((venta) => venta.tipo_producto === "accesorios").map((v)  => (
                   <tr key={v.id}>
                     <td style={{ padding: 8 }}>{v.empleado?.username}</td>
                     <td style={{ padding: 8 }}>{v.producto}</td>
