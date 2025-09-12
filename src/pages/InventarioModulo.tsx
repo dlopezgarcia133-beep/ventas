@@ -78,10 +78,10 @@ const actualizarCantidad = async () => {
 
   try {
       await axios.put(
-        `${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${selectedItem.selectedItem.id}`,
+        `${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${selectedItem.producto}`,
         { cantidad: parseInt(nuevaCantidad),
           modulo_id: selectedItem.modulo_id
-        },  
+        },
         config
       );
   
