@@ -83,7 +83,8 @@ const actualizarCantidad = async () => {
         { cantidad: parseInt(nuevaCantidad), modulo_id: moduloSeleccionado },
         config
       );
-    
+    console.log("Voy a actualizar:", selectedItem.producto, "con cantidad:", nuevaCantidad, "modulo:", moduloSeleccionado);
+
 
     setNuevaCantidad("");
     setSelectedItem(null);
