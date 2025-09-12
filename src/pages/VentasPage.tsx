@@ -12,7 +12,7 @@ import UsuariosAdmin from './Usuarios';
 const FormularioVentaMultiple = () => {
   const [productos, setProductos] = useState<string[]>([]);
   const [ventas, setVentas] = useState<Venta[]>([]);
-  const ventasAccesorios = ventas.filter((v) => v.tipo_producto === "accesorio");
+  const ventasAccesorios = ventas.filter((v) => v.tipo_producto === "accesorios");
   const ventasTelefonos = ventas.filter((v) => v.tipo_producto === "telefono");
   const [producto, setProducto] = useState('');
   const [precio, setPrecio] = useState<number | null>(null);
@@ -66,7 +66,7 @@ const FormularioVentaMultiple = () => {
 useEffect(() => {
   if (ventas.length > 0) {
     // Filtrar y sumar accesorios
-    const accesorios = ventas.filter(v => v.tipo_producto === "accesorio" && !v.cancelada);
+    const accesorios = ventas.filter(v => v.tipo_producto === "accesorios" && !v.cancelada);
     const totalAcc = accesorios.reduce(
       (acc, v) => acc + v.precio_unitario * v.cantidad,
       0
@@ -148,7 +148,7 @@ useEffect(() => {
       precio_unitario: precio,
       id: 0,
       nombre: '',
-      tipo_producto: "accesorio"
+      tipo_producto: "accesorios"
     };
 
     setCarrito([...carrito, nuevo]);
