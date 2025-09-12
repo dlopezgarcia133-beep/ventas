@@ -16,6 +16,7 @@ export interface Venta {
   comision: number;
   tipo_venta: string;
   fecha: string;
+  hora: string;
   cancelada: boolean;
   tipo_producto:"accesorios" | "telefono";
   empleado?: {

@@ -664,7 +664,7 @@ const totalVentasTelefonos = ventasTelefonos
                     <td style={{ padding: 8 }}>
                       ${typeof v.total === "number" ? v.total.toFixed(2) : "0.00"}
                     </td>
-                    <td style={{ padding: 8 }}>{new Date(v.fecha).toLocaleString()}</td>
+                    <td style={{ padding: 8 }}>{`${v.fecha} ${v.hora}`}</td>
                     <td style={{ padding: 8 }}>{v.cancelada ? 'Cancelada' : 'Activa'}</td>
                     <td style={{ padding: 8 }}>
                       <Button
