@@ -65,17 +65,10 @@ const InventarioAdmin = () => {
 
 const guardarCambios = async (item: any) => {
   try {
-    if (item.tipo === 'producto') {
+    
       await axios.put(`${process.env.REACT_APP_API_URL}/inventario/inventario/general/${item.id}`, {
-        precio: parseFloat(editarData.precio),
         cantidad: parseInt(editarData.cantidad)
       }, config);
-    } else {
-      await axios.put(`${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general/${item.id}`, {
-        precio: parseFloat(editarData.precio),
-        cantidad: parseInt(editarData.cantidad)
-      }, config);
-    }
 
     setEditando(null);
     setEditarData({ precio: '', cantidad: '' });
@@ -85,6 +78,9 @@ const guardarCambios = async (item: any) => {
   }
 };
 
+
+
+
 const actualizarCantidad = async () => {
   if (!selectedItem) {
     alert("Selecciona un producto de la tabla primero");
@@ -92,19 +88,12 @@ const actualizarCantidad = async () => {
   }
 
   try {
-    if (selectedItem.tipo === "producto") {
       await axios.put(
-        `${process.env.REACT_APP_API_URL}/inventario/inventario/general/${selectedItem.id}`,
+        `${process.env.REACT_APP_API_URL}/inventario/inventario/general/${encodeURIComponent(selectedItem.nombre)}`,
         { cantidad: parseInt(nuevaCantidad) },
         config
       );
-    } else {
-      await axios.put(
-        `${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general/${selectedItem.id}`,
-        { cantidad: parseInt(nuevaCantidad) },
-        config
-      );
-    }
+    
 
     setNuevaCantidad("");
     setSelectedItem(null);
