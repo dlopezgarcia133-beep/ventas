@@ -25,6 +25,11 @@ const totalTarjeta =
   (corte.accesorios_tarjeta || 0) +
   (corte.telefonos_tarjeta || 0);
 
+  // Calcular el total de ventas de accesorios
+  const totalAccesorios = ventas
+    .filter((v) => v.tipo_producto === "accesorio")
+    .reduce((acc, v) => acc + (v.total || 0), 0);
+
   return (
   <Box sx={{ mb: 6 }}>
     <Typography variant="h5" gutterBottom>
@@ -119,6 +124,11 @@ const totalTarjeta =
           </tbody>
         </Box>
       </Paper>
+      <Box mt={2} textAlign="right">
+          <Typography variant="subtitle1" fontWeight="bold">
+            Total Ventas Accesorios: ${totalAccesorios.toFixed(2)}
+          </Typography>
+        </Box>
     </Box>
 
     {/* TABLA DE TELÉFONOS */}
@@ -154,6 +164,12 @@ const totalTarjeta =
           </tbody>
         </Box>
       </Paper>
+
+        <Box mt={2} textAlign="right">
+          <Typography variant="subtitle1" fontWeight="bold">
+            Total Ventas Teléfonos: ${ventas.filter((v) => v.tipo_producto === "telefono").reduce((acc, v) => acc + (v.total || 0), 0).toFixed(2)}
+          </Typography>
+        </Box>
     </Box>
   </Box>
 );}
