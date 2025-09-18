@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Box, Paper, Typography, TextField, Divider, Alert, MenuItem, Select, InputLabel, FormControl
 } from '@mui/material';
-import Grid from '@mui/material/Grid';
+import { Grid } from '@mui/material';
 import axios from 'axios';
 import { obtenerRolDesdeToken } from '../components/Token';
 

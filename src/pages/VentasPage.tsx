@@ -1,9 +1,10 @@
 import React, { ChangeEvent, useEffect, useState, useRef } from 'react';
 import {
   Box, TextField, Button, Typography, Autocomplete, Alert, Paper,
-  TableContainer, Container, Table, TableHead, TableRow, TableCell, TableBody,Grid,MenuItem,
-  FormControlLabel,Switch,Slide
+  TableContainer, Container, Table, TableHead, TableRow, TableCell, TableBody, MenuItem,
+  FormControlLabel, Switch, Slide
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { Modulo, ProductoEnVenta, Usuario, Venta, VentaTelefono } from '../Types';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +13,7 @@ import UsuariosAdmin from './Usuarios';
 const FormularioVentaMultiple = () => {
   const [productos, setProductos] = useState<string[]>([]);
   const [ventas, setVentas] = useState<Venta[]>([]);
-  const ventasAccesorios = ventas.filter((v) => v.tipo_producto === "accesorios");
+  const ventasAccesorios = ventas.filter((v) => v.tipo_producto === "accesorio");
   const ventasTelefonos = ventas.filter((v) => v.tipo_producto === "telefono");
   const [producto, setProducto] = useState('');
   const [precio, setPrecio] = useState<number | null>(null);
@@ -66,7 +67,7 @@ const FormularioVentaMultiple = () => {
 useEffect(() => {
   if (ventas.length > 0) {
     // Filtrar y sumar accesorios
-    const accesorios = ventas.filter(v => v.tipo_producto === "accesorios" && !v.cancelada);
+    const accesorios = ventas.filter(v => v.tipo_producto === "accesorio" && !v.cancelada);
     const totalAcc = accesorios.reduce(
       (acc, v) => acc + v.precio_unitario * v.cantidad,
       0
@@ -123,7 +124,7 @@ useEffect(() => {
     console.log("Ventas cargadas:", todas);
 
     // Aquí sí filtras de la respuesta, no del state
-    const ventasAccesorios = todas.filter((v: any) => v.tipo_producto === "accesorios");
+    const ventasAccesorios = todas.filter((v: any) => v.tipo_producto === "accesorio");
     const ventasTelefonos = todas.filter((v: any) => v.tipo_producto === "telefono");
 
     // Guardas todas las ventas en el state principal
@@ -148,7 +149,7 @@ useEffect(() => {
       precio_unitario: precio,
       id: 0,
       nombre: '',
-      tipo_producto: "accesorios"
+      tipo_producto: "accesorio"
     };
 
     setCarrito([...carrito, nuevo]);
@@ -653,7 +654,7 @@ const totalVentasTelefonos = ventasTelefonos
                 </tr>
               </thead>
               <tbody>
-                {ventas.filter((venta) => venta.tipo_producto === "accesorios").map((v)  => (
+                {ventas.filter((venta) => venta.tipo_producto === "accesorio").map((v)  => (
                   <tr key={v.id}>
                     <td style={{ padding: 8 }}>{v.empleado?.username}</td>
                     <td style={{ padding: 8 }}>{v.producto}</td>

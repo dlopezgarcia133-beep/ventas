@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import {
-  Box, Typography, TextField, Button, Paper, Grid, Alert, Table, TableHead,
+  Box, Typography, TextField, Button, Paper, Alert, Table, TableHead,
   TableRow, TableCell, TableBody, Divider
 } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import axios from "axios";
 
 export const InventarioTelefonosGeneral = () => {

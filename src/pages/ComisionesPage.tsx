@@ -289,7 +289,9 @@ useEffect(() => {
 </Table>
 
 {/* CHIPS */}
-<Typography variant="subtitle1">🔌 Chips: ${data.total_chips.toFixed(2)}</Typography>
+<Typography variant="subtitle1">
+  🔌 Chips: ${data.total_chips.toFixed(2)}
+</Typography>
 <Table size="small" sx={{ mb: 2 }}>
   <TableHead>
     <TableRow>
@@ -298,26 +300,59 @@ useEffect(() => {
       <TableCell>Comisión</TableCell>
       <TableCell>Fecha</TableCell>
       <TableCell>Hora</TableCell>
+      <TableCell>Eliminar</TableCell> {/* 👈 Nueva columna */}
     </TableRow>
   </TableHead>
   <TableBody>
     {data.ventas_chips &&
-  [...data.ventas_chips]
-    .sort((a, b) => {
-      const fechaA = new Date(`${a.fecha} ${a.hora}`);
-      const fechaB = new Date(`${b.fecha} ${b.hora}`);
-      return fechaB.getTime() - fechaA.getTime(); // Descendente
-    }).map((v, i) => (
-      <TableRow key={i}>
-        <TableCell>{v.tipo_chip}</TableCell>
-        <TableCell>{v.numero_telefono}</TableCell>
-        <TableCell>${v.comision.toFixed(2)}</TableCell>
-        <TableCell>{v.fecha}</TableCell>
-        <TableCell>{v.hora}</TableCell>
-      </TableRow>
-    ))}
+      [...data.ventas_chips]
+        .sort((a, b) => {
+          const fechaA = new Date(`${a.fecha} ${a.hora}`);
+          const fechaB = new Date(`${b.fecha} ${b.hora}`);
+          return fechaB.getTime() - fechaA.getTime(); // Descendente
+        })
+        .map((v, i) => (
+          <TableRow key={i}>
+            <TableCell>{v.tipo_chip}</TableCell>
+            <TableCell>{v.numero_telefono}</TableCell>
+            <TableCell>${v.comision.toFixed(2)}</TableCell>
+            <TableCell>{v.fecha}</TableCell>
+            <TableCell>{v.hora}</TableCell>
+            <TableCell>
+              <IconButton
+                color="error"
+                onClick={() => {
+                  // 1. Quitar el registro de la lista
+                  const nuevasVentas = data.ventas_chips.filter((_, idx) => idx !== i);
+
+                  // 2. Recalcular totales
+                  const nuevoTotalChips = nuevasVentas.reduce(
+                    (acc, chip) => acc + chip.comision,
+                    0
+                  );
+
+                  const nuevoTotalGeneral =
+                    data.total_accesorios +
+                    data.total_telefonos +
+                    nuevoTotalChips;
+
+                  // 3. Actualizar estado "data"
+                  setData({
+                    ...data,
+                    ventas_chips: nuevasVentas,
+                    total_chips: nuevoTotalChips,
+                    total_general: nuevoTotalGeneral,
+                  });
+                }}
+              >
+                <Delete />
+              </IconButton>
+            </TableCell>
+          </TableRow>
+        ))}
   </TableBody>
 </Table>
+
 
 <Divider sx={{ my: 2 }} />
 <Typography variant="h6">💵 Total: ${data.total_general.toFixed(2)}</Typography>

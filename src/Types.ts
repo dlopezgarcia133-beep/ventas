@@ -18,7 +18,7 @@ export interface Venta {
   fecha: string;
   hora: string;
   cancelada: boolean;
-  tipo_producto:"accesorios" | "telefono";
+  tipo_producto:"accesorio" | "telefono";
   empleado?: {
     username: string;
   };
@@ -117,7 +117,7 @@ export interface ProductoEnVenta {
   producto: string;
   cantidad: number;
   precio_unitario: number;
-  tipo_producto: "accesorios" | "telefono";
+  tipo_producto: "accesorio" | "telefono";
 }
 
 export interface VentaChip {
