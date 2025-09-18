@@ -191,7 +191,13 @@ const CortePage = () => {
     parseFloat(transporte || '0') +
     parseFloat(otros || '0');
 
-  const totalFinal = (resumen?.total_general || 0) + totalAdicional;
+  const totalSistema =
+  (resumen?.ventas_productos?.efectivo || 0) +
+  (resumen?.ventas_productos?.tarjeta || 0) +
+  (resumen?.ventas_telefonos?.efectivo || 0) +
+  (resumen?.ventas_telefonos?.tarjeta || 0);
+
+  const totalFinal = (resumen?.total_sistema || 0) + totalAdicional;
   const totalEfectivo =
   (resumen?.ventas_productos?.efectivo ?? 0) +
   (resumen?.ventas_telefonos?.efectivo ?? 0) +
@@ -405,7 +411,7 @@ const totalTarjeta =
                   <Typography variant="h6" gutterBottom>📊 Totales</Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Typography>
-                    Total del Sistema: ${(resumen?.total_general ?? 0).toFixed(2)}
+                    Total del Sistema: ${(resumen?.totalSistema ?? 0).toFixed(2)}
                   </Typography>
                   <Typography>Total Adicional Manual: ${totalAdicional.toFixed(2)}</Typography>
 
