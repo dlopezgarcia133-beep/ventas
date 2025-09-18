@@ -411,7 +411,7 @@ const totalTarjeta =
                   <Typography variant="h6" gutterBottom>📊 Totales</Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Typography>
-                    Total del Sistema: ${(resumen?.totalSistema ?? 0).toFixed(2)}
+                    Total del Sistema: ${(resumen?.total_sistema ?? 0).toFixed(2)}
                   </Typography>
                   <Typography>Total Adicional Manual: ${totalAdicional.toFixed(2)}</Typography>
 
