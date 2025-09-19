@@ -372,7 +372,6 @@ const totalVentasTelefonos = ventasTelefonos
           value={precio !== null ? `$${precio.toFixed(2)}` : ''}
           margin="normal"
           fullWidth
-          InputProps={{ readOnly: true }}
         />
 
         <TextField
@@ -391,6 +390,8 @@ const totalVentasTelefonos = ventasTelefonos
             fullWidth
             margin="normal"
             required
+            error={!metodoPago} // si está vacío muestra error
+            helperText={!metodoPago ? "Este campo es obligatorio" : ""}
           >
             <MenuItem value="efectivo">Efectivo</MenuItem>
             <MenuItem value="tarjeta">Tarjeta</MenuItem>
