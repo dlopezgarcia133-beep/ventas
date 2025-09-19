@@ -167,7 +167,7 @@ const totalTarjeta =
 
         <Box mt={2} textAlign="right">
           <Typography variant="subtitle1" fontWeight="bold">
-            Total Ventas Teléfonos: ${ventas.filter((v) => v.tipo_producto === "telefono").reduce((acc, v) => acc + (v.total || 0), 0).toFixed(2)}
+            Total Ventas Teléfonos: ${ventas.filter((v) => v.tipo_producto === "telefono").reduce((acc, v) => acc + (v.precio_unitario || 0), 0).toFixed(2)}
           </Typography>
         </Box>
     </Box>
