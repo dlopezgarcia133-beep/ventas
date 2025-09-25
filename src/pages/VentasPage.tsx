@@ -369,7 +369,7 @@ const totalVentasTelefonos = ventasTelefonos
 
         <TextField
           label="Precio Unitario"
-          value={precio !== null ? `$${precio.toFixed(2)}` : ''}
+          value={precio }
           margin="normal"
           fullWidth
         />
@@ -390,11 +390,11 @@ const totalVentasTelefonos = ventasTelefonos
             fullWidth
             margin="normal"
             required
-            error={!metodoPago} // si está vacío muestra error
+            error={!metodoPago} 
             helperText={!metodoPago ? "Este campo es obligatorio" : ""}
           >
-            <MenuItem value="efectivo">Efectivo</MenuItem>
-            <MenuItem value="tarjeta">Tarjeta</MenuItem>
+            <MenuItem value="efectivo">Efectivo 💵</MenuItem>
+            <MenuItem value="tarjeta">Tarjeta 💳</MenuItem>
           </TextField>
 
         <Button

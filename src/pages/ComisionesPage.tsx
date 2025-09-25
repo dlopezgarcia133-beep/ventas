@@ -246,20 +246,51 @@ useEffect(() => {
       <TableCell>Comisión</TableCell>
       <TableCell>Fecha</TableCell>
       <TableCell>Hora</TableCell>
+      <TableCell>Eliminar</TableCell> {/* 👈 Nueva columna */}
     </TableRow>
   </TableHead>
   <TableBody>
-    {data.ventas_accesorios .sort((a, b) => new Date(`${b.fecha} ${b.hora}`).getTime() - new Date(`${a.fecha} ${a.hora}`).getTime()).map((v, i) => (
-      <TableRow key={i}>
-        <TableCell>{v.producto}</TableCell>
-        <TableCell>{v.cantidad}</TableCell>
-        <TableCell>${v.comision.toFixed(2)}</TableCell>
-        <TableCell>{v.fecha}</TableCell>
-        <TableCell>{v.hora}</TableCell>
-      </TableRow>
-    ))}
+    {data.ventas_accesorios
+      .sort((a, b) => new Date(`${b.fecha} ${b.hora}`).getTime() - new Date(`${a.fecha} ${a.hora}`).getTime())
+      .map((v, i) => (
+        <TableRow key={i}>
+          <TableCell>{v.producto}</TableCell>
+          <TableCell>{v.cantidad}</TableCell>
+          <TableCell>${v.comision.toFixed(2)}</TableCell>
+          <TableCell>{v.fecha}</TableCell>
+          <TableCell>{v.hora}</TableCell>
+          <TableCell>
+            <IconButton
+              color="error"
+              onClick={() => {
+                const nuevasVentas = data.ventas_accesorios.filter((_, idx) => idx !== i);
+
+                const nuevoTotalAccesorios = nuevasVentas.reduce(
+                  (acc, item) => acc + item.comision,
+                  0
+                );
+
+                const nuevoTotalGeneral =
+                  nuevoTotalAccesorios +
+                  data.total_telefonos +
+                  data.total_chips;
+
+                setData({
+                  ...data,
+                  ventas_accesorios: nuevasVentas,
+                  total_accesorios: nuevoTotalAccesorios,
+                  total_general: nuevoTotalGeneral,
+                });
+              }}
+            >
+              <Delete />
+            </IconButton>
+          </TableCell>
+        </TableRow>
+      ))}
   </TableBody>
 </Table>
+
 
 {/* TELÉFONOS */}
 <Typography variant="subtitle1">📱 Teléfonos: ${data.total_telefonos.toFixed(2)}</Typography>
@@ -272,19 +303,49 @@ useEffect(() => {
       <TableCell>Comisión</TableCell>
       <TableCell>Fecha</TableCell>
       <TableCell>Hora</TableCell>
+      <TableCell>Eliminar</TableCell> {/* 👈 Nueva columna */}
     </TableRow>
   </TableHead>
   <TableBody>
-    {data.ventas_telefonos .sort((a, b) => new Date(`${b.fecha} ${b.hora}`).getTime() - new Date(`${a.fecha} ${a.hora}`).getTime()).map((v, i) => (
-      <TableRow key={i}>
-        <TableCell>{v.marca}</TableCell>
-        <TableCell>{v.modelo}</TableCell>
-        <TableCell>{v.tipo}</TableCell>
-        <TableCell>${v.comision.toFixed(2)}</TableCell>
-        <TableCell>{v.fecha}</TableCell>
-        <TableCell>{v.hora}</TableCell>
-      </TableRow>
-    ))}
+    {data.ventas_telefonos
+      .sort((a, b) => new Date(`${b.fecha} ${b.hora}`).getTime() - new Date(`${a.fecha} ${a.hora}`).getTime())
+      .map((v, i) => (
+        <TableRow key={i}>
+          <TableCell>{v.marca}</TableCell>
+          <TableCell>{v.modelo}</TableCell>
+          <TableCell>{v.tipo}</TableCell>
+          <TableCell>${v.comision.toFixed(2)}</TableCell>
+          <TableCell>{v.fecha}</TableCell>
+          <TableCell>{v.hora}</TableCell>
+          <TableCell>
+            <IconButton
+              color="error"
+              onClick={() => {
+                const nuevasVentas = data.ventas_telefonos.filter((_, idx) => idx !== i);
+
+                const nuevoTotalTelefonos = nuevasVentas.reduce(
+                  (acc, item) => acc + item.comision,
+                  0
+                );
+
+                const nuevoTotalGeneral =
+                  data.total_accesorios +
+                  nuevoTotalTelefonos +
+                  data.total_chips;
+
+                setData({
+                  ...data,
+                  ventas_telefonos: nuevasVentas,
+                  total_telefonos: nuevoTotalTelefonos,
+                  total_general: nuevoTotalGeneral,
+                });
+              }}
+            >
+              <Delete />
+            </IconButton>
+          </TableCell>
+        </TableRow>
+      ))}
   </TableBody>
 </Table>
 

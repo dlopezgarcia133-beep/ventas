@@ -20,6 +20,8 @@ const InventarioPorModulo = () => {
   const [nuevaCantidad, setNuevaCantidad] = useState<string>("");
   const [editando, setEditando] = useState<string | null>(null);
   const [editarData, setEditarData] = useState({ cantidad: '', precio: '' });
+  const [modificaciones, setModificaciones] = useState<{ id: number; producto: string; cantidad: number }[]>([]);
+
 
   const token = localStorage.getItem("token");
   const config = { headers: { Authorization: `Bearer ${token}` } };
