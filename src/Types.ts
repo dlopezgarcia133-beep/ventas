@@ -150,6 +150,7 @@ export interface ComisionData {
     producto: string;
     cantidad: number;
     comision: number;
+    tipo_venta: string;
     fecha: string;
     hora: string;
   }[];
