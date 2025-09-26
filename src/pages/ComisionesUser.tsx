@@ -129,8 +129,7 @@ const ComisionesUsuario = () => {
           <Table size="small" sx={{ mb: 2 }}>
             <TableHead>
               <TableRow>
-                <TableCell>Marca</TableCell>
-                <TableCell>Modelo</TableCell>
+                <TableCell>Telefono</TableCell>
                 <TableCell>Tipo</TableCell>
                 <TableCell>Comisión</TableCell>
                 <TableCell>Fecha</TableCell>
@@ -140,7 +139,7 @@ const ComisionesUsuario = () => {
             <TableBody>
               {data.ventas_accesorios.filter(v => v.producto.toUpperCase().startsWith("TELEFONO")) .sort((a, b) => new Date(`${b.fecha} ${b.hora}`).getTime() - new Date(`${a.fecha} ${a.hora}`).getTime()).map((v, i) => (
                 <TableRow key={i}>
-                  <TableCell>{v.producto.split(" - ")[1] || "N/A"}</TableCell>
+                  <TableCell>{v.producto|| "N/A"}</TableCell>
                   <TableCell>{v.tipo_venta}</TableCell>
                   <TableCell>${v.comision.toFixed(2)}</TableCell>
                   <TableCell>{v.fecha}</TableCell>
