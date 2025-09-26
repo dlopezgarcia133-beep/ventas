@@ -112,7 +112,7 @@ const ComisionesUsuario = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.ventas_accesorios.sort((a, b) => new Date(`${b.fecha} ${b.hora}`).getTime() - new Date(`${a.fecha} ${a.hora}`).getTime()).map((v, i) => (
+              {data.ventas_accesorios.filter(v => !v.producto.toUpperCase().startsWith("TELEFONO")).sort((a, b) => new Date(`${b.fecha} ${b.hora}`).getTime() - new Date(`${a.fecha} ${a.hora}`).getTime()).map((v, i) => (
                 <TableRow key={i}>
                   <TableCell>{v.producto}</TableCell>
                   <TableCell>{v.cantidad}</TableCell>
@@ -138,11 +138,10 @@ const ComisionesUsuario = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.ventas_telefonos .sort((a, b) => new Date(`${b.fecha} ${b.hora}`).getTime() - new Date(`${a.fecha} ${a.hora}`).getTime()).map((v, i) => (
+              {data.ventas_accesorios.filter(v => v.producto.toUpperCase().startsWith("TELEFONO")) .sort((a, b) => new Date(`${b.fecha} ${b.hora}`).getTime() - new Date(`${a.fecha} ${a.hora}`).getTime()).map((v, i) => (
                 <TableRow key={i}>
-                  <TableCell>{v.marca}</TableCell>
-                  <TableCell>{v.modelo}</TableCell>
-                  <TableCell>{v.tipo}</TableCell>
+                  <TableCell>{v.producto.split(" - ")[1] || "N/A"}</TableCell>
+                  <TableCell>{v.tipo_venta}</TableCell>
                   <TableCell>${v.comision.toFixed(2)}</TableCell>
                   <TableCell>{v.fecha}</TableCell>
                   <TableCell>{v.hora}</TableCell>
