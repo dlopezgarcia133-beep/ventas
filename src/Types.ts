@@ -146,19 +146,21 @@ export interface ComisionData {
   total_telefonos: number;
   total_chips: number;
   total_general: number;
+  
   ventas_accesorios: {
     producto: string;
     cantidad: number;
     comision: number;
     tipo_venta: string;
+    comision_total: number;
     fecha: string;
     hora: string;
   }[];
   ventas_telefonos: {
     marca: string;
     modelo: string;
-    tipo: string;
-    comision: number
+    tipo_venta: string;
+    comision_total: number;
     fecha: string;
     hora: string;
   }[];

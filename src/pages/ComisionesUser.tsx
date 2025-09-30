@@ -141,7 +141,9 @@ const ComisionesUsuario = () => {
                 <TableRow key={i}>
                   <TableCell>{v.producto|| "N/A"}</TableCell>
                   <TableCell>{v.tipo_venta}</TableCell>
-                  <TableCell>${v.comision.toFixed(2)}</TableCell>
+                  <TableCell>
+                    ${((v.comision_total ?? (v.comision * v.cantidad)) || 0).toFixed(2)}
+                  </TableCell>
                   <TableCell>{v.fecha}</TableCell>
                   <TableCell>{v.hora}</TableCell>
                 </TableRow>
