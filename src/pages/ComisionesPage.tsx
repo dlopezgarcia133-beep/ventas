@@ -313,8 +313,8 @@ useEffect(() => {
         <TableRow key={i}>
           <TableCell>{v.marca}</TableCell>
           <TableCell>{v.modelo}</TableCell>
-          <TableCell>{v.tipo}</TableCell>
-          <TableCell>${v.comision.toFixed(2)}</TableCell>
+          <TableCell>{v.tipo_venta}</TableCell>
+          <TableCell>${v.comision_total.toFixed(2)}</TableCell>
           <TableCell>{v.fecha}</TableCell>
           <TableCell>{v.hora}</TableCell>
           <TableCell>
@@ -324,7 +324,7 @@ useEffect(() => {
                 const nuevasVentas = data.ventas_telefonos.filter((_, idx) => idx !== i);
 
                 const nuevoTotalTelefonos = nuevasVentas.reduce(
-                  (acc, item) => acc + item.comision,
+                  (acc, item) => acc + item.comision_total,
                   0
                 );
 
