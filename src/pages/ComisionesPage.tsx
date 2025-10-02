@@ -311,8 +311,7 @@ useEffect(() => {
       .sort((a, b) => new Date(`${b.fecha} ${b.hora}`).getTime() - new Date(`${a.fecha} ${a.hora}`).getTime())
       .map((v, i) => (
         <TableRow key={i}>
-          <TableCell>{v.marca}</TableCell>
-          <TableCell>{v.modelo}</TableCell>
+          <TableCell>{v.producto || "N/A"}</TableCell>
           <TableCell>{v.tipo_venta}</TableCell>
           <TableCell>${v.comision_total.toFixed(2)}</TableCell>
           <TableCell>{v.fecha}</TableCell>

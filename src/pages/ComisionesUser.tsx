@@ -137,9 +137,11 @@ const ComisionesUsuario = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.ventas_accesorios.filter(v => v.producto.toUpperCase().startsWith("TELEFONO")) .sort((a, b) => new Date(`${b.fecha} ${b.hora}`).getTime() - new Date(`${a.fecha} ${a.hora}`).getTime()).map((v, i) => (
+              {data.ventas_telefonos
+                .sort((a, b) => new Date(`${b.fecha} ${b.hora}`).getTime() - new Date(`${a.fecha} ${a.hora}`).getTime())
+              .map((v, i) => (
                 <TableRow key={i}>
-                  <TableCell>{v.producto|| "N/A"}</TableCell>
+                  <TableCell>{v.producto || "N/A"}</TableCell>
                   <TableCell>{v.tipo_venta}</TableCell>
                   <TableCell>
                     ${((v.comision_total ?? (v.comision * v.cantidad)) || 0).toFixed(2)}
