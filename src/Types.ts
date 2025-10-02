@@ -157,8 +157,9 @@ export interface ComisionData {
     hora: string;
   }[];
   ventas_telefonos: {
-    marca: string;
-    modelo: string;
+    producto: string;
+    cantidad: number;
+    comision: number;
     tipo_venta: string;
     comision_total: number;
     fecha: string;
