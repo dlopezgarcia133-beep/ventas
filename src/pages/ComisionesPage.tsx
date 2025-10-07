@@ -297,8 +297,7 @@ useEffect(() => {
 <Table size="small" sx={{ mb: 2 }}>
   <TableHead>
     <TableRow>
-      <TableCell>Marca</TableCell>
-      <TableCell>Modelo</TableCell>
+      <TableCell>Telefono</TableCell>
       <TableCell>Tipo</TableCell>
       <TableCell>Comisión</TableCell>
       <TableCell>Fecha</TableCell>
@@ -360,7 +359,7 @@ useEffect(() => {
       <TableCell>Comisión</TableCell>
       <TableCell>Fecha</TableCell>
       <TableCell>Hora</TableCell>
-      <TableCell>Eliminar</TableCell> {/* 👈 Nueva columna */}
+      <TableCell>Eliminar</TableCell> 
     </TableRow>
   </TableHead>
   <TableBody>
@@ -369,7 +368,7 @@ useEffect(() => {
         .sort((a, b) => {
           const fechaA = new Date(`${a.fecha} ${a.hora}`);
           const fechaB = new Date(`${b.fecha} ${b.hora}`);
-          return fechaB.getTime() - fechaA.getTime(); // Descendente
+          return fechaB.getTime() - fechaA.getTime(); 
         })
         .map((v, i) => (
           <TableRow key={i}>
