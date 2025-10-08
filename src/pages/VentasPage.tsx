@@ -2,7 +2,8 @@ import React, { ChangeEvent, useEffect, useState, useRef } from 'react';
 import {
   Box, TextField, Button, Typography, Autocomplete, Alert, Paper,
   TableContainer, Container, Table, TableHead, TableRow, TableCell, TableBody, MenuItem,
-  FormControlLabel, Switch, Slide
+  FormControlLabel, Switch, Slide,
+  Menu
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
@@ -42,6 +43,7 @@ const FormularioVentaMultiple = () => {
   const navigate = useNavigate();
   const [totalAccesorios, setTotalAccesorios] = useState(0);
   const [totalTelefonos, setTotalTelefonos] = useState(0);
+  const [clave, setClave] = useState('');
 
   const token = localStorage.getItem("token");
   const config = {
@@ -203,6 +205,7 @@ useEffect(() => {
         numero_telefono: numero,
         monto_recarga: parseFloat(recarga),
         correo_cliente: correo || null,
+        clave_b63: clave || null,
       }, {
         headers: {
           "Content-Type": "application/json",
@@ -477,6 +480,7 @@ const totalVentasTelefonos = ventasTelefonos
               <MenuItem value="Chip Azul">Chip Azul</MenuItem>
               <MenuItem value="Chip ATO">Chip ATO</MenuItem>
               <MenuItem value="Portabilidad">Portabilidad</MenuItem>
+              <MenuItem value="B63">B63</MenuItem>
               <MenuItem value="Chip Cero/Libre">Chip Cero/Libre (Cadenas)</MenuItem>
               <MenuItem value="Chip Preactivado">Chip Preactivado (Cadenas)</MenuItem>
               <MenuItem value="Activacion">Activacion (Cadenas)</MenuItem>
@@ -496,6 +500,15 @@ const totalVentasTelefonos = ventasTelefonos
               type="number"
               value={recarga}
               onChange={(e) => setRecarga(e.target.value)}
+              fullWidth
+              margin="normal"
+            />
+
+            <TextField
+              label="Clave B63"
+              type="text"
+              value={clave}
+              onChange={(e) => setClave(e.target.value)}
               fullWidth
               margin="normal"
             />

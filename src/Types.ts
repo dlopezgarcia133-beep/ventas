@@ -130,6 +130,7 @@ export interface VentaChip {
   validado: boolean;
   comision: number;
   comision_manual: number;
+  clave_b63: string;
   descripcion_rechazo: string;
   empleado?: {
     username: string;
