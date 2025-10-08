@@ -115,6 +115,8 @@ useEffect(() => {
     fetchPrecio();
   }, [producto]);
   
+
+  
   const cargarVentas = async () => {
   try {
     const res = await axios.get(
