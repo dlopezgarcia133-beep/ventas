@@ -116,7 +116,7 @@ useEffect(() => {
   }, [producto]);
   
 
-  
+
   const cargarVentas = async () => {
   try {
     const res = await axios.get(
@@ -507,7 +507,7 @@ const totalVentasTelefonos = ventasTelefonos
             />
 
             <TextField
-              label="Clave B63"
+              label="Clave Chip"
               type="text"
               value={clave}
               onChange={(e) => setClave(e.target.value)}
