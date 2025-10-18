@@ -374,7 +374,8 @@ const totalVentasTelefonos = ventasTelefonos
 
         <TextField
           label="Precio Unitario"
-          value={precio }
+          type='number'
+          value={precio}
           margin="normal"
           fullWidth
         />

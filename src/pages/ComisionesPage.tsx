@@ -302,7 +302,7 @@ useEffect(() => {
       <TableCell>Comisión</TableCell>
       <TableCell>Fecha</TableCell>
       <TableCell>Hora</TableCell>
-      <TableCell>Eliminar</TableCell> {/* 👈 Nueva columna */}
+      <TableCell>Eliminar</TableCell> 
     </TableRow>
   </TableHead>
   <TableBody>
