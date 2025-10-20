@@ -256,7 +256,7 @@ useEffect(() => {
         <TableRow key={i}>
           <TableCell>{v.producto}</TableCell>
           <TableCell>{v.cantidad}</TableCell>
-          <TableCell>${v.comision.toFixed(2)}</TableCell>
+          <TableCell>${(v.comision * v.cantidad).toFixed(2)}</TableCell>
           <TableCell>{v.fecha}</TableCell>
           <TableCell>{v.hora}</TableCell>
           <TableCell>
