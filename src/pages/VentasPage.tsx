@@ -409,7 +409,7 @@ const totalVentasTelefonos = ventasTelefonos
           fullWidth
           onClick={agregarAlCarrito}
           sx={{ mt: 1 }}
-          disabled={!producto || !precio || cantidad <= 0}
+          disabled={!producto || cantidad <= 0}
         >
           Agregar al Carrito
         </Button>
