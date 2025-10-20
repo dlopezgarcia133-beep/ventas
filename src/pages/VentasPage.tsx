@@ -376,7 +376,7 @@ const totalVentasTelefonos = ventasTelefonos
           label="Precio Unitario"
           type="number"
           value={precio !== null ? precio : ''}
-          onChange={(e) => setPrecio(parseFloat(e.target.value))}
+           onChange={(e) => setPrecio(Number(e.target.value) || 0)}
           fullWidth
           margin="normal"
         />
