@@ -430,7 +430,7 @@ const totalVentasTelefonos = ventasTelefonos
           ) : (
             <ul>
               {carrito.map((p, i) => (
-                <li key={i}>{p.producto} - {p.cantidad} x ${p.precio_unitario.toFixed(2)}</li>
+                <li key={i}>{p.producto} - {p.cantidad} x ${p.precio_unitario}</li>
               ))}
             </ul>
           )}
