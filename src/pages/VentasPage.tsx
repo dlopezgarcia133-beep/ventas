@@ -374,10 +374,11 @@ const totalVentasTelefonos = ventasTelefonos
 
         <TextField
           label="Precio Unitario"
-          type='number'
-          value={precio}
-          margin="normal"
+          type="number"
+          value={precio !== null ? precio : ''}
+          onChange={(e) => setPrecio(parseFloat(e.target.value))}
           fullWidth
+          margin="normal"
         />
 
         <TextField
