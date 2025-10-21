@@ -268,8 +268,9 @@ const totalTarjeta =
     
     try {
       const params: any = {};
-      if (filtroModulo) params.modulo_id = filtroModulo;
       if (filtroFecha) params.fecha = filtroFecha;
+      if (filtroModulo) params.modulo_id = filtroModulo;
+      
 
       const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/ventas/cortes`, {
         ...config,
