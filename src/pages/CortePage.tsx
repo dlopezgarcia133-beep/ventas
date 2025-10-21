@@ -138,17 +138,17 @@ const totalTarjeta =
         <Box p={2} component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
+              <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Nombre</th>
               <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Producto</th>
               <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Tipo</th>
               <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Precio</th>
               <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Fecha</th>
-              <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Estado</th>
-              <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {ventas.filter((v) => v.tipo_producto === "telefono").map((v) => (
               <tr key={v.id}>
+                <td style={{ padding: 8 }}>{v.empleado?.username}</td>
                 <td style={{ padding: 8 }}>{v.producto}</td>
                 <td style={{ padding: 8 }}>{v.tipo_venta}</td>
                 <td style={{ padding: 8 }}>${v.precio_unitario?.toFixed(2)}</td>
@@ -275,6 +275,10 @@ const totalTarjeta =
         ...config,
         params,
       });
+
+      const dataOrdenada = res.data.sort(
+      (a: any, b: any) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+    );
 
       setCortesGuardados(res.data);
     } catch (err) {
