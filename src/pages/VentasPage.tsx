@@ -722,6 +722,7 @@ const totalVentasTelefonos = ventasTelefonos
       <Box p={2} component="table" sx={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr>
+            <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Nombre</th>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Producto</th>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Tipo</th>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Precio</th>
@@ -733,6 +734,7 @@ const totalVentasTelefonos = ventasTelefonos
         <tbody>
           {ventasTelefonos.filter((venta) => venta.tipo_producto === "telefono").map((v) => (
             <tr key={v.id}>
+              <td style={{ padding: 8 }}>{v.empleado?.username}</td>
               <td style={{ padding: 8 }}>{v.producto}</td>
               <td style={{ padding: 8 }}>{v.tipo_venta}</td>
               <td style={{ padding: 8 }}>
