@@ -17,7 +17,7 @@ const FormularioVentaMultiple = () => {
   const ventasAccesorios = ventas.filter((v) => v.tipo_producto === "accesorio");
   const ventasTelefonos = ventas.filter((v) => v.tipo_producto === "telefono");
   const [producto, setProducto] = useState('');
-  const [precio, setPrecio] = useState<number | null>(null);
+  const [precio, setPrecio] = useState<number |null>(null);
   const [cantidad, setCantidad] = useState<number>(1);
   const [metodoPago, setMetodoPago] = useState('');
   const [correo, setCorreo] = useState('');
@@ -145,7 +145,7 @@ useEffect(() => {
   
 
   const agregarAlCarrito = () => {
-    if (!producto || !precio || cantidad <= 0) return;
+    if (!producto || precio === null || cantidad <= 0) return;
 
     const nuevo: ProductoEnVenta = {
       producto,
@@ -372,14 +372,17 @@ const totalVentasTelefonos = ventasTelefonos
           )}
         />
 
-        <TextField
-          label="Precio Unitario"
-          type="number"
-          value={precio !== null ? precio : ''}
-           onChange={(e) => setPrecio(Number(e.target.value) || 0)}
-          fullWidth
-          margin="normal"
-        />
+   <TextField
+  label="Precio Unitario"
+  type="number"
+  value={precio ?? ''}  // muestra vacío si es null o undefined
+  onChange={(e) => {
+    const value = e.target.value;
+    setPrecio(value === '' ? null : Number(value)); // null si está vacío, número si hay algo
+  }}
+  fullWidth
+  margin="normal"
+/>
 
         <TextField
           label="Cantidad"
