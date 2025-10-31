@@ -73,6 +73,46 @@ const InventarioPorModulo = () => {
 };
 
 
+
+const manejarArchivoExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (!moduloSeleccionado) {
+    alert("Primero selecciona un módulo.");
+    return;
+  }
+
+  const archivo = e.target.files?.[0];
+  if (!archivo) return;
+
+  const formData = new FormData();
+  formData.append("archivo", archivo);
+  formData.append("modulo_id", moduloSeleccionado.toString());
+
+  try {
+    const res = await axios.post(
+      `${process.env.REACT_APP_API_URL}/inventario/inventario/actualizar_inventario_excel`,
+      formData,
+      {
+        headers: {
+          ...config.headers,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    alert(res.data.message);
+    cargarInventario(); // recargar datos actualizados
+  } catch (err: any) {
+    alert(err.response?.data?.detail || "Error al procesar el archivo Excel");
+  }
+
+  // Limpiar input
+  e.target.value = "";
+};
+
+
+
+
+
+
 const actualizarCantidad = async () => {
   if (!selectedItem) {
     alert("Selecciona un producto de la tabla primero");
@@ -171,6 +211,27 @@ const actualizarCantidad = async () => {
           Actualizar Cantidad
         </Button>
       </Box>
+
+
+      <Box display="flex" alignItems="center" gap={2} mb={3}>
+        <Button
+          variant="contained"
+          component="label"
+        >
+          Subir Excel
+          <input
+            type="file"
+            accept=".xlsx, .xls"
+            hidden
+            onChange={(e) => manejarArchivoExcel(e)}
+          />
+        </Button>
+
+        <Typography variant="body2" color="textSecondary">
+          (Importa cantidades, precios y productos desde Excel)
+        </Typography>
+      </Box>
+
 
       {moduloSeleccionado && (
         <>
