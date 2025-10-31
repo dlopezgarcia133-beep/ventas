@@ -89,7 +89,7 @@ const manejarArchivoExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
   try {
     const res = await axios.post(
-      `${process.env.REACT_APP_API_URL}/inventario/inventario/actualizar_inventario_excel`,
+      `${process.env.REACT_APP_API_URL}/inventario/actualizar_inventario_excel`,
       formData,
       {
         headers: {
