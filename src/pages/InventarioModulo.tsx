@@ -21,6 +21,10 @@ const InventarioPorModulo = () => {
   const [editando, setEditando] = useState<string | null>(null);
   const [editarData, setEditarData] = useState({ cantidad: '', precio: '' });
   const [modificaciones, setModificaciones] = useState<{ id: number; producto: string; cantidad: number }[]>([]);
+  const [busquedaClave, setBusquedaClave] = useState("");
+  const [productoEncontrado, setProductoEncontrado] = useState<any | null>(null);
+  const [cantidadConteo, setCantidadConteo] = useState("");
+  const [conteoLista, setConteoLista] = useState<{ producto_id: number; producto: string; clave: string; cantidad: number }[]>([]);
 
 
   const token = localStorage.getItem("token");
@@ -69,6 +73,123 @@ const InventarioPorModulo = () => {
     cargarInventario();
   } catch (err: any) {
     alert(err.response?.data?.detail || "Error al agregar");
+  }
+};
+
+
+
+
+const congelarInventario = async () => {
+  if (!moduloSeleccionado) {
+    alert("Selecciona un módulo primero");
+    return;
+  }
+
+  try {
+    const response = await axios.get(
+      `${process.env.REACT_APP_API_URL}/inventario/congelar/${moduloSeleccionado}`,
+      {
+        ...config,
+        responseType: 'blob'  // Para descargar archivo
+      }
+    );
+
+    // Crear descarga del archivo
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.setAttribute('download', `inventario_modulo_${moduloSeleccionado}.xlsx`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    alert("Inventario congelado correctamente. Todo se ha puesto en 0.");
+    cargarInventario();
+  } catch (err) {
+    alert("Error al congelar inventario");
+  }
+};
+
+
+
+
+const buscarProducto = async () => {
+  if (!busquedaClave || !moduloSeleccionado) return;
+
+  try {
+    const res = await axios.get(
+      `${process.env.REACT_APP_API_URL}/inventario/buscar?modulo_id=${moduloSeleccionado}&clave=${busquedaClave}`,
+      config
+    );
+
+    if (!res.data.ok) {
+      alert("Producto no encontrado");
+      return;
+    }
+
+    setProductoEncontrado(res.data.producto);
+  } catch {
+    alert("Error en la búsqueda");
+  }
+};
+
+
+
+
+const agregarAConteo = () => {
+  if (!productoEncontrado) {
+    alert("Primero busca un producto");
+    return;
+  }
+
+  if (!cantidadConteo || parseInt(cantidadConteo) < 0) {
+    alert("Ingresa una cantidad válida");
+    return;
+  }
+
+  setConteoLista(prev => [
+    ...prev,
+    {
+      producto_id: productoEncontrado.id,
+      producto: productoEncontrado.clave,
+      clave: productoEncontrado.clave,
+      cantidad: parseInt(cantidadConteo)
+    }
+  ]);
+
+  setProductoEncontrado(null);
+  setCantidadConteo("");
+  setBusquedaClave("");
+};
+
+
+
+
+const guardarConteo = async () => {
+  if (conteoLista.length === 0) {
+    alert("No has agregado productos al conteo");
+    return;
+  }
+
+  try {
+    await axios.post(
+      `${process.env.REACT_APP_API_URL}/inventario/guardar_conteo`,
+      {
+        modulo_id: moduloSeleccionado,
+        productos: conteoLista.map(p => ({
+          producto_id: p.producto_id,
+          cantidad: p.cantidad
+        }))
+      },
+      config
+    );
+
+    alert("Inventario actualizado con éxito");
+    setConteoLista([]);
+    cargarInventario();
+  } catch (err) {
+    alert("Error al guardar conteo");
   }
 };
 
@@ -212,25 +333,68 @@ const actualizarCantidad = async () => {
         </Button>
       </Box>
 
+<Button variant="contained" color="warning" sx={{ mb: 3 }} onClick={congelarInventario}>
+  Congelar Inventario (Descargar Excel)
+</Button>
 
-      <Box display="flex" alignItems="center" gap={2} mb={3}>
-        <Button
-          variant="contained"
-          component="label"
-        >
-          Subir Excel
-          <input
-            type="file"
-            accept=".xlsx, .xls"
-            hidden
-            onChange={(e) => manejarArchivoExcel(e)}
-          />
-        </Button>
 
-        <Typography variant="body2" color="textSecondary">
-          (Importa cantidades, precios y productos desde Excel)
-        </Typography>
-      </Box>
+
+      <Box sx={{ border: "1px solid #ccc", borderRadius: 2, p: 2, mb: 4 }}>
+  <Typography variant="h6">Conteo físico</Typography>
+
+  <Box display="flex" gap={2} mt={2}>
+    <TextField
+      label="Buscar clave"
+      value={busquedaClave}
+      onChange={(e) => setBusquedaClave(e.target.value)}
+    />
+    <Button variant="contained" onClick={buscarProducto}>Buscar</Button>
+  </Box>
+
+  {productoEncontrado && (
+    <Box mt={2}>
+      <Typography><strong>Producto:</strong> {productoEncontrado.clave}</Typography>
+
+      <TextField
+        label="Cantidad contada"
+        type="number"
+        value={cantidadConteo}
+        onChange={(e) => setCantidadConteo(e.target.value)}
+        sx={{ mt: 2 }}
+      />
+
+      <Button variant="contained" sx={{ ml: 2, mt: 2 }} onClick={agregarAConteo}>
+        Agregar a lista
+      </Button>
+    </Box>
+  )}
+
+  {conteoLista.length > 0 && (
+    <Box mt={3}>
+      <Typography><strong>Productos agregados:</strong></Typography>
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>Clave</TableCell>
+            <TableCell>Cantidad</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {conteoLista.map((p, idx) => (
+            <TableRow key={idx}>
+              <TableCell>{p.clave}</TableCell>
+              <TableCell>{p.cantidad}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <Button variant="contained" color="success" sx={{ mt: 2 }} onClick={guardarConteo}>
+        Guardar inventario contado
+      </Button>
+    </Box>
+  )}
+</Box>
+
 
 
       {moduloSeleccionado && (
