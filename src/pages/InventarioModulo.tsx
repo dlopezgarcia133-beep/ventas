@@ -50,14 +50,14 @@ const InventarioPorModulo = () => {
   clave: nuevo.clave,
   cantidad: parseInt(nuevo.cantidad),
   precio: parseFloat(nuevo.precio),
-  modulo: moduloSeleccionado
+  modulo_id: moduloSeleccionado
 });
       await axios.post(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo`, {
         producto: nuevo.producto,
         clave: nuevo.clave,
         cantidad: parseInt(nuevo.cantidad),
         precio: parseFloat(nuevo.precio),
-        modulo: moduloSeleccionado,
+        modulo_id: moduloSeleccionado,
       }, config);
     } else {
       await axios.post(`${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/modulo`, {
@@ -65,7 +65,7 @@ const InventarioPorModulo = () => {
         modelo: nuevoTelefono.modelo,
         cantidad: parseInt(nuevo.cantidad),
         precio: parseFloat(nuevo.precio),
-        modulo: moduloSeleccionado,
+        modulo_id: moduloSeleccionado,
       }, config);
     }
 
@@ -87,7 +87,7 @@ const congelarInventario = async () => {
 
   try {
     const response = await axios.get(
-      `${process.env.REACT_APP_API_URL}/inventario/congelar/${moduloSeleccionado}`,
+      `${process.env.REACT_APP_API_URL}/inventario/inventario/congelar/${moduloSeleccionado}`,
       {
         ...config,
         responseType: 'blob'  // Para descargar archivo
