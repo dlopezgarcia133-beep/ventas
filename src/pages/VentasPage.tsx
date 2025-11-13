@@ -20,7 +20,7 @@ const FormularioVentaMultiple = () => {
   const [precio, setPrecio] = useState<number |null>(null);
   const [cantidad, setCantidad] = useState<number>(1);
   const [metodoPago, setMetodoPago] = useState('');
-  const [correo, setCorreo] = useState('');
+  const [telefono, settelefono] = useState('');
   const [carrito, setCarrito] = useState<ProductoEnVenta[]>([]);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
   const [checked, setChecked] = useState(false);
@@ -166,13 +166,13 @@ useEffect(() => {
     try {
       await axios.post(`${process.env.REACT_APP_API_URL}/ventas/ventas/multiples`, {
         productos: carrito,
-        correo_cliente: correo,
+        telefono_cliente: telefono,
         metodo_pago: metodoPago,
       }, config);
 
       setMensaje({ tipo: 'success', texto: 'Venta registrada con éxito.' });
       setCarrito([]);
-      setCorreo('');
+      settelefono('');
       
     } catch (err: any) {
       console.error(err);
@@ -206,7 +206,7 @@ useEffect(() => {
         tipo_chip: tipoChip,
         numero_telefono: numero,
         monto_recarga: parseFloat(recarga),
-        correo_cliente: correo || null,
+        telefono_cliente: telefono || null,
         clave_b63: clave || null,
       }, {
         headers: {
@@ -219,7 +219,7 @@ useEffect(() => {
       setTipoChip('');
       setNumero('');
       setRecarga('');
-      setCorreo('');
+      settelefono('');
     } catch (err: any) {
       console.error(err);
       const msg = err?.response?.data?.detail || 'Error al registrar la venta';
@@ -254,7 +254,7 @@ const registrarVentaTelefono = async () => {
     },
   ],
   metodo_pago: metodoPago,
-  correo_cliente: correo?.trim() || "",
+  telefono_cliente: telefono?.trim() || "",
 };
 
 await axios.post(`${process.env.REACT_APP_API_URL}/ventas/ventas`, ventaPayload, config);
@@ -267,7 +267,7 @@ await axios.post(`${process.env.REACT_APP_API_URL}/ventas/ventas`, ventaPayload,
     setTelefonoTipo_venta("");
     setMetodoPago("");
     setTelefonoPrecio("");
-    setCorreo("");
+    settelefono("");
   } catch (err: any) {
     console.error("Error en registrarVentaTelefono:", err);
 
@@ -418,10 +418,10 @@ const totalVentasTelefonos = ventasTelefonos
         </Button>
 
         <TextField
-          label="Correo del cliente"
-          type="email"
-          value={correo}
-          onChange={(e) => setCorreo(e.target.value)}
+          label="telefono del cliente"
+          type="text"
+          value={telefono}
+          onChange={(e) => settelefono(e.target.value)}
           fullWidth
           margin="normal"
         />
