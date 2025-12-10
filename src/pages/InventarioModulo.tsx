@@ -45,26 +45,21 @@ const InventarioPorModulo = () => {
   const agregarProducto = async () => {
   try {
     if (tipo === 'producto') {
-      console.log({
-  producto: nuevo.producto,
-  clave: nuevo.clave,
-  cantidad: parseInt(nuevo.cantidad),
-  precio: parseFloat(nuevo.precio),
-  modulo_id: moduloSeleccionado
-});
       await axios.post(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo`, {
         producto: nuevo.producto,
         clave: nuevo.clave,
         cantidad: parseInt(nuevo.cantidad),
         precio: parseFloat(nuevo.precio),
+        tipo_producto: 'producto',
         modulo_id: moduloSeleccionado,
       }, config);
     } else {
-      await axios.post(`${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/modulo`, {
-        marca: nuevoTelefono.marca,
-        modelo: nuevoTelefono.modelo,
+      await axios.post(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo`, {
+        producto: nuevo.producto,
+        clave: nuevo.clave,
         cantidad: parseInt(nuevo.cantidad),
         precio: parseFloat(nuevo.precio),
+        tipo_producto: 'telefono',
         modulo_id: moduloSeleccionado,
       }, config);
     }
@@ -404,17 +399,10 @@ const actualizarCantidad = async () => {
           <MenuItem value="producto">Producto</MenuItem>
           <MenuItem value="telefono">Teléfono</MenuItem>
         </Select>
-            {tipo === 'producto' ? (
-              <>
+            
                 <TextField label="Producto" value={nuevo.producto} onChange={(e) => setNuevo({ ...nuevo, producto: e.target.value })} />
                 <TextField label="Clave" value={nuevo.clave} onChange={(e) => setNuevo({ ...nuevo, clave: e.target.value })} />
-              </>
-            ) : (
-              <>
-                <TextField label="Marca" value={nuevoTelefono.marca} onChange={(e) => setNuevoTelefono({ ...nuevoTelefono, marca: e.target.value })} />
-                <TextField label="Modelo" value={nuevoTelefono.modelo} onChange={(e) => setNuevoTelefono({ ...nuevoTelefono, modelo: e.target.value })} />
-              </>
-            )}
+                  
             <TextField label="Cantidad" type="number" value={nuevo.cantidad} onChange={(e) => setNuevo({ ...nuevo, cantidad: e.target.value })} />
             <TextField label="Precio" type="number" value={nuevo.precio} onChange={(e) => setNuevo({ ...nuevo, precio: e.target.value })} />
             <Button variant="contained" onClick={agregarProducto}>Agregar</Button>
