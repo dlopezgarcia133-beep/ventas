@@ -176,13 +176,10 @@ const eliminarItem = async (item: any) => {
         <Select value={tipo} onChange={(e) => setTipo(e.target.value as 'producto' | 'telefono')}>
           <MenuItem value="producto">Producto</MenuItem>
           <MenuItem value="telefono">Teléfono</MenuItem>
-        </Select>
-        {tipo === 'producto' ? (
-          <>
+          
             <TextField label="Producto" value={nuevo.producto} onChange={(e) => setNuevo({ ...nuevo, producto: e.target.value })} />
             <TextField label="Clave" value={nuevo.clave} onChange={(e) => setNuevo({ ...nuevo, clave: e.target.value })} />
-          </>
-        ) }
+        
         <TextField label="Precio" type="number" value={nuevo.precio} onChange={(e) => setNuevo({ ...nuevo, precio: e.target.value })} />
         <TextField label="Cantidad" type="number" value={nuevo.cantidad} onChange={(e) => setNuevo({ ...nuevo, cantidad: e.target.value })} />
         <Button variant="contained" onClick={agregar}>Agregar</Button>
