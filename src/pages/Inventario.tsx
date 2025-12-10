@@ -38,14 +38,16 @@ const InventarioAdmin = () => {
           producto: nuevo.producto,
           clave: nuevo.clave,
           precio: parseFloat(nuevo.precio),
-          cantidad: parseInt(nuevo.cantidad)
+          cantidad: parseInt(nuevo.cantidad),
+          tipo_producto: 'producto',
         }, config);
       } else {
-        await axios.post(`${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general`, {
-          marca: nuevo.marca,
-          modelo: nuevo.modelo,
+        await axios.post(`${process.env.REACT_APP_API_URL}/inventario/inventario/general`, {
+          producto: nuevo.producto,
+          clave: nuevo.clave,
           precio: parseFloat(nuevo.precio),
-          cantidad: parseInt(nuevo.cantidad)
+          cantidad: parseInt(nuevo.cantidad),
+          tipo_producto: 'telefono',
         }, config);
       }
       setNuevo({ producto: '', clave: '', precio: '', cantidad: '', marca: '', modelo: '' });
@@ -180,12 +182,7 @@ const eliminarItem = async (item: any) => {
             <TextField label="Producto" value={nuevo.producto} onChange={(e) => setNuevo({ ...nuevo, producto: e.target.value })} />
             <TextField label="Clave" value={nuevo.clave} onChange={(e) => setNuevo({ ...nuevo, clave: e.target.value })} />
           </>
-        ) : (
-          <>
-            <TextField label="Marca" value={nuevo.marca} onChange={(e) => setNuevo({ ...nuevo, marca: e.target.value })} />
-            <TextField label="Modelo" value={nuevo.modelo} onChange={(e) => setNuevo({ ...nuevo, modelo: e.target.value })} />
-          </>
-        )}
+        ) }
         <TextField label="Precio" type="number" value={nuevo.precio} onChange={(e) => setNuevo({ ...nuevo, precio: e.target.value })} />
         <TextField label="Cantidad" type="number" value={nuevo.cantidad} onChange={(e) => setNuevo({ ...nuevo, cantidad: e.target.value })} />
         <Button variant="contained" onClick={agregar}>Agregar</Button>
