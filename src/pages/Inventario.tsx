@@ -176,7 +176,7 @@ const eliminarItem = async (item: any) => {
         <Select value={tipo} onChange={(e) => setTipo(e.target.value as 'producto' | 'telefono')}>
           <MenuItem value="producto">Producto</MenuItem>
           <MenuItem value="telefono">Teléfono</MenuItem>
-          
+          </Select>
             <TextField label="Producto" value={nuevo.producto} onChange={(e) => setNuevo({ ...nuevo, producto: e.target.value })} />
             <TextField label="Clave" value={nuevo.clave} onChange={(e) => setNuevo({ ...nuevo, clave: e.target.value })} />
         
