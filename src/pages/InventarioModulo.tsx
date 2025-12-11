@@ -453,7 +453,7 @@ const InventarioPorModulo = () => {
           variant="outlined"
           color="secondary"
           onClick={() => {
-            if (!confirm("¿Limpiar lista de conteo?")) return;
+            if (!window.confirm("¿Limpiar lista de conteo?")) return;
             setConteoLista([]);
           }}
         >
