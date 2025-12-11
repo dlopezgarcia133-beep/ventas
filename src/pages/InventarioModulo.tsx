@@ -2,11 +2,18 @@ import React, { useEffect, useState } from 'react';
 import {
   Container, Typography, TextField, Button, MenuItem, Table, TableHead,
   TableRow, TableCell, TableBody, Paper, IconButton, Box, TableContainer,
-  Select
+  Select, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import { Edit, Delete, Save } from '@mui/icons-material';
 import axios from 'axios';
 import { InventarioModulo, Modulo } from '../Types';
+
+interface ConteoItem {
+  producto_id: number;
+  producto: string;
+  clave: string;
+  cantidad: number;
+}
 
 const InventarioPorModulo = () => {
   const [modulos, setModulos] = useState<Modulo[]>([]);
@@ -21,11 +28,15 @@ const InventarioPorModulo = () => {
   const [editando, setEditando] = useState<string | null>(null);
   const [editarData, setEditarData] = useState({ cantidad: '', precio: '' });
   const [modificaciones, setModificaciones] = useState<{ id: number; producto: string; cantidad: number }[]>([]);
-  const [busquedaClave, setBusquedaClave] = useState("");
-  const [productoEncontrado, setProductoEncontrado] = useState<any | null>(null);
-  const [cantidadConteo, setCantidadConteo] = useState("");
-  const [conteoLista, setConteoLista] = useState<{ producto_id: number; producto: string; clave: string; cantidad: number }[]>([]);
 
+  // Conteo físico states
+  const [busquedaClave, setBusquedaClave] = useState<string>("");
+  const [productoEncontrado, setProductoEncontrado] = useState<any | null>(null);
+  const [cantidadConteo, setCantidadConteo] = useState<string>("");
+  const [conteoLista, setConteoLista] = useState<ConteoItem[]>([]);
+  const [editarIndex, setEditarIndex] = useState<number | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [guardando, setGuardando] = useState(false);
 
   const token = localStorage.getItem("token");
   const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -38,220 +49,249 @@ const InventarioPorModulo = () => {
   const cargarInventario = async () => {
     if (!moduloSeleccionado) return;
     const res = await axios.get(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo?modulo_id=${moduloSeleccionado}`, config);
-     console.log("Inventario recibido:", res.data);
+    console.log("Inventario recibido:", res.data);
     setInventario(res.data);
   };
 
   const agregarProducto = async () => {
-  try {
-    if (tipo === 'producto') {
-      await axios.post(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo`, {
-        producto: nuevo.producto,
-        clave: nuevo.clave,
-        cantidad: parseInt(nuevo.cantidad),
-        precio: parseFloat(nuevo.precio),
-        tipo_producto: 'producto',
-        modulo_id: moduloSeleccionado,
-      }, config);
-    } else {
-      await axios.post(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo`, {
-        producto: nuevo.producto,
-        clave: nuevo.clave,
-        cantidad: parseInt(nuevo.cantidad),
-        precio: parseFloat(nuevo.precio),
-        tipo_producto: 'telefono',
-        modulo_id: moduloSeleccionado,
-      }, config);
-    }
-
-    setNuevoTelefono({ producto: '', clave: '', cantidad: '', precio: '', marca: '', modelo: '' });
-    cargarInventario();
-  } catch (err: any) {
-    alert(err.response?.data?.detail || "Error al agregar");
-  }
-};
-
-
-
-
-const congelarInventario = async () => {
-  if (!moduloSeleccionado) {
-    alert("Selecciona un módulo primero");
-    return;
-  }
-
-  try {
-    const response = await axios.get(
-      `${process.env.REACT_APP_API_URL}/inventario/inventario/congelar/${moduloSeleccionado}`,
-      {
-        ...config,
-        responseType: 'blob'  // Para descargar archivo
+    try {
+      if (tipo === 'producto') {
+        await axios.post(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo`, {
+          producto: nuevo.producto,
+          clave: nuevo.clave,
+          cantidad: parseInt(nuevo.cantidad),
+          precio: parseFloat(nuevo.precio),
+          tipo_producto: 'producto',
+          modulo_id: moduloSeleccionado,
+        }, config);
+      } else {
+        await axios.post(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo`, {
+          producto: nuevo.producto,
+          clave: nuevo.clave,
+          cantidad: parseInt(nuevo.cantidad),
+          precio: parseFloat(nuevo.precio),
+          tipo_producto: 'telefono',
+          modulo_id: moduloSeleccionado,
+        }, config);
       }
-    );
 
-    // Crear descarga del archivo
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement('a');
+      setNuevoTelefono({ producto: '', clave: '', cantidad: '', precio: '', marca: '', modelo: '' });
+      cargarInventario();
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Error al agregar");
+    }
+  };
 
-    link.href = url;
-    link.setAttribute('download', `inventario_modulo_${moduloSeleccionado}.xlsx`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    alert("Inventario congelado correctamente. Todo se ha puesto en 0.");
-    cargarInventario();
-  } catch (err) {
-    alert("Error al congelar inventario");
-  }
-};
-
-
-
-
-const buscarProducto = async () => {
-  if (!busquedaClave || !moduloSeleccionado) return;
-
-  try {
-    const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/inventario/buscar?modulo_id=${moduloSeleccionado}&clave=${busquedaClave}`,
-      config
-    );
-
-    if (!res.data.ok) {
-      alert("Producto no encontrado");
+  const congelarInventario = async () => {
+    if (!moduloSeleccionado) {
+      alert("Selecciona un módulo primero");
       return;
     }
 
-    setProductoEncontrado(res.data.producto);
-  } catch {
-    alert("Error en la búsqueda");
-  }
-};
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/inventario/inventario/congelar/${moduloSeleccionado}`,
+        {
+          ...config,
+          responseType: 'blob'  // Para descargar archivo
+        }
+      );
 
+      // Crear descarga del archivo
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
 
+      link.href = url;
+      link.setAttribute('download', `inventario_modulo_${moduloSeleccionado}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
 
-
-const agregarAConteo = () => {
-  if (!productoEncontrado) {
-    alert("Primero busca un producto");
-    return;
-  }
-
-  if (!cantidadConteo || parseInt(cantidadConteo) < 0) {
-    alert("Ingresa una cantidad válida");
-    return;
-  }
-
-  setConteoLista(prev => [
-    ...prev,
-    {
-      producto_id: productoEncontrado.id,
-      producto: productoEncontrado.clave,
-      clave: productoEncontrado.clave,
-      cantidad: parseInt(cantidadConteo)
+      alert("Inventario congelado correctamente. Todo se ha puesto en 0.");
+      cargarInventario();
+    } catch (err) {
+      alert("Error al congelar inventario");
     }
-  ]);
+  };
 
-  setProductoEncontrado(null);
-  setCantidadConteo("");
-  setBusquedaClave("");
-};
+  const buscarProducto = async () => {
+    if (!busquedaClave || !moduloSeleccionado) return;
 
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/inventario/buscar?modulo_id=${moduloSeleccionado}&clave=${busquedaClave}`,
+        config
+      );
 
-
-
-const guardarConteo = async () => {
-  if (conteoLista.length === 0) {
-    alert("No has agregado productos al conteo");
-    return;
-  }
-
-  try {
-    await axios.post(
-      `${process.env.REACT_APP_API_URL}/inventario/guardar_conteo`,
-      {
-        modulo_id: moduloSeleccionado,
-        productos: conteoLista.map(p => ({
-          producto_id: p.producto_id,
-          cantidad: p.cantidad
-        }))
-      },
-      config
-    );
-
-    alert("Inventario actualizado con éxito");
-    setConteoLista([]);
-    cargarInventario();
-  } catch (err) {
-    alert("Error al guardar conteo");
-  }
-};
-
-
-
-const manejarArchivoExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  if (!moduloSeleccionado) {
-    alert("Primero selecciona un módulo.");
-    return;
-  }
-
-  const archivo = e.target.files?.[0];
-  if (!archivo) return;
-
-  const formData = new FormData();
-  formData.append("archivo", archivo);
-  formData.append("modulo_id", moduloSeleccionado.toString());
-
-  try {
-    const res = await axios.post(
-      `${process.env.REACT_APP_API_URL}/inventario/actualizar_inventario_excel`,
-      formData,
-      {
-        headers: {
-          ...config.headers,
-          "Content-Type": "multipart/form-data",
-        },
+      if (!res.data.ok) {
+        alert("Producto no encontrado");
+        return;
       }
-    );
-    alert(res.data.message);
-    cargarInventario(); // recargar datos actualizados
-  } catch (err: any) {
-    alert(err.response?.data?.detail || "Error al procesar el archivo Excel");
-  }
 
-  // Limpiar input
-  e.target.value = "";
-};
+      setProductoEncontrado(res.data.producto);
+      setCantidadConteo("");
+    } catch (err) {
+      console.error(err);
+      alert("Error en la búsqueda");
+    }
+  };
 
+  const agregarAConteo = () => {
+    if (!productoEncontrado) {
+      alert("Primero busca un producto");
+      return;
+    }
 
+    const cantidad = parseInt(cantidadConteo, 10);
+    if (Number.isNaN(cantidad) || cantidad < 0) {
+      alert("Ingresa una cantidad válida (>= 0)");
+      return;
+    }
 
+    const productoId = productoEncontrado.id ?? productoEncontrado.producto_id ?? productoEncontrado.producto;
 
+    const nuevaFila: ConteoItem = {
+      producto_id: productoId,
+      producto: productoEncontrado.producto ?? String(productoId),
+      clave: productoEncontrado.clave ?? "",
+      cantidad
+    };
 
+    // Si estamos editando, reemplazamos la fila
+    if (editarIndex !== null) {
+      setConteoLista(prev => {
+        const copy = [...prev];
+        copy[editarIndex] = nuevaFila;
+        return copy;
+      });
+      setEditarIndex(null);
 
-const actualizarCantidad = async () => {
-  if (!selectedItem) {
-    alert("Selecciona un producto de la tabla primero");
-    return;
-  }
+    } else {
+      // Evitar duplicados: si ya existe, reemplazar y notificar
+      const existingIndex = conteoLista.findIndex(p => p.producto_id === productoId);
+      if (existingIndex !== -1) {
+        setConteoLista(prev => {
+          const copy = [...prev];
+          copy[existingIndex] = nuevaFila;
+          return copy;
+        });
+      } else {
+        setConteoLista(prev => [...prev, nuevaFila]);
+      }
+    }
 
-  try {
+    setProductoEncontrado(null);
+    setCantidadConteo("");
+    setBusquedaClave("");
+  };
+
+  const editarFila = (idx: number) => {
+    const fila = conteoLista[idx];
+    setProductoEncontrado({ id: fila.producto_id, producto: fila.producto, clave: fila.clave });
+    setCantidadConteo(String(fila.cantidad));
+    setEditarIndex(idx);
+  };
+
+  const eliminarFila = (idx: number) => {
+    if (!window.confirm("Eliminar este producto del conteo?")) return;
+    setConteoLista(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const guardarConteo = async () => {
+    if (conteoLista.length === 0) {
+      alert("No has agregado productos al conteo");
+      return;
+    }
+
+    setConfirmOpen(true);
+  };
+
+  const confirmarGuardar = async () => {
+    setConfirmOpen(false);
+    setGuardando(true);
+
+    try {
+      const payload = {
+        modulo_id: moduloSeleccionado,
+        productos: conteoLista.map(p => ({ producto_id: p.producto_id, cantidad: p.cantidad }))
+      };
+
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_URL}/inventario/guardar_conteo`,
+        payload,
+        config
+      );
+
+      if (res.data && res.data.ok) {
+        alert("Inventario actualizado con éxito");
+        setConteoLista([]);
+        cargarInventario();
+      } else {
+        alert("Respuesta inesperada del servidor");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error al guardar conteo");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const manejarArchivoExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!moduloSeleccionado) {
+      alert("Primero selecciona un módulo.");
+      return;
+    }
+
+    const archivo = e.target.files?.[0];
+    if (!archivo) return;
+
+    const formData = new FormData();
+    formData.append("archivo", archivo);
+    formData.append("modulo_id", moduloSeleccionado.toString());
+
+    try {
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_URL}/inventario/actualizar_inventario_excel`,
+        formData,
+        {
+          headers: {
+            ...config.headers,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      alert(res.data.message);
+      cargarInventario(); // recargar datos actualizados
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Error al procesar el archivo Excel");
+    }
+
+    // Limpiar input
+    e.target.value = "";
+  };
+
+  const actualizarCantidad = async () => {
+    if (!selectedItem) {
+      alert("Selecciona un producto de la tabla primero");
+      return;
+    }
+
+    try {
       await axios.put(
         `${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${encodeURIComponent(selectedItem.producto)}`,
         { cantidad: parseInt(nuevaCantidad), modulo_id: moduloSeleccionado },
         config
       );
-    console.log("Voy a actualizar:", selectedItem.producto, "con cantidad:", nuevaCantidad, "modulo:", moduloSeleccionado);
+      console.log("Voy a actualizar:", selectedItem.producto, "con cantidad:", nuevaCantidad, "modulo:", moduloSeleccionado);
 
-
-    setNuevaCantidad("");
-    setSelectedItem(null);
-    cargarInventario();
-  } catch (err: any) {
-    alert(err.response?.data?.detail || "Error al actualizar cantidad");
-  }
-};
-
+      setNuevaCantidad("");
+      setSelectedItem(null);
+      cargarInventario();
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Error al actualizar cantidad");
+    }
+  };
 
   const guardarEdicion = async (producto: string) => {
     try {
@@ -305,7 +345,6 @@ const actualizarCantidad = async () => {
           <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
         ))}
       </TextField>
-      
 
       <TextField
         label="Buscar producto o teléfono"
@@ -342,24 +381,29 @@ const actualizarCantidad = async () => {
       label="Buscar clave"
       value={busquedaClave}
       onChange={(e) => setBusquedaClave(e.target.value)}
+      onKeyDown={(e) => { if (e.key === "Enter") buscarProducto(); }}
     />
     <Button variant="contained" onClick={buscarProducto}>Buscar</Button>
   </Box>
 
   {productoEncontrado && (
     <Box mt={2}>
-      <Typography><strong>Producto:</strong> {productoEncontrado.clave}</Typography>
+      <Typography><strong>Producto:</strong> {productoEncontrado.clave} {productoEncontrado.producto ? `(${productoEncontrado.producto})` : ""}</Typography>
 
       <TextField
         label="Cantidad contada"
         type="number"
         value={cantidadConteo}
         onChange={(e) => setCantidadConteo(e.target.value)}
-        sx={{ mt: 2 }}
+        sx={{ mt: 2, width: 200 }}
       />
 
-      <Button variant="contained" sx={{ ml: 2, mt: 2 }} onClick={agregarAConteo}>
-        Agregar a lista
+      <Button
+        variant="contained"
+        sx={{ ml: 2, mt: 2 }}
+        onClick={agregarAConteo}
+      >
+        {editarIndex !== null ? "Guardar cambios" : "Agregar a lista"}
       </Button>
     </Box>
   )}
@@ -371,21 +415,51 @@ const actualizarCantidad = async () => {
         <TableHead>
           <TableRow>
             <TableCell>Clave</TableCell>
-            <TableCell>Cantidad</TableCell>
+            <TableCell>Producto (ref)</TableCell>
+            <TableCell align="right">Cantidad</TableCell>
+            <TableCell>Acciones</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {conteoLista.map((p, idx) => (
             <TableRow key={idx}>
               <TableCell>{p.clave}</TableCell>
-              <TableCell>{p.cantidad}</TableCell>
+              <TableCell>{p.producto ?? p.producto_id}</TableCell>
+              <TableCell align="right">{p.cantidad}</TableCell>
+              <TableCell>
+                <IconButton size="small" onClick={() => editarFila(idx)} title="Editar">
+                  <Edit fontSize="small" />
+                </IconButton>
+                <IconButton size="small" onClick={() => eliminarFila(idx)} title="Eliminar">
+                  <Delete fontSize="small" />
+                </IconButton>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      <Button variant="contained" color="success" sx={{ mt: 2 }} onClick={guardarConteo}>
-        Guardar inventario contado
-      </Button>
+
+      <Box display="flex" gap={2} mt={2}>
+        <Button
+          variant="contained"
+          color="success"
+          onClick={guardarConteo}
+          disabled={guardando}
+        >
+          Guardar inventario contado
+        </Button>
+
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={() => {
+            if (!confirm("¿Limpiar lista de conteo?")) return;
+            setConteoLista([]);
+          }}
+        >
+          Limpiar lista
+        </Button>
+      </Box>
     </Box>
   )}
 </Box>
@@ -475,6 +549,21 @@ const actualizarCantidad = async () => {
           </TableContainer>
         </>
       )}
+
+      {/* Dialogo de confirmación antes de enviar a BD */}
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Confirmar guardado</DialogTitle>
+        <DialogContent>
+          <Typography>Vas a actualizar {conteoLista.length} registros en la base de datos. ¿Deseas continuar?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)}>Cancelar</Button>
+          <Button onClick={confirmarGuardar} variant="contained" color="primary" disabled={guardando}>
+            {guardando ? "Guardando..." : "Sí, guardar"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </Container>
   );
 };
