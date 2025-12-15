@@ -119,7 +119,7 @@ const InventarioPorModulo = () => {
 
     try {
       const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/inventario/buscar?modulo_id=${moduloSeleccionado}&clave=${busquedaClave}`,
+        `${process.env.REACT_APP_API_URL}/inventario/inventario/buscar?modulo_id=${moduloSeleccionado}&clave=${busquedaClave}`,
         config
       );
 
