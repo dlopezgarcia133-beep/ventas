@@ -61,7 +61,7 @@ const InventarioPorModulo = () => {
           clave: nuevo.clave,
           cantidad: parseInt(nuevo.cantidad),
           precio: parseFloat(nuevo.precio),
-          tipo_producto: 'producto',
+          tipo_producto: 'accesorios',
           modulo_id: moduloSeleccionado,
         }, config);
       } else {
