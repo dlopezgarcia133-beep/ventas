@@ -130,6 +130,8 @@ const InventarioPorModulo = () => {
 
       setProductoEncontrado(res.data.producto);
       setCantidadConteo("");
+      console.log("Producto encontrado:", productoEncontrado);
+
     } catch (err) {
       console.error(err);
       alert("Error en la búsqueda");
