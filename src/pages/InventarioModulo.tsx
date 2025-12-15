@@ -137,53 +137,57 @@ const InventarioPorModulo = () => {
   };
 
   const agregarAConteo = () => {
-    if (!productoEncontrado) {
-      alert("Primero busca un producto");
-      return;
-    }
+  if (!productoEncontrado) {
+    alert("Primero busca un producto");
+    return;
+  }
 
-    const cantidad = parseInt(cantidadConteo, 10);
-    if (Number.isNaN(cantidad) || cantidad < 0) {
-      alert("Ingresa una cantidad válida (>= 0)");
-      return;
-    }
+  if (!productoEncontrado.id) {
+    alert("Producto inválido (sin ID)");
+    return;
+  }
 
-    const productoId = productoEncontrado.id ?? productoEncontrado.producto_id ?? productoEncontrado.producto;
+  const cantidad = parseInt(cantidadConteo, 10);
+  if (Number.isNaN(cantidad) || cantidad < 0) {
+    alert("Ingresa una cantidad válida (>= 0)");
+    return;
+  }
 
-    const nuevaFila: ConteoItem = {
-      producto_id: productoId,
-      producto: productoEncontrado.producto ?? String(productoId),
-      clave: productoEncontrado.clave ?? "",
-      cantidad
-    };
+  const nuevaFila: ConteoItem = {
+    producto_id: productoEncontrado.id, // ✅ SIEMPRE INT
+    producto: productoEncontrado.producto,
+    clave: productoEncontrado.clave,
+    cantidad
+  };
 
-    // Si estamos editando, reemplazamos la fila
-    if (editarIndex !== null) {
+  if (editarIndex !== null) {
+    setConteoLista(prev => {
+      const copy = [...prev];
+      copy[editarIndex] = nuevaFila;
+      return copy;
+    });
+    setEditarIndex(null);
+  } else {
+    const existingIndex = conteoLista.findIndex(
+      p => p.producto_id === productoEncontrado.id
+    );
+
+    if (existingIndex !== -1) {
       setConteoLista(prev => {
         const copy = [...prev];
-        copy[editarIndex] = nuevaFila;
+        copy[existingIndex] = nuevaFila;
         return copy;
       });
-      setEditarIndex(null);
-
     } else {
-      // Evitar duplicados: si ya existe, reemplazar y notificar
-      const existingIndex = conteoLista.findIndex(p => p.producto_id === productoId);
-      if (existingIndex !== -1) {
-        setConteoLista(prev => {
-          const copy = [...prev];
-          copy[existingIndex] = nuevaFila;
-          return copy;
-        });
-      } else {
-        setConteoLista(prev => [...prev, nuevaFila]);
-      }
+      setConteoLista(prev => [...prev, nuevaFila]);
     }
+  }
 
-    setProductoEncontrado(null);
-    setCantidadConteo("");
-    setBusquedaClave("");
-  };
+  setProductoEncontrado(null);
+  setCantidadConteo("");
+  setBusquedaClave("");
+};
+
 
   const editarFila = (idx: number) => {
     const fila = conteoLista[idx];
