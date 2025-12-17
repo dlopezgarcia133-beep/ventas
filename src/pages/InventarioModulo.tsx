@@ -37,6 +37,8 @@ const InventarioPorModulo = () => {
   const [editarIndex, setEditarIndex] = useState<number | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const [mostrarConteo, setMostrarConteo] = useState(false);
+
 
   const token = localStorage.getItem("token");
   const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -81,38 +83,41 @@ const InventarioPorModulo = () => {
       alert(err.response?.data?.detail || "Error al agregar");
     }
   };
+const congelarInventario = async () => {
+  if (!moduloSeleccionado) {
+    alert("Selecciona un módulo primero");
+    return;
+  }
 
-  const congelarInventario = async () => {
-    if (!moduloSeleccionado) {
-      alert("Selecciona un módulo primero");
-      return;
-    }
+  try {
+    const response = await axios.get(
+      `${process.env.REACT_APP_API_URL}/inventario/inventario/congelar/${moduloSeleccionado}`,
+      {
+        ...config,
+        responseType: 'blob'
+      }
+    );
 
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/inventario/inventario/congelar/${moduloSeleccionado}`,
-        {
-          ...config,
-          responseType: 'blob'  // Para descargar archivo
-        }
-      );
+    // Descargar Excel
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
 
-      // Crear descarga del archivo
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `inventario_modulo_${moduloSeleccionado}.xlsx`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
 
-      link.href = url;
-      link.setAttribute('download', `inventario_modulo_${moduloSeleccionado}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+    alert("Inventario congelado correctamente. Todo se ha puesto en 0.");
 
-      alert("Inventario congelado correctamente. Todo se ha puesto en 0.");
-      cargarInventario();
-    } catch (err) {
-      alert("Error al congelar inventario");
-    }
-  };
+    setMostrarConteo(true); // ✅ AQUÍ SE ACTIVA EL CONTEO FÍSICO
+
+    cargarInventario();
+  } catch (err) {
+    alert("Error al congelar inventario");
+  }
+};
+
 
   const buscarProducto = async () => {
     if (!busquedaClave || !moduloSeleccionado) return;
@@ -378,42 +383,98 @@ const InventarioPorModulo = () => {
 </Button>
 
 
+{mostrarConteo && (
+  <Box sx={{ border: "1px solid #ccc", borderRadius: 2, p: 2, mb: 4 }}>
+    <Typography variant="h6">Conteo físico</Typography>
 
-      <Box sx={{ border: "1px solid #ccc", borderRadius: 2, p: 2, mb: 4 }}>
-  <Typography variant="h6">Conteo físico</Typography>
-
-  <Box display="flex" gap={2} mt={2}>
-    <TextField
-      label="Buscar clave"
-      value={busquedaClave}
-      onChange={(e) => setBusquedaClave(e.target.value)}
-      onKeyDown={(e) => { if (e.key === "Enter") buscarProducto(); }}
-    />
-    <Button variant="contained" onClick={buscarProducto}>Buscar</Button>
-  </Box>
-
-  {productoEncontrado && (
-    <Box mt={2}>
-      <Typography><strong>Producto:</strong> {productoEncontrado.clave} {productoEncontrado.producto ? `(${productoEncontrado.producto})` : ""}</Typography>
-
+    <Box display="flex" gap={2} mt={2}>
       <TextField
-        label="Cantidad contada"
-        type="number"
-        value={cantidadConteo}
-        onChange={(e) => setCantidadConteo(e.target.value)}
-        sx={{ mt: 2, width: 200 }}
+        label="Buscar clave"
+        value={busquedaClave}
+        onChange={(e) => setBusquedaClave(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter") buscarProducto(); }}
       />
-
-      <Button
-        variant="contained"
-        sx={{ ml: 2, mt: 2 }}
-        onClick={agregarAConteo}
-      >
-        {editarIndex !== null ? "Guardar cambios" : "Agregar a lista"}
-      </Button>
+      <Button variant="contained" onClick={buscarProducto}>Buscar</Button>
     </Box>
-  )}
+    
+    {productoEncontrado && (
+      <Box mt={2}>
+        <Typography><strong>Producto:</strong> {productoEncontrado.clave} {productoEncontrado.producto ? `(${productoEncontrado.producto})` : ""}</Typography>
 
+        <TextField
+          label="Cantidad contada"
+          type="number"
+          value={cantidadConteo}
+          onChange={(e) => setCantidadConteo(e.target.value)}
+          sx={{ mt: 2, width: 200 }}
+        />
+
+        <Button
+          variant="contained"
+          sx={{ ml: 2, mt: 2 }}
+          onClick={agregarAConteo}
+        >
+          {editarIndex !== null ? "Guardar cambios" : "Agregar a lista"}
+        </Button>
+      </Box>
+    )}
+
+    {conteoLista.length > 0 && (
+      <Box mt={3}>
+        <Typography><strong>Productos agregados:</strong></Typography>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Clave</TableCell>
+              <TableCell>Producto (ref)</TableCell>
+              <TableCell align="right">Cantidad</TableCell>
+              <TableCell>Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {conteoLista.map((p, idx) => (
+              <TableRow key={idx}>
+                <TableCell>{p.clave}</TableCell>
+                <TableCell>{p.producto ?? p.producto_id}</TableCell>
+                <TableCell align="right">{p.cantidad}</TableCell>
+                <TableCell>
+                  <IconButton size="small" onClick={() => editarFila(idx)} title="Editar">
+                    <Edit fontSize="small" />
+                  </IconButton>
+                  <IconButton size="small" onClick={() => eliminarFila(idx)} title="Eliminar">
+                    <Delete fontSize="small" />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+        <Box display="flex" gap={2} mt={2}>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={guardarConteo}
+            disabled={guardando}
+          >
+            Guardar inventario contado
+          </Button>
+
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => {
+              if (!window.confirm("¿Limpiar lista de conteo?")) return;
+              setConteoLista([]);
+            }}
+          >
+            Limpiar lista
+          </Button>
+        </Box>
+      </Box>
+    )}
+  </Box>
+)}
   {conteoLista.length > 0 && (
     <Box mt={3}>
       <Typography><strong>Productos agregados:</strong></Typography>
