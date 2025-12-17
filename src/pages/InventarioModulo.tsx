@@ -387,19 +387,30 @@ const congelarInventario = async () => {
   <Box sx={{ border: "1px solid #ccc", borderRadius: 2, p: 2, mb: 4 }}>
     <Typography variant="h6">Conteo físico</Typography>
 
+    {/* BUSCAR */}
     <Box display="flex" gap={2} mt={2}>
       <TextField
         label="Buscar clave"
         value={busquedaClave}
         onChange={(e) => setBusquedaClave(e.target.value)}
-        onKeyDown={(e) => { if (e.key === "Enter") buscarProducto(); }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") buscarProducto();
+        }}
       />
-      <Button variant="contained" onClick={buscarProducto}>Buscar</Button>
+      <Button variant="contained" onClick={buscarProducto}>
+        Buscar
+      </Button>
     </Box>
-    
+
+    {/* PRODUCTO ENCONTRADO */}
     {productoEncontrado && (
       <Box mt={2}>
-        <Typography><strong>Producto:</strong> {productoEncontrado.clave} {productoEncontrado.producto ? `(${productoEncontrado.producto})` : ""}</Typography>
+        <Typography>
+          <strong>Producto:</strong> {productoEncontrado.clave}{" "}
+          {productoEncontrado.producto
+            ? `(${productoEncontrado.producto})`
+            : ""}
+        </Typography>
 
         <TextField
           label="Cantidad contada"
@@ -419,9 +430,13 @@ const congelarInventario = async () => {
       </Box>
     )}
 
+    {/* LISTA DE CONTEO */}
     {conteoLista.length > 0 && (
       <Box mt={3}>
-        <Typography><strong>Productos agregados:</strong></Typography>
+        <Typography>
+          <strong>Productos agregados:</strong>
+        </Typography>
+
         <Table size="small">
           <TableHead>
             <TableRow>
@@ -438,10 +453,10 @@ const congelarInventario = async () => {
                 <TableCell>{p.producto ?? p.producto_id}</TableCell>
                 <TableCell align="right">{p.cantidad}</TableCell>
                 <TableCell>
-                  <IconButton size="small" onClick={() => editarFila(idx)} title="Editar">
+                  <IconButton size="small" onClick={() => editarFila(idx)}>
                     <Edit fontSize="small" />
                   </IconButton>
-                  <IconButton size="small" onClick={() => eliminarFila(idx)} title="Eliminar">
+                  <IconButton size="small" onClick={() => eliminarFila(idx)}>
                     <Delete fontSize="small" />
                   </IconButton>
                 </TableCell>
@@ -475,61 +490,7 @@ const congelarInventario = async () => {
     )}
   </Box>
 )}
-  {conteoLista.length > 0 && (
-    <Box mt={3}>
-      <Typography><strong>Productos agregados:</strong></Typography>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Clave</TableCell>
-            <TableCell>Producto (ref)</TableCell>
-            <TableCell align="right">Cantidad</TableCell>
-            <TableCell>Acciones</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {conteoLista.map((p, idx) => (
-            <TableRow key={idx}>
-              <TableCell>{p.clave}</TableCell>
-              <TableCell>{p.producto ?? p.producto_id}</TableCell>
-              <TableCell align="right">{p.cantidad}</TableCell>
-              <TableCell>
-                <IconButton size="small" onClick={() => editarFila(idx)} title="Editar">
-                  <Edit fontSize="small" />
-                </IconButton>
-                <IconButton size="small" onClick={() => eliminarFila(idx)} title="Eliminar">
-                  <Delete fontSize="small" />
-                </IconButton>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
 
-      <Box display="flex" gap={2} mt={2}>
-        <Button
-          variant="contained"
-          color="success"
-          onClick={guardarConteo}
-          disabled={guardando}
-        >
-          Guardar inventario contado
-        </Button>
-
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={() => {
-            if (!window.confirm("¿Limpiar lista de conteo?")) return;
-            setConteoLista([]);
-          }}
-        >
-          Limpiar lista
-        </Button>
-      </Box>
-    </Box>
-  )}
-</Box>
 
 
 
