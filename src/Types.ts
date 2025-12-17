@@ -187,3 +187,10 @@ export interface Diferencia {
   fisico: number;
   diferencia: number;
 }
+
+type EntradaItem = {
+  producto_id: number;
+  clave: string;
+  producto?: string;
+  cantidad: number; // cantidad RECIBIDA
+};
