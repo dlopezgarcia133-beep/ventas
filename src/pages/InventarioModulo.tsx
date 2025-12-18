@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Container, Typography, TextField, Button, MenuItem, Table, TableHead,
   TableRow, TableCell, TableBody, Paper, IconButton, Box, TableContainer,
@@ -43,7 +43,7 @@ const InventarioPorModulo = () => {
   type ModoOperacion = 'normal' | 'conteo' | 'entrada';
   const [modo, setModo] = useState<ModoOperacion>('normal');
 
-  // Entrada de mercancía
+// Entrada de mercancía
 const [busquedaEntrada, setBusquedaEntrada] = useState("");
 const [productoEntrada, setProductoEntrada] = useState<any | null>(null);
 const [cantidadEntrada, setCantidadEntrada] = useState("");
@@ -53,6 +53,7 @@ const [guardandoEntrada, setGuardandoEntrada] = useState(false);
 
 const [opcionesProductos, setOpcionesProductos] = useState<any[]>([]);
 const [loadingBusqueda, setLoadingBusqueda] = useState(false);
+const inputClaveRef = useRef<HTMLInputElement>(null);
   
 
 
@@ -387,6 +388,8 @@ const agregarEntrada = () => {
     return;
   }
 
+  if (!cantidadEntrada || Number(cantidadEntrada) <= 0) return;
+
   const cantidad = parseInt(cantidadEntrada, 10);
   if (isNaN(cantidad) || cantidad <= 0) {
     alert("Cantidad inválida");
@@ -414,6 +417,9 @@ const agregarEntrada = () => {
 
   setProductoEntrada(null);
   setCantidadEntrada("");
+  setTimeout(() => {
+    inputClaveRef.current?.focus();
+  }, 100);
 };
 
 
@@ -687,6 +693,12 @@ const guardarEntradaMercancia = async () => {
           type="number"
           value={cantidadEntrada}
           onChange={(e) => setCantidadEntrada(e.target.value)}
+           onKeyDown={(e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      agregarEntrada();
+    }
+  }}
           sx={{ mt: 2, width: 200 }}
         />
 
