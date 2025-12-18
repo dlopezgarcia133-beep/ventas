@@ -52,7 +52,6 @@ const [editarEntradaIndex, setEditarEntradaIndex] = useState<number | null>(null
 const [guardandoEntrada, setGuardandoEntrada] = useState(false);
 
 const [opcionesProductos, setOpcionesProductos] = useState<any[]>([]);
-const [productoEntrada, setProductoEntrada] = useState<any | null>(null);
 const [loadingBusqueda, setLoadingBusqueda] = useState(false);
   
 
