@@ -7,6 +7,9 @@ import {
 import { Edit, Delete, Save } from '@mui/icons-material';
 import axios from 'axios';
 import { InventarioModulo, Modulo } from '../Types';
+import Autocomplete from '@mui/material/Autocomplete';
+
+
 
 interface ConteoItem {
   producto_id: number;
@@ -48,6 +51,9 @@ const [entradaLista, setEntradaLista] = useState<ConteoItem[]>([]);
 const [editarEntradaIndex, setEditarEntradaIndex] = useState<number | null>(null);
 const [guardandoEntrada, setGuardandoEntrada] = useState(false);
 
+const [opcionesProductos, setOpcionesProductos] = useState<any[]>([]);
+const [productoEntrada, setProductoEntrada] = useState<any | null>(null);
+const [loadingBusqueda, setLoadingBusqueda] = useState(false);
   
 
 
@@ -345,78 +351,72 @@ const congelarInventario = async () => {
   );
 
 
-const buscarProductoEntrada = async () => {
-  if (!busquedaEntrada || !moduloSeleccionado) return;
+const buscarProductosEntrada = async (texto: string) => {
+  if (!texto || texto.length < 2 || !moduloSeleccionado) {
+    setOpcionesProductos([]);
+    return;
+  }
 
   try {
+    setLoadingBusqueda(true);
+
     const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/inventario/inventario/buscar?modulo_id=${moduloSeleccionado}&clave=${busquedaEntrada}`,
-      config
+      `${process.env.REACT_APP_API_URL}/inventario/inventario/buscar-autocomplete`,
+      {
+        ...config,
+        params: {
+          modulo_id: moduloSeleccionado,
+          q: texto
+        }
+      }
     );
 
-    if (!res.data.ok) {
-      alert("Producto no encontrado");
-      return;
-    }
-
-    setProductoEntrada(res.data.producto);
-    setCantidadEntrada("");
+    setOpcionesProductos(res.data);
   } catch (err) {
-    alert("Error al buscar producto");
+    console.error(err);
+  } finally {
+    setLoadingBusqueda(false);
   }
 };
 
 
 
-const agregarAEntrada = () => {
+
+const agregarEntrada = () => {
   if (!productoEntrada) {
-    alert("Busca un producto primero");
+    alert("Selecciona un producto");
     return;
   }
 
   const cantidad = parseInt(cantidadEntrada, 10);
-  if (Number.isNaN(cantidad) || cantidad <= 0) {
+  if (isNaN(cantidad) || cantidad <= 0) {
     alert("Cantidad inválida");
     return;
   }
 
-  const nuevaFila: ConteoItem = {
-    producto_id: productoEntrada.id,
-    producto: productoEntrada.producto,
-    clave: productoEntrada.clave,
-    cantidad
-  };
+  setEntradaLista(prev => {
+    const index = prev.findIndex(p => p.producto_id === productoEntrada.id);
 
-  if (editarEntradaIndex !== null) {
-    setEntradaLista(prev => {
+    const nuevoItem = {
+      producto_id: productoEntrada.id,
+      producto: productoEntrada.producto,
+      clave: productoEntrada.clave,
+      cantidad
+    };
+
+    if (index !== -1) {
       const copy = [...prev];
-      copy[editarEntradaIndex] = nuevaFila;
+      copy[index].cantidad += cantidad;
       return copy;
-    });
-    setEditarEntradaIndex(null);
-  } else {
-    const existente = entradaLista.findIndex(
-      p => p.producto_id === productoEntrada.id
-    );
-
-    if (existente !== -1) {
-      setEntradaLista(prev => {
-        const copy = [...prev];
-        copy[existente] = {
-          ...copy[existente],
-          cantidad: copy[existente].cantidad + cantidad
-        };
-        return copy;
-      });
-    } else {
-      setEntradaLista(prev => [...prev, nuevaFila]);
     }
-  }
+
+    return [...prev, nuevoItem];
+  });
 
   setProductoEntrada(null);
   setCantidadEntrada("");
-  setBusquedaEntrada("");
 };
+
 
 
 
@@ -658,17 +658,24 @@ const guardarEntradaMercancia = async () => {
   <Box sx={{ border: "1px solid #ccc", borderRadius: 2, p: 2, mb: 4 }}>
     <Typography variant="h6">Entrada de mercancía</Typography>
 
-    <Box display="flex" gap={2} mt={2}>
-      <TextField
-        label="Buscar clave"
-        value={busquedaEntrada}
-        onChange={(e) => setBusquedaEntrada(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && buscarProductoEntrada()}
-      />
-      <Button variant="contained" onClick={buscarProductoEntrada}>
-        Buscar
-      </Button>
-    </Box>
+          <Autocomplete
+            options={opcionesProductos}
+            loading={loadingBusqueda}
+            value={productoEntrada}
+            onChange={(_, newValue) => setProductoEntrada(newValue)}
+            onInputChange={(_, value) => buscarProductosEntrada(value)}
+            getOptionLabel={(option) =>
+              `${option.clave} - ${option.producto}`
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Buscar producto o clave"
+                fullWidth
+              />
+            )}
+          />
+
 
     {productoEntrada && (
       <Box mt={2}>

@@ -11,6 +11,7 @@ import { Modulo, ProductoEnVenta, Usuario, Venta, VentaTelefono } from '../Types
 import { useNavigate } from 'react-router-dom';
 import UsuariosAdmin from './Usuarios';
 
+
 const FormularioVentaMultiple = () => {
   const [productos, setProductos] = useState<string[]>([]);
   const [ventas, setVentas] = useState<Venta[]>([]);
