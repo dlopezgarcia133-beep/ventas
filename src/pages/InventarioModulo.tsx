@@ -438,7 +438,7 @@ const guardarEntradaMercancia = async () => {
     };
 
     const res = await axios.post(
-      `${process.env.REACT_APP_API_URL}/inventario/entrada_mercancia`,
+      `${process.env.REACT_APP_API_URL}/inventario/inventario/entrada_mercancia`,
       payload,
       config
     );
