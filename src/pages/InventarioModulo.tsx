@@ -54,7 +54,10 @@ const [guardandoEntrada, setGuardandoEntrada] = useState(false);
 const [opcionesProductos, setOpcionesProductos] = useState<any[]>([]);
 const [loadingBusqueda, setLoadingBusqueda] = useState(false);
 const inputClaveRef = useRef<HTMLInputElement>(null);
-  
+const [textoBusquedaConteo, setTextoBusquedaConteo] = useState("");
+const [opcionesConteo, setOpcionesConteo] = useState<any[]>([]);
+const [loadingConteo, setLoadingConteo] = useState(false);
+
 
 
   const token = localStorage.getItem("token");
@@ -138,28 +141,35 @@ const congelarInventario = async () => {
 };
 
 
-  const buscarProducto = async () => {
-    if (!busquedaClave || !moduloSeleccionado) return;
+const buscarProductosConteo = async (texto: string) => {
+  setTextoBusquedaConteo(texto);
 
-    try {
-      const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/inventario/inventario/buscar?modulo_id=${moduloSeleccionado}&clave=${busquedaClave}`,
-        config
-      );
+  if (!texto || texto.length < 2 || !moduloSeleccionado) {
+    setOpcionesConteo([]);
+    return;
+  }
 
-      if (!res.data.ok) {
-        alert("Producto no encontrado");
-        return;
+  try {
+    setLoadingConteo(true);
+    const res = await axios.get(
+      `${process.env.REACT_APP_API_URL}/inventario/inventario/buscar-claves`,
+      {
+        params: {
+          modulo_id: moduloSeleccionado,
+          q: texto
+        },
+        ...config
       }
+    );
 
-      setProductoEncontrado(res.data.producto);
-      setCantidadConteo("");
+    setOpcionesConteo(res.data);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoadingConteo(false);
+  }
+};
 
-    } catch (err) {
-      console.error(err);
-      alert("Error en la búsqueda");
-    }
-  };
 
   const agregarAConteo = () => {
   if (!productoEncontrado) {
@@ -556,17 +566,36 @@ const guardarEntradaMercancia = async () => {
 
     {/* BUSCAR */}
     <Box display="flex" gap={2} mt={2}>
-      <TextField
-        label="Buscar clave"
-        value={busquedaClave}
-        onChange={(e) => setBusquedaClave(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") buscarProducto();
-        }}
-      />
-      <Button variant="contained" onClick={buscarProducto}>
-        Buscar
-      </Button>
+            <Autocomplete
+              options={opcionesConteo}
+              loading={loadingConteo}
+              getOptionLabel={(option) =>
+                `${option.clave} - ${option.producto}`
+              }
+              onInputChange={(_, value) => buscarProductosConteo(value)}
+              onChange={(_, value) => {
+                if (value) {
+                  setProductoEncontrado(value);
+                  setCantidadConteo("");
+                }
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Buscar por clave"
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {loadingConteo ? <CircularProgress size={20} /> : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
+            />
+
     </Box>
 
     {/* PRODUCTO ENCONTRADO */}
