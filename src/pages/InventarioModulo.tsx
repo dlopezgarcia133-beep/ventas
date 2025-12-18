@@ -693,7 +693,7 @@ const guardarEntradaMercancia = async () => {
         <Button
           variant="contained"
           sx={{ ml: 2, mt: 2 }}
-          onClick={agregarAEntrada}
+          onClick={agregarEntrada}
         >
           Agregar a lista
         </Button>
