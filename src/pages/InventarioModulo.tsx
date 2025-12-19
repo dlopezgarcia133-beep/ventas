@@ -155,7 +155,7 @@ const buscarProductosConteo = async (texto: string) => {
   try {
     setLoadingConteo(true);
     const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/inventario/inventario/buscar-claves`,
+      `${process.env.REACT_APP_API_URL}/inventario/inventario/buscarautocomplete`,
       {
         params: {
           modulo_id: moduloSeleccionado,
@@ -374,7 +374,7 @@ const buscarProductosEntrada = async (texto: string) => {
     setLoadingBusqueda(true);
 
     const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/inventario/inventario/buscar-autocomplete`,
+      `${process.env.REACT_APP_API_URL}/inventario/inventario/buscar?modulo_id=${moduloSeleccionado}&clave=${busquedaClave}`,
       {
         ...config,
         params: {
