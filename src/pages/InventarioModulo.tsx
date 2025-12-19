@@ -52,6 +52,7 @@ const [entradaLista, setEntradaLista] = useState<ConteoItem[]>([]);
 const [editarEntradaIndex, setEditarEntradaIndex] = useState<number | null>(null);
 const [guardandoEntrada, setGuardandoEntrada] = useState(false);
 const [productoConteo, setProductoConteo] = useState<any | null>(null);
+const [textoBusqueda, setTextoBusqueda] = useState("");
 
 const [opcionesProductos, setOpcionesProductos] = useState<any[]>([]);
 const [loadingBusqueda, setLoadingBusqueda] = useState(false);
@@ -569,34 +570,19 @@ const guardarEntradaMercancia = async () => {
     {/* BUSCAR */}
     <Box display="flex" gap={2} mt={2}>
             <Autocomplete
-              options={opcionesConteo}
-              loading={loadingConteo}
-              getOptionLabel={(option) =>
-                `${option.clave} - ${option.producto}`
-              }
-              onInputChange={(_, value) => buscarProductosConteo(value)}
-              onChange={(_, value) => {
-                if (value) {
-                  setProductoEncontrado(value);
-                  setCantidadConteo("");
-                }
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Buscar por clave"
-                  InputProps={{
-                    ...params.InputProps,
-                    endAdornment: (
-                      <>
-                        {loadingConteo ? <CircularProgress size={20} /> : null}
-                        {params.InputProps.endAdornment}
-                      </>
-                    ),
-                  }}
-                />
-              )}
-            />
+  options={opcionesProductos}
+  loading={loadingBusqueda}
+  value={productoConteo}
+  inputValue={textoBusqueda}
+  onChange={(e, value) => setProductoConteo(value)}
+  onInputChange={(e, value) => setTextoBusqueda(value)}
+  getOptionLabel={(option) =>
+    `${option.clave} - ${option.producto}`
+  }
+  renderInput={(params) => (
+    <TextField {...params} label="Buscar producto" />
+  )}
+/>
 
     </Box>
 
