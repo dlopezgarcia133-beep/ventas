@@ -569,20 +569,42 @@ const guardarEntradaMercancia = async () => {
 
     {/* BUSCAR */}
     <Box display="flex" gap={2} mt={2}>
-            <Autocomplete
-  options={opcionesProductos}
-  loading={loadingBusqueda}
+      <Autocomplete
+  options={opcionesConteo}
+  loading={loadingConteo}
   value={productoConteo}
-  inputValue={textoBusqueda}
-  onChange={(e, value) => setProductoConteo(value)}
-  onInputChange={(e, value) => setTextoBusqueda(value)}
+  inputValue={textoBusquedaConteo}
+  onChange={(e, value) => {
+    setProductoConteo(value);
+    setProductoEncontrado(value); // 🔥 CLAVE
+  }}
+  onInputChange={(e, value) => {
+    setTextoBusquedaConteo(value);
+    buscarProductosConteo(value); // 🔥 AQUÍ SE LLAMA AL BACKEND
+  }}
   getOptionLabel={(option) =>
     `${option.clave} - ${option.producto}`
   }
+  isOptionEqualToValue={(option, value) =>
+    option.id === value.id
+  }
   renderInput={(params) => (
-    <TextField {...params} label="Buscar producto" />
+    <TextField
+      {...params}
+      label="Buscar producto"
+      InputProps={{
+        ...params.InputProps,
+        endAdornment: (
+          <>
+            {loadingConteo && <CircularProgress size={20} />}
+            {params.InputProps.endAdornment}
+          </>
+        ),
+      }}
+    />
   )}
 />
+
 
     </Box>
 
