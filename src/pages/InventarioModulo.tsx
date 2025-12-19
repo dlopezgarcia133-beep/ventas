@@ -8,6 +8,7 @@ import { Edit, Delete, Save } from '@mui/icons-material';
 import axios from 'axios';
 import { InventarioModulo, Modulo } from '../Types';
 import Autocomplete from '@mui/material/Autocomplete';
+import { CircularProgress } from '@mui/material';
 
 
 
