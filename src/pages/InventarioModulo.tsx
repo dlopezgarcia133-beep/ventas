@@ -694,22 +694,34 @@ const guardarEntradaMercancia = async () => {
     <Typography variant="h6">Entrada de mercancía</Typography>
 
           <Autocomplete
-            options={opcionesProductos}
-            loading={loadingBusqueda}
-            value={productoEntrada}
-            onChange={(_, newValue) => setProductoEntrada(newValue)}
-            onInputChange={(_, value) => buscarProductosEntrada(value)}
-            getOptionLabel={(option) =>
-              `${option.clave} - ${option.producto}`
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Buscar producto o clave"
-                fullWidth
-              />
-            )}
-          />
+  options={opcionesProductos}
+  loading={loadingBusqueda}
+  value={productoConteo}
+  onChange={(e, value) => setProductoConteo(value)}
+  onInputChange={(e, value) => setTextoBusqueda(value)}
+  getOptionLabel={(option) =>
+    `${option.clave} - ${option.producto}`
+  }
+  isOptionEqualToValue={(option, value) =>
+    option.clave === value.clave
+  }
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Buscar por clave o producto"
+      InputProps={{
+        ...params.InputProps,
+        endAdornment: (
+          <>
+            {loadingBusqueda && <CircularProgress size={20} />}
+            {params.InputProps.endAdornment}
+          </>
+        ),
+      }}
+    />
+  )}
+/>
+
 
 
     {productoEntrada && (
