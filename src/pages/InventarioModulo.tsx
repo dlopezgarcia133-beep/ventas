@@ -567,20 +567,19 @@ const guardarEntradaMercancia = async () => {
   <Box sx={{ border: "1px solid #ccc", borderRadius: 2, p: 2, mb: 4 }}>
     <Typography variant="h6">Conteo físico</Typography>
 
-    {/* BUSCAR */}
-      <Autocomplete
-      fullWidth
+ <Autocomplete
+  fullWidth
   options={opcionesConteo}
   loading={loadingConteo}
   value={productoConteo}
   inputValue={textoBusquedaConteo}
   onChange={(e, value) => {
     setProductoConteo(value);
-    setProductoEncontrado(value); // 🔥 CLAVE
+    setProductoEncontrado(value);
   }}
   onInputChange={(e, value) => {
     setTextoBusquedaConteo(value);
-    buscarProductosConteo(value); // 🔥 AQUÍ SE LLAMA AL BACKEND
+    buscarProductosConteo(value);
   }}
   getOptionLabel={(option) =>
     `${option.clave} - ${option.producto}`
@@ -592,6 +591,7 @@ const guardarEntradaMercancia = async () => {
     <TextField
       {...params}
       label="Buscar producto"
+      fullWidth
       InputProps={{
         ...params.InputProps,
         endAdornment: (
@@ -606,9 +606,9 @@ const guardarEntradaMercancia = async () => {
 />
 
 
-    </Box>
 
-    {/* PRODUCTO ENCONTRADO */}
+
+
     {productoEncontrado && (
       <Box mt={2}>
         <Typography>
