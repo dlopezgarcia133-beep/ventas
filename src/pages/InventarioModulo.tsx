@@ -568,7 +568,6 @@ const guardarEntradaMercancia = async () => {
     <Typography variant="h6">Conteo físico</Typography>
 
     {/* BUSCAR */}
-    <Box display="flex" gap={2} mt={2}>
       <Autocomplete
   options={opcionesConteo}
   loading={loadingConteo}
