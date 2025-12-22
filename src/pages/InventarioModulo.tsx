@@ -372,15 +372,14 @@ const buscarProductosEntrada = async (texto: string) => {
 
   try {
     setLoadingBusqueda(true);
-
     const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/inventario/inventario/buscar?modulo_id=${moduloSeleccionado}&clave=${busquedaClave}`,
+      `${process.env.REACT_APP_API_URL}/inventario/inventario/buscarautocomplete`,
       {
-        ...config,
         params: {
           modulo_id: moduloSeleccionado,
           q: texto
-        }
+        },
+        ...config
       }
     );
 
@@ -391,6 +390,7 @@ const buscarProductosEntrada = async (texto: string) => {
     setLoadingBusqueda(false);
   }
 };
+
 
 
 
@@ -702,17 +702,23 @@ const guardarEntradaMercancia = async () => {
   <Box sx={{ border: "1px solid #ccc", borderRadius: 2, p: 2, mb: 4 }}>
     <Typography variant="h6">Entrada de mercancía</Typography>
 
-          <Autocomplete
+     <Autocomplete
   options={opcionesProductos}
   loading={loadingBusqueda}
-  value={productoConteo}
-  onChange={(e, value) => setProductoConteo(value)}
-  onInputChange={(e, value) => setTextoBusqueda(value)}
+  value={productoEntrada}
+  inputValue={busquedaEntrada}
+  onChange={(e, value) => {
+    setProductoEntrada(value);
+  }}
+  onInputChange={(e, value) => {
+    setBusquedaEntrada(value);
+    buscarProductosEntrada(value);
+  }}
   getOptionLabel={(option) =>
     `${option.clave} - ${option.producto}`
   }
   isOptionEqualToValue={(option, value) =>
-    option.clave === value.clave
+    option.id === value.id
   }
   renderInput={(params) => (
     <TextField
