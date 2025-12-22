@@ -477,6 +477,40 @@ const guardarEntradaMercancia = async () => {
 };
 
 
+const descargarInventario = async () => {
+  if (!moduloSeleccionado) {
+    alert("Selecciona un módulo primero");
+    return;
+  }
+
+  try {
+    const res = await axios.get(
+      `${process.env.REACT_APP_API_URL}/inventario/inventario/descargar/${moduloSeleccionado}`,
+      {
+        ...config,
+        responseType: "blob"
+      }
+    );
+
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `inventario_modulo_${moduloSeleccionado}.xlsx`
+    );
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } catch (err) {
+    alert("Error al descargar inventario");
+  }
+};
+
+
+
 
 
   useEffect(() => {
@@ -546,6 +580,15 @@ const guardarEntradaMercancia = async () => {
   }}
 >
   Entrada de mercancía
+</Button>
+
+
+<Button
+  variant="contained"
+  color="primary"
+  onClick={descargarInventario}
+>
+  Descargar inventario (Excel)
 </Button>
 
 
