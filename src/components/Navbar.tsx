@@ -71,6 +71,9 @@ const Navbar = () => {
         <Box>
           {rolToken === "admin" && (
             <>
+            <Button color="inherit" component={Link} to="/nomina">
+                Nomina
+              </Button>
             <Button color="inherit" component={Link} to="/corte">
                 Cortes
               </Button>
