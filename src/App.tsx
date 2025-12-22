@@ -15,6 +15,7 @@ import InventarioTelefonosGeneral from './pages/InventariosTelefonos';
 import ComisionesUser from './pages/ComisionesUser';
 import ChipsRechazados from './pages/ChipsInvalidos';
 import DiferenciasInventario from './pages/InventarioDiferencias';
+import Nomina from './pages/Nomina';
 
 const App: React.FC = () => {
   const routes = useRoutes([
@@ -33,6 +34,7 @@ const App: React.FC = () => {
     { path: '/inventario_telefonos', element: <InventarioTelefonosGeneral/> },
     { path: '/chips_invalidos', element: <ChipsRechazados/> }, 
     { path: '/inventario/diferencias', element: <DiferenciasInventario /> }, 
+    { path: '/nomina', element: <Nomina /> },
   ]);
 
   return routes;
