@@ -569,6 +569,7 @@ const guardarEntradaMercancia = async () => {
 
     {/* BUSCAR */}
       <Autocomplete
+      fullWidth
   options={opcionesConteo}
   loading={loadingConteo}
   value={productoConteo}
