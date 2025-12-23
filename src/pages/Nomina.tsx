@@ -73,7 +73,7 @@ const Nomina = () => {
   const activarPeriodoNomina = async (inicio: Dayjs, fin: Dayjs) => {
     try {
       const res = await axios.post(
-        `${process.env.REACT_APP_API_URL}/nomina/periodo/activar`,
+        `${process.env.REACT_APP_API_URL}/periodo/activar`,
         {
           fecha_inicio: inicio.format("YYYY-MM-DD"),
           fecha_fin: fin.format("YYYY-MM-DD"),
