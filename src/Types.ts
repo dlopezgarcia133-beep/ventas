@@ -194,3 +194,25 @@ type EntradaItem = {
   producto?: string;
   cantidad: number; // cantidad RECIBIDA
 };
+
+
+// types/nomina.ts
+export interface NominaPeriodo {
+  id: number;
+  fecha_inicio: string;
+  fecha_fin: string;
+  activa: boolean;
+  estado: string;
+}
+
+export interface NominaEmpleado {
+  usuario_id: number;
+  usuario: string;
+  nombre: string;
+  rol: "asesor" | "encargado";
+  comisiones: number;
+  sueldo_base: number;
+  horas_extra: number;
+  pago_horas_extra: number;
+  total_pagar: number;
+}
