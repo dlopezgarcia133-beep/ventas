@@ -98,6 +98,9 @@ const Navbar = () => {
 
           {rolToken === "contador" && (
             <>
+            <Button color="inherit" component={Link} to="/nomina">
+                Nomina
+              </Button>
             <Button color="inherit" component={Link} to="/corte">
                 Cortes
               </Button>
@@ -122,6 +125,9 @@ const Navbar = () => {
 
           {rolToken === "encargado" && (
             <>
+            <Button color="inherit" component={Link} to="/nomina">
+                Nomina
+              </Button>
               <Button color="inherit" component={Link} to="/traspasos">
                 Traspasos
               </Button>
@@ -142,6 +148,9 @@ const Navbar = () => {
 
           {rolToken === "asesor" && (
             <>
+            <Button color="inherit" component={Link} to="/nomina">
+                Nomina
+              </Button>
               <Button color="inherit" component={Link} to="/ventas">
                 Ventas
               </Button>
