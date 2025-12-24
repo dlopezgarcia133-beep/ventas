@@ -258,7 +258,7 @@ const Nomina = () => {
                 setEmpleadoSeleccionado(e);
                 fetchResumenEmpleado(e.usuario_id);
               }}>
-              <TableCell>{e.nombre}</TableCell>
+              <TableCell>{e.username}</TableCell>
               <TableCell align="right">${e.comisiones}</TableCell>
 
               <TableCell align="right">
@@ -374,7 +374,7 @@ const Nomina = () => {
       >
         {empleadosGrupo.map(emp => (
           <MenuItem key={emp.usuario_id} value={emp.usuario_id}>
-            {emp.nombre}
+            {emp.username}
           </MenuItem>
         ))}
       </Select>
