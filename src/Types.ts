@@ -207,8 +207,8 @@ export interface NominaPeriodo {
 
 export interface NominaEmpleado {
   usuario_id: number;
-  usuario: string;
-  nombre: string;
+  username: string;
+
   rol: "asesor" | "encargado";
   comisiones: number;
   sueldo_base: number;
