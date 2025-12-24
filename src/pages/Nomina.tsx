@@ -250,7 +250,7 @@ const Nomina = () => {
               hover
               sx={{ cursor: "pointer" }}
               onClick={() => {
-                setEmpleadoSeleccionado(e.usuario_id);
+                setEmpleadoSeleccionado(e);
                 fetchResumenEmpleado(e.usuario_id);
               }}>
               <TableCell>{e.nombre}</TableCell>
