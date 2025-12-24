@@ -41,15 +41,15 @@ const Nomina = () => {
 
   const empleadosGrupo = nomina.filter(e =>
   grupoSeleccionado === "A"
-    ? e.usuario.startsWith("A")
+    ? e.username.startsWith("A")
     : grupoSeleccionado === "C"
-    ? e.usuario.startsWith("C")
+    ? e.username.startsWith("C")
     : false
 );
 
   // 🔹 Derivados
-  const asesores = nomina.filter(e => e.usuario.startsWith("A"));
-  const encargados = nomina.filter(e => e.usuario.startsWith("C"));
+  const asesores = nomina.filter(e => e.username.startsWith("A"));
+  const encargados = nomina.filter(e => e.username.startsWith("C"));
 
 
   // =========================
