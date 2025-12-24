@@ -15,6 +15,10 @@ import axios from "axios";
 import dayjs, { Dayjs } from "dayjs";
 import { NominaEmpleado, NominaPeriodo } from "../Types";
 
+
+import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+
+
 const Nomina = () => {
   const token = localStorage.getItem("token");
 
@@ -28,8 +32,20 @@ const Nomina = () => {
   sueldo_base: number
   horas_extra: number }>>({});
 
-  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<number | null>(null);
+
   const [resumenEmpleado, setResumenEmpleado] = useState<any>(null);
+
+  const [grupoSeleccionado, setGrupoSeleccionado] = useState<"A" | "C" | "">("");
+  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<NominaEmpleado | null>(null);
+
+
+  const empleadosGrupo = nomina.filter(e =>
+  grupoSeleccionado === "A"
+    ? e.usuario.startsWith("A")
+    : grupoSeleccionado === "C"
+    ? e.usuario.startsWith("C")
+    : false
+);
 
   // 🔹 Derivados
   const asesores = nomina.filter(e => e.usuario.startsWith("A"));
@@ -313,39 +329,125 @@ const Nomina = () => {
   );
 
   return (
-  <Box p={3} display="flex" gap={3}>
-    {/* =========================
-        PANEL IZQUIERDO
-    ========================= */}
-    <Box width={320}>
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Typography variant="h6">
-          Detalle del empleado
-        </Typography>
+  <Box display="flex" gap={3}>
+  {/* PANEL IZQUIERDO */}
+  <Paper sx={{ p: 2, width: 320 }}>
+    <Typography variant="h6" gutterBottom>
+      Detalle del empleado
+    </Typography>
 
-        {!empleadoSeleccionado && (
-          <Typography color="text.secondary" mt={1}>
-            Selecciona un empleado
-          </Typography>
-        )}
+    <FormControl fullWidth sx={{ mb: 2 }}>
+      <InputLabel>Grupo</InputLabel>
+      <Select
+        value={grupoSeleccionado}
+        label="Grupo"
+        onChange={(e) => {
+          setGrupoSeleccionado(e.target.value as "A" | "C");
+          setEmpleadoSeleccionado(null);
+          setResumenEmpleado(null);
+        }}
+      >
+        <MenuItem value="A">Grupo A</MenuItem>
+        <MenuItem value="C">Grupo C</MenuItem>
+      </Select>
+    </FormControl>
 
-        {resumenEmpleado && (
-          <>
-            <Typography mt={2}>🎧 Accesorios: ${resumenEmpleado.accesorios}</Typography>
-            <Typography>📱 Teléfonos: ${resumenEmpleado.telefonos}</Typography>
-            <Typography>💳 Chips: ${resumenEmpleado.chips}</Typography>
+    <FormControl fullWidth sx={{ mb: 2 }} disabled={!grupoSeleccionado}>
+      <InputLabel>Empleado</InputLabel>
+      <Select
+        value={empleadoSeleccionado?.usuario_id ?? ""}
+        label="Empleado"
+        onChange={(e) => {
+          const emp = empleadosGrupo.find(
+            x => x.usuario_id === e.target.value
+          );
+          if (emp) {
+            setEmpleadoSeleccionado(emp);
+            fetchResumenEmpleado(emp.usuario_id);
+          }
+        }}
+      >
+        {empleadosGrupo.map(emp => (
+          <MenuItem key={emp.usuario_id} value={emp.usuario_id}>
+            {emp.nombre}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
 
-            <Typography mt={2} fontWeight="bold">
-              Total comisiones: ${resumenEmpleado.total_comisiones}
-            </Typography>
-          </>
-        )}
-      </Paper>
-    </Box>
+    {!empleadoSeleccionado && (
+      <Typography color="text.secondary">
+        Selecciona un empleado
+      </Typography>
+    )}
+    {empleadoSeleccionado && resumenEmpleado && (
+  <>
+    <Typography variant="subtitle2" mt={2}>Comisiones</Typography>
+    <Typography>Accesorios: ${resumenEmpleado.accesorios}</Typography>
+    <Typography>Teléfonos: ${resumenEmpleado.telefonos}</Typography>
+    <Typography>Chips: ${resumenEmpleado.chips}</Typography>
+    <Typography fontWeight="bold">
+      Total: ${resumenEmpleado.total_comisiones}
+    </Typography>
 
-    {/* =========================
-        CONTENIDO PRINCIPAL
-    ========================= */}
+    <Typography variant="subtitle2" mt={2}>Nómina</Typography>
+
+    <TextField
+      label="Sueldo base"
+      type="number"
+      fullWidth
+      sx={{ mt: 1 }}
+      value={edicion[empleadoSeleccionado.usuario_id]?.sueldo_base ?? 0}
+      onChange={(e) =>
+        setEdicion(prev => ({
+          ...prev,
+          [empleadoSeleccionado.usuario_id]: {
+            ...prev[empleadoSeleccionado.usuario_id],
+            sueldo_base: Number(e.target.value)
+          }
+        }))
+      }
+    />
+
+    <TextField
+      label="Horas extra"
+      type="number"
+      fullWidth
+      sx={{ mt: 1 }}
+      value={edicion[empleadoSeleccionado.usuario_id]?.horas_extra ?? 0}
+      onChange={(e) =>
+        setEdicion(prev => ({
+          ...prev,
+          [empleadoSeleccionado.usuario_id]: {
+            ...prev[empleadoSeleccionado.usuario_id],
+            horas_extra: Number(e.target.value)
+          }
+        }))
+      }
+    />
+
+    <Button
+      variant="contained"
+      fullWidth
+      sx={{ mt: 2 }}
+      onClick={() =>
+        actualizarNominaEmpleado(
+          empleadoSeleccionado.usuario_id,
+          edicion[empleadoSeleccionado.usuario_id].sueldo_base,
+          edicion[empleadoSeleccionado.usuario_id].horas_extra
+        )
+      }
+    >
+      Guardar
+    </Button>
+  </>
+)}
+</Paper>
+
+
+
+
+     
     <Box flex={1}>
       <Box display="flex" justifyContent="space-between" mb={3}>
         <Typography variant="h5">Nómina</Typography>
@@ -373,8 +475,8 @@ const Nomina = () => {
 
       {periodo && !loading && (
         <>
-          {renderTabla("Asesores (A)", asesores)}
-          {renderTabla("Encargados (C)", encargados)}
+          {renderTabla("(A)", asesores)}
+          {renderTabla("(C)", encargados)}
 
           {esAdmin && (
             <Box display="flex" gap={2}>
@@ -396,6 +498,7 @@ const Nomina = () => {
           )}
         </>
       )}
+    </Box>
     </Box>
   </Box>
 );
