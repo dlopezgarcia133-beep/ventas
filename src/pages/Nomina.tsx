@@ -24,10 +24,17 @@ const Nomina = () => {
   const [periodo, setPeriodo] = useState<NominaPeriodo | null>(null);
   const [nomina, setNomina] = useState<NominaEmpleado[]>([]);
   const [loading, setLoading] = useState(false);
+  const [edicion, setEdicion] = useState<Record<number, {
+  sueldo_base: number
+  horas_extra: number }>>({});
+
+  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<number | null>(null);
+  const [resumenEmpleado, setResumenEmpleado] = useState<any>(null);
 
   // 🔹 Derivados
-  const asesores = nomina.filter((e) => e.usuario.startsWith("A"));
-  const encargados = nomina.filter((e) => e.usuario.startsWith("C"));
+  const asesores = nomina.filter(e => e.usuario.startsWith("A"));
+  const encargados = nomina.filter(e => e.usuario.startsWith("C"));
+
 
   // =========================
   // 🔹 API CALLS
@@ -69,6 +76,24 @@ const Nomina = () => {
       setLoading(false);
     }
   };
+
+
+
+  const fetchResumenEmpleado = async (usuarioId: number) => {
+  try {
+    const res = await axios.get(
+      `${process.env.REACT_APP_API_URL}/nomina/resumen/empleado/${usuarioId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+    setResumenEmpleado(res.data);
+  } catch (err) {
+    console.error("Error al obtener resumen del empleado", err);
+    setResumenEmpleado(null);
+  }
+};
+
 
   const activarPeriodoNomina = async (inicio: Dayjs, fin: Dayjs) => {
     try {
@@ -165,9 +190,25 @@ const Nomina = () => {
     }
   }, [periodo]);
 
+
+
+  useEffect(() => {
+  const base: any = {};
+  nomina.forEach(e => {
+    base[e.usuario_id] = {
+      sueldo_base: e.sueldo_base,
+      horas_extra: e.horas_extra
+    };
+  });
+  setEdicion(base);
+}, [nomina]);
+
   // =========================
   // 🔹 UI
   // =========================
+
+  
+
 
   const renderTabla = (titulo: string, data: NominaEmpleado[]) => (
     <Paper sx={{ p: 2, mb: 4 }}>
@@ -189,7 +230,13 @@ const Nomina = () => {
 
         <TableBody>
           {data.map((e) => (
-            <TableRow key={e.usuario_id}>
+            <TableRow key={e.usuario_id}
+              hover
+              sx={{ cursor: "pointer" }}
+              onClick={() => {
+                setEmpleadoSeleccionado(e.usuario_id);
+                fetchResumenEmpleado(e.usuario_id);
+              }}>
               <TableCell>{e.nombre}</TableCell>
               <TableCell align="right">${e.comisiones}</TableCell>
 
@@ -198,15 +245,18 @@ const Nomina = () => {
                   <TextField
                     size="small"
                     type="number"
-                    value={e.sueldo_base}
+                    value={edicion[e.usuario_id]?.sueldo_base ?? 0}
                     onChange={(ev) =>
-                      actualizarNominaEmpleado(
-                        e.usuario_id,
-                        Number(ev.target.value),
-                        e.horas_extra
-                      )
+                      setEdicion(prev => ({
+                        ...prev,
+                        [e.usuario_id]: {
+                          ...prev[e.usuario_id],
+                          sueldo_base: Number(ev.target.value)
+                        }
+                      }))
                     }
                   />
+
                 ) : (
                   `$${e.sueldo_base}`
                 )}
@@ -217,15 +267,18 @@ const Nomina = () => {
                   <TextField
                     size="small"
                     type="number"
-                    value={e.horas_extra}
+                    value={edicion[e.usuario_id]?.horas_extra ?? 0}
                     onChange={(ev) =>
-                      actualizarNominaEmpleado(
-                        e.usuario_id,
-                        e.sueldo_base,
-                        Number(ev.target.value)
-                      )
+                      setEdicion(prev => ({
+                        ...prev,
+                        [e.usuario_id]: {
+                          ...prev[e.usuario_id],
+                          horas_extra: Number(ev.target.value)
+                        }
+                      }))
                     }
                   />
+
                 ) : (
                   e.horas_extra
                 )}
@@ -235,6 +288,23 @@ const Nomina = () => {
               <TableCell align="right">
                 <strong>${e.total_pagar}</strong>
               </TableCell>
+              <TableCell align="center">Acciones</TableCell>
+              <TableCell align="center">
+                <Button
+                  size="small"
+                  variant="contained"
+                  onClick={() =>
+                    actualizarNominaEmpleado(
+                      e.usuario_id,
+                      edicion[e.usuario_id].sueldo_base,
+                      edicion[e.usuario_id].horas_extra
+                    )
+                  }
+                >
+                  Guardar
+                </Button>
+              </TableCell>
+
             </TableRow>
           ))}
         </TableBody>
@@ -243,7 +313,40 @@ const Nomina = () => {
   );
 
   return (
-    <Box p={3}>
+  <Box p={3} display="flex" gap={3}>
+    {/* =========================
+        PANEL IZQUIERDO
+    ========================= */}
+    <Box width={320}>
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Typography variant="h6">
+          Detalle del empleado
+        </Typography>
+
+        {!empleadoSeleccionado && (
+          <Typography color="text.secondary" mt={1}>
+            Selecciona un empleado
+          </Typography>
+        )}
+
+        {resumenEmpleado && (
+          <>
+            <Typography mt={2}>🎧 Accesorios: ${resumenEmpleado.accesorios}</Typography>
+            <Typography>📱 Teléfonos: ${resumenEmpleado.telefonos}</Typography>
+            <Typography>💳 Chips: ${resumenEmpleado.chips}</Typography>
+
+            <Typography mt={2} fontWeight="bold">
+              Total comisiones: ${resumenEmpleado.total_comisiones}
+            </Typography>
+          </>
+        )}
+      </Paper>
+    </Box>
+
+    {/* =========================
+        CONTENIDO PRINCIPAL
+    ========================= */}
+    <Box flex={1}>
       <Box display="flex" justifyContent="space-between" mb={3}>
         <Typography variant="h5">Nómina</Typography>
 
@@ -294,7 +397,8 @@ const Nomina = () => {
         </>
       )}
     </Box>
-  );
+  </Box>
+);
 };
 
 export default Nomina;
