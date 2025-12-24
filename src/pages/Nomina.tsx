@@ -499,9 +499,9 @@ const Nomina = () => {
         </>
       )}
     </Box>
+    </Box>
   </Box>
-  </Box>
-);
+  );
 };
 
 export default Nomina;
