@@ -207,6 +207,11 @@ const Nomina = () => {
   }, [periodo]);
 
 
+  useEffect(() => {
+  console.log("Nomina:", nomina);
+}, [nomina]);
+
+
 
   useEffect(() => {
   const base: any = {};
