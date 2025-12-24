@@ -499,7 +499,7 @@ const Nomina = () => {
         </>
       )}
     </Box>
-    </Box>
+  </Box>
   </Box>
 );
 };
