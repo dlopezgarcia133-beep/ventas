@@ -616,6 +616,67 @@ const descargarInventario = async () => {
       />
 
 
+      {mostrandoPreview && (
+  <>
+    <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>Productos válidos ({previewValido.length})</Typography>
+
+    <TableContainer component={Paper} sx={{ mb: 3 }}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Clave</TableCell>
+            <TableCell>Producto</TableCell>
+            <TableCell>Cantidad</TableCell>
+            <TableCell>Precio</TableCell>
+            <TableCell>Acción</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {previewValido.map((item, i) => (
+            <TableRow key={i}>
+              <TableCell>{item.clave}</TableCell>
+              <TableCell>{item.producto}</TableCell>
+              <TableCell>{item.cantidad}</TableCell>
+              <TableCell>${item.precio}</TableCell>
+              <TableCell>{item.accion}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  </>
+)}
+
+
+
+{previewErrores.length > 0 && (
+  <>
+    <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>Errores ({previewErrores.length})</Typography>
+
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Fila</TableCell>
+            <TableCell>Clave</TableCell>
+            <TableCell>Errores</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {previewErrores.map((err, i) => (
+            <TableRow key={i}>
+              <TableCell>{err.fila}</TableCell>
+              <TableCell>{err.clave}</TableCell>
+              <TableCell>{err.errores.join(", ")}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  </>
+)}
+
+
 <Box display="flex" gap={2} mb={3}>
   <Button
     variant="contained"
@@ -706,65 +767,7 @@ const descargarInventario = async () => {
 />
 
 
-{mostrandoPreview && (
-  <>
-    <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>Productos válidos ({previewValido.length})</Typography>
 
-    <TableContainer component={Paper} sx={{ mb: 3 }}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Clave</TableCell>
-            <TableCell>Producto</TableCell>
-            <TableCell>Cantidad</TableCell>
-            <TableCell>Precio</TableCell>
-            <TableCell>Acción</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {previewValido.map((item, i) => (
-            <TableRow key={i}>
-              <TableCell>{item.clave}</TableCell>
-              <TableCell>{item.producto}</TableCell>
-              <TableCell>{item.cantidad}</TableCell>
-              <TableCell>${item.precio}</TableCell>
-              <TableCell>{item.accion}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  </>
-)}
-
-
-
-{previewErrores.length > 0 && (
-  <>
-    <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>Errores ({previewErrores.length})</Typography>
-
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Fila</TableCell>
-            <TableCell>Clave</TableCell>
-            <TableCell>Errores</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {previewErrores.map((err, i) => (
-            <TableRow key={i}>
-              <TableCell>{err.fila}</TableCell>
-              <TableCell>{err.clave}</TableCell>
-              <TableCell>{err.errores.join(", ")}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  </>
-)}
 
 
 
@@ -857,6 +860,10 @@ const descargarInventario = async () => {
     )}
   </Box>
 )}
+
+
+
+
 
 
 {modo === 'entrada' && (
