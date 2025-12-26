@@ -62,6 +62,11 @@ const [opcionesConteo, setOpcionesConteo] = useState<any[]>([]);
 const [loadingConteo, setLoadingConteo] = useState(false);
 
 
+const [previewValido, setPreviewValido] = useState<any[]>([]);
+const [previewErrores, setPreviewErrores] = useState<any[]>([]);
+const [mostrandoPreview, setMostrandoPreview] = useState(false);
+const [cargandoPreview, setCargandoPreview] = useState(false);
+
 
   const token = localStorage.getItem("token");
   const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -278,6 +283,49 @@ const buscarProductosConteo = async (texto: string) => {
       setGuardando(false);
     }
   };
+
+
+  const manejarPreviewExcel = async (
+  e: React.ChangeEvent<HTMLInputElement>
+) => {
+  if (!moduloSeleccionado) {
+    alert("Primero selecciona un módulo");
+    return;
+  }
+
+  const archivo = e.target.files?.[0];
+  if (!archivo) return;
+
+  const formData = new FormData();
+  formData.append("archivo", archivo);
+  formData.append("modulo_id", moduloSeleccionado.toString());
+
+  try {
+    setCargandoPreview(true);
+
+    const res = await axios.post(
+      `${process.env.REACT_APP_API_URL}/inventario/preview_excel`,
+      formData,
+      {
+        headers: {
+          ...config.headers,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    setPreviewValido(res.data.validas || []);
+    setPreviewErrores(res.data.errores || []);
+    setMostrandoPreview(true);
+
+  } catch (err: any) {
+    alert(err.response?.data?.detail || "Error al previsualizar el Excel");
+  } finally {
+    setCargandoPreview(false);
+    e.target.value = "";
+  }
+};
+
 
   const manejarArchivoExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!moduloSeleccionado) {
@@ -559,6 +607,15 @@ const descargarInventario = async () => {
         </Button>
       </Box>
 
+      <TextField
+        type="file"
+        inputProps={{ accept: ".xlsx,.xls" }}
+        onChange={manejarPreviewExcel}
+        variant="outlined"
+        sx={{ mb: 3 }}
+      />
+
+
 <Box display="flex" gap={2} mb={3}>
   <Button
     variant="contained"
@@ -647,6 +704,67 @@ const descargarInventario = async () => {
     />
   )}
 />
+
+
+{mostrandoPreview && (
+  <>
+    <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>Productos válidos ({previewValido.length})</Typography>
+
+    <TableContainer component={Paper} sx={{ mb: 3 }}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Clave</TableCell>
+            <TableCell>Producto</TableCell>
+            <TableCell>Cantidad</TableCell>
+            <TableCell>Precio</TableCell>
+            <TableCell>Acción</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {previewValido.map((item, i) => (
+            <TableRow key={i}>
+              <TableCell>{item.clave}</TableCell>
+              <TableCell>{item.producto}</TableCell>
+              <TableCell>{item.cantidad}</TableCell>
+              <TableCell>${item.precio}</TableCell>
+              <TableCell>{item.accion}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  </>
+)}
+
+
+
+{previewErrores.length > 0 && (
+  <>
+    <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>Errores ({previewErrores.length})</Typography>
+
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Fila</TableCell>
+            <TableCell>Clave</TableCell>
+            <TableCell>Errores</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {previewErrores.map((err, i) => (
+            <TableRow key={i}>
+              <TableCell>{err.fila}</TableCell>
+              <TableCell>{err.clave}</TableCell>
+              <TableCell>{err.errores.join(", ")}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  </>
+)}
 
 
 
