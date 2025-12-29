@@ -288,46 +288,32 @@ const buscarProductosConteo = async (texto: string) => {
   };
 
 
-  const manejarPreviewExcel = async (
-  e: React.ChangeEvent<HTMLInputElement>
-) => {
-  if (!moduloSeleccionado) {
-    alert("Primero selecciona un módulo");
-    return;
-  }
-
+  const manejarPreviewExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
   const archivo = e.target.files?.[0];
   if (!archivo) return;
+
+  setArchivoSeleccionado(archivo); // 🔥 ESTA ES LA CLAVE
 
   const formData = new FormData();
   formData.append("archivo", archivo);
   formData.append("modulo_id", moduloSeleccionado.toString());
 
-  try {
-    setCargandoPreview(true);
+  const res = await axios.post(
+    `${process.env.REACT_APP_API_URL}/inventario/preview_excel`,
+    formData,
+    {
+      headers: {
+        ...config.headers,
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
 
-    const res = await axios.post(
-      `${process.env.REACT_APP_API_URL}/inventario/preview_excel`,
-      formData,
-      {
-        headers: {
-          ...config.headers,
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-
-    setPreviewValido(res.data.validas || []);
-    setPreviewErrores(res.data.errores || []);
-    setMostrandoPreview(true);
-
-  } catch (err: any) {
-    alert(err.response?.data?.detail || "Error al previsualizar el Excel");
-  } finally {
-    setCargandoPreview(false);
-    e.target.value = "";
-  }
+  setPreviewValido(res.data.validas);
+  setPreviewErrores(res.data.errores);
+  setMostrandoPreview(true);
 };
+
 
 
   const manejarArchivoExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
