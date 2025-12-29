@@ -644,7 +644,31 @@ const confirmarImportacion = async () => {
 
 
       {mostrandoPreview && (
-  <>
+  <><Box
+    display="flex"
+    justifyContent="center"
+    mt={3}
+    mb={4}
+  >
+    <Button
+      variant="contained"
+      color="success"
+      size="large"
+      startIcon={<CheckCircleIcon />}
+      disabled={previewValido.length === 0}
+      onClick={confirmarImportacion}
+      sx={{
+        px: 5,
+        py: 1.5,
+        fontSize: "1rem",
+        borderRadius: 2,
+        boxShadow: 3,
+      }}
+    >
+      Confirmar importación
+    </Button>
+  </Box>
+  
     <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>Productos válidos ({previewValido.length})</Typography>
 
     <TableContainer component={Paper} sx={{ mb: 3 }}>
