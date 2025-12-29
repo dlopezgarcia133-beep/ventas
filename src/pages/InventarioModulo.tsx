@@ -9,6 +9,8 @@ import axios from 'axios';
 import { InventarioModulo, Modulo } from '../Types';
 import Autocomplete from '@mui/material/Autocomplete';
 import { CircularProgress } from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 
 
