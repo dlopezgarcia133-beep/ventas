@@ -745,15 +745,6 @@ const confirmarImportacion = async () => {
 
 
 
-<button
-  className="btn btn-success"
-  disabled={previewValido.length === 0}
-  onClick={confirmarImportacion}
->
-  Confirmar importación
-</button>
-
-
 <Box display="flex" gap={2} mb={3}>
   <Button
     variant="contained"
