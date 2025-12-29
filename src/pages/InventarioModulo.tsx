@@ -66,6 +66,9 @@ const [previewValido, setPreviewValido] = useState<any[]>([]);
 const [previewErrores, setPreviewErrores] = useState<any[]>([]);
 const [mostrandoPreview, setMostrandoPreview] = useState(false);
 const [cargandoPreview, setCargandoPreview] = useState(false);
+const [productosValidos, setProductosValidos] = useState<any[]>([]);
+const [erroresExcel, setErroresExcel] = useState<any[]>([]);
+const [archivoSeleccionado, setArchivoSeleccionado] = useState<File | null>(null);
 
 
   const token = localStorage.getItem("token");
