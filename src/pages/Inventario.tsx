@@ -164,7 +164,7 @@ const eliminarItem = async (item: any) => {
 
   const res = await axios.post(
     `${process.env.REACT_APP_API_URL}/inventario/preview_excel_general`,
-    formData
+    formData,
     config
   );
 
@@ -185,7 +185,7 @@ const confirmarImportacion = async () => {
 
   await axios.post(
     `${process.env.REACT_APP_API_URL}/inventario/actualizar_inventario_excel_general`,
-    formData
+    formData,
     config
   );
 
