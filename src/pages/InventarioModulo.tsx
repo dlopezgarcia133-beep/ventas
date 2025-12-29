@@ -558,6 +558,44 @@ const descargarInventario = async () => {
 };
 
 
+const limpiarPreview = () => {
+  setProductosValidos([]);
+  setErroresExcel([]);
+  setArchivoSeleccionado(null);
+};
+
+
+const confirmarImportacion = async () => {
+  if (!archivoSeleccionado || !moduloSeleccionado) {
+    alert("Falta el archivo o el módulo");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("archivo", archivoSeleccionado);
+  formData.append("modulo_id", moduloSeleccionado.toString());
+
+  try {
+    const res = await axios.post(
+      `${process.env.REACT_APP_API_URL}/inventario/actualizar_inventario_excel`,
+      formData,
+      {
+        headers: {
+          ...config.headers,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    alert(res.data.message);
+    cargarInventario();   // refrescar vista
+    limpiarPreview();     // opcional
+  } catch (err: any) {
+    alert(err.response?.data?.detail || "Error al importar inventario");
+  }
+};
+
+
 
 
 
@@ -643,8 +681,13 @@ const descargarInventario = async () => {
           ))}
         </TableBody>
       </Table>
+      
     </TableContainer>
+
+    
   </>
+
+  
 )}
 
 
@@ -675,6 +718,17 @@ const descargarInventario = async () => {
     </TableContainer>
   </>
 )}
+
+
+
+
+<button
+  className="btn btn-success"
+  disabled={productosValidos.length === 0}
+  onClick={confirmarImportacion}
+>
+  Confirmar importación
+</button>
 
 
 <Box display="flex" gap={2} mb={3}>
@@ -1087,3 +1141,5 @@ const descargarInventario = async () => {
 };
 
 export default InventarioPorModulo;
+
+
