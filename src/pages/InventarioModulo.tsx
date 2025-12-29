@@ -547,6 +547,14 @@ const descargarInventario = async () => {
 };
 
 
+const congelarInventarioConfirmado = () => {
+  if (!window.confirm("¿Seguro que deseas congelar el inventario y descargar el Excel?")) {
+    return;
+  }
+  congelarInventario();
+};
+
+
 const limpiarPreview = () => {
   setProductosValidos([]);
   setErroresExcel([]);
@@ -668,7 +676,7 @@ const confirmarImportacion = async () => {
       Confirmar importación
     </Button>
   </Box>
-  
+
     <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>Productos válidos ({previewValido.length})</Typography>
 
     <TableContainer component={Paper} sx={{ mb: 3 }}>
@@ -748,7 +756,7 @@ const confirmarImportacion = async () => {
   <Button
     variant="contained"
     color="warning"
-    onClick={congelarInventario}
+    onClick={congelarInventarioConfirmado}
   >
     Congelar Inventario (Descargar Excel)
   </Button>

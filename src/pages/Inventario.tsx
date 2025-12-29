@@ -24,6 +24,14 @@ const InventarioAdmin = () => {
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
   const [nuevaCantidad, setNuevaCantidad] = useState<string>("");
 
+  const [previewValido, setPreviewValido] = useState<any[]>([]);
+const [previewErrores, setPreviewErrores] = useState<any[]>([]);
+const [archivoExcel, setArchivoExcel] = useState<File | null>(null);
+const [mostrandoPreview, setMostrandoPreview] = useState(false);
+
+
+
+
   const cargarInventario = async () => {
     const resProd = await axios.get(`${process.env.REACT_APP_API_URL}/inventario/inventario/general`, config);
     setProductos(resProd.data);
@@ -143,6 +151,50 @@ const eliminarItem = async (item: any) => {
     item.nombre.toLowerCase().includes(filtro.toLowerCase())
   );
 
+
+
+  const manejarPreviewExcel = async (e: any) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  setArchivoExcel(file);
+
+  const formData = new FormData();
+  formData.append("archivo", file);
+
+  const res = await axios.post(
+    `${process.env.REACT_APP_API_URL}/inventario/preview_excel_general`,
+    formData
+    config
+  );
+
+  setPreviewValido(res.data.validas);
+  setPreviewErrores(res.data.errores);
+  setMostrandoPreview(true);
+};
+
+
+const confirmarImportacion = async () => {
+  if (!archivoExcel) {
+    alert("Falta archivo");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("archivo", archivoExcel);
+
+  await axios.post(
+    `${process.env.REACT_APP_API_URL}/inventario/actualizar_inventario_excel_general`,
+    formData
+    config
+  );
+
+  alert("Inventario general actualizado");
+  cargarInventario();
+  setMostrandoPreview(false);
+};
+
+
   useEffect(() => {
     cargarInventario();
   }, []);
@@ -171,6 +223,43 @@ const eliminarItem = async (item: any) => {
           Actualizar Cantidad
         </Button>
       </Box>
+
+
+<TextField
+        type="file"
+        inputProps={{ accept: ".xlsx,.xls" }}
+        onChange={manejarPreviewExcel}
+        variant="outlined"
+        sx={{ mb: 3 }}
+      />
+
+      {mostrandoPreview && previewValido.length > 0 && (
+  <Box
+    display="flex"
+    justifyContent="space-between"
+    alignItems="center"
+    mt={3}
+    p={2}
+    bgcolor="#f5f5f5"
+    borderRadius={2}
+  >
+    <Typography color="text.secondary">
+      Se importarán {previewValido.length} productos
+      {previewErrores.length > 0 && ` (${previewErrores.length} con errores)`}
+    </Typography>
+
+    <Button
+      variant="contained"
+      color="success"
+      size="large"
+      onClick={confirmarImportacion}
+    >
+      Confirmar importación
+    </Button>
+  </Box>
+)}
+
+
 
       <Box display="flex" gap={2} mb={3} flexWrap="wrap">
         <Select value={tipo} onChange={(e) => setTipo(e.target.value as 'producto' | 'telefono')}>
