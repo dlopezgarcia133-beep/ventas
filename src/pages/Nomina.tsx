@@ -453,30 +453,38 @@ const Nomina = () => {
 
 
      
-    <Box flex={1}>
-      <Box display="flex" justifyContent="space-between" mb={3}>
-        <Typography variant="h5">Nómina</Typography>
+      {esAdmin && (
+        <TextField
+          type="date"
+          label={
+            periodo
+              ? "Periodo activo"
+              : "Inicio del periodo"
+          }
+          InputLabelProps={{ shrink: true }}
+          disabled={!!periodo}
+          onChange={(e) =>
+            activarPeriodoNomina(
+              dayjs(e.target.value),
+              dayjs(e.target.value).add(6, "day")
+            )
+          }
+        />
+      )}
 
-        {esAdmin && !periodo && (
-          <TextField
-            type="date"
-            label="Inicio del periodo"
-            InputLabelProps={{ shrink: true }}
-            onChange={(e) =>
-              activarPeriodoNomina(
-                dayjs(e.target.value),
-                dayjs(e.target.value).add(6, "day")
-              )
-            }
-          />
-        )}
-      </Box>
 
       {!periodo && (
         <Typography color="text.secondary">
           El administrador aún no ha definido el periodo de nómina
         </Typography>
       )}
+
+      {periodo && (
+        <Typography color="text.secondary">
+          Periodo activo: {periodo.fecha_inicio} → {periodo.fecha_fin}
+        </Typography>
+      )}
+
 
       {periodo && !loading && (
         <>
