@@ -73,6 +73,11 @@ const [erroresExcel, setErroresExcel] = useState<any[]>([]);
 const [archivoSeleccionado, setArchivoSeleccionado] = useState<File | null>(null);
 
 
+const user = JSON.parse(localStorage.getItem("user") || "{}");
+const esAdmin = user?.rol === "admin";
+
+
+
   const token = localStorage.getItem("token");
   const config = { headers: { Authorization: `Bearer ${token}` } };
 
@@ -631,7 +636,7 @@ const confirmarImportacion = async () => {
         fullWidth
         sx={{ mb: 3 }}
       />
-
+    {esAdmin && (
       <Box display="flex" gap={2} mb={3}>
         <TextField
           label="Nueva cantidad"
@@ -651,7 +656,7 @@ const confirmarImportacion = async () => {
         variant="outlined"
         sx={{ mb: 3 }}
       />
-
+)}
 
       {mostrandoPreview && (
   <><Box
@@ -740,43 +745,43 @@ const confirmarImportacion = async () => {
       </Table>
     </TableContainer>
   </>
+ )}
+
+
+
+{esAdmin && (
+  <Box display="flex" gap={2} mb={3}>
+    <Button
+      variant="contained"
+      color="warning"
+      onClick={congelarInventarioConfirmado}
+    >
+      Congelar Inventario (Descargar Excel)
+    </Button>
+
+    <Button
+      variant="contained"
+      color="info"
+      onClick={() => {
+        if (!moduloSeleccionado) {
+          alert("Selecciona un módulo primero");
+          return;
+        }
+        setModo('entrada');
+      }}
+    >
+      Entrada de mercancía
+    </Button>
+
+    <Button
+      variant="contained"
+      color="primary"
+      onClick={descargarInventario}
+    >
+      Descargar inventario (Excel)
+    </Button>
+  </Box>
 )}
-
-
-
-
-<Box display="flex" gap={2} mb={3}>
-  <Button
-    variant="contained"
-    color="warning"
-    onClick={congelarInventarioConfirmado}
-  >
-    Congelar Inventario (Descargar Excel)
-  </Button>
-
- <Button
-  variant="contained"
-  color="info"
-  onClick={() => {
-    if (!moduloSeleccionado) {
-      alert("Selecciona un módulo primero");
-      return;
-    }
-    setModo('entrada');
-  }}
->
-  Entrada de mercancía
-</Button>
-
-
-<Button
-  variant="contained"
-  color="primary"
-  onClick={descargarInventario}
->
-  Descargar inventario (Excel)
-</Button>
-
 
  <Button
   variant="outlined"
@@ -1047,7 +1052,7 @@ const confirmarImportacion = async () => {
       </Box>
     )}
   </Box>
-)}
+  )}
 
 
 
