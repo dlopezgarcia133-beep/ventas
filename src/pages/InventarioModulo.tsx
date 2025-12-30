@@ -11,6 +11,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import { CircularProgress } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { obtenerRolDesdeToken } from '../components/Token';
 
 
 
@@ -72,9 +73,7 @@ const [productosValidos, setProductosValidos] = useState<any[]>([]);
 const [erroresExcel, setErroresExcel] = useState<any[]>([]);
 const [archivoSeleccionado, setArchivoSeleccionado] = useState<File | null>(null);
 
-
-const user = JSON.parse(localStorage.getItem("user") || "{}");
-const esAdmin = user?.rol === "admin";
+const [esAdmin, setEsAdmin] = useState(false);
 
 
 
@@ -600,6 +599,12 @@ const confirmarImportacion = async () => {
 };
 
 
+
+
+  useEffect(() => {
+    const rol = obtenerRolDesdeToken();
+    setEsAdmin(rol === "admin");
+  }, []);
 
 
 
