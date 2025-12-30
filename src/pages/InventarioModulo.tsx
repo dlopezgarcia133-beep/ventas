@@ -794,7 +794,7 @@ const confirmarImportacion = async () => {
 >
   Volver a inventario
 </Button>
-</Box>
+
 
 
 {modo === 'conteo' &&  (
