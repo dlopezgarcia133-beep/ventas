@@ -636,27 +636,30 @@ const confirmarImportacion = async () => {
         fullWidth
         sx={{ mb: 3 }}
       />
-    {esAdmin && (
-      <Box display="flex" gap={2} mb={3}>
-        <TextField
-          label="Nueva cantidad"
-          type="number"
-          value={nuevaCantidad}
-          onChange={(e) => setNuevaCantidad(e.target.value)}
-        />
-        <Button variant="contained" onClick={actualizarCantidad}>
-          Actualizar Cantidad
-        </Button>
-      </Box>
-
+   {esAdmin && (
+  <>
+    <Box display="flex" gap={2} mb={3}>
       <TextField
-        type="file"
-        inputProps={{ accept: ".xlsx,.xls" }}
-        onChange={manejarPreviewExcel}
-        variant="outlined"
-        sx={{ mb: 3 }}
+        label="Nueva cantidad"
+        type="number"
+        value={nuevaCantidad}
+        onChange={(e) => setNuevaCantidad(e.target.value)}
       />
+      <Button variant="contained" onClick={actualizarCantidad}>
+        Actualizar Cantidad
+      </Button>
+    </Box>
+
+    <TextField
+      type="file"
+      inputProps={{ accept: ".xlsx,.xls" }}
+      onChange={manejarPreviewExcel}
+      variant="outlined"
+      sx={{ mb: 3 }}
+    />
+  </>
 )}
+
 
       {mostrandoPreview && (
   <><Box
