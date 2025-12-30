@@ -451,69 +451,57 @@ const Nomina = () => {
 
 
 
+    <Box flex={1}>
 
-     
+  {esAdmin && (
+    <TextField
+      type="date"
+      label={periodo ? "Periodo activo" : "Inicio del periodo"}
+      InputLabelProps={{ shrink: true }}
+      disabled={!!periodo}
+      onChange={(e) =>
+        activarPeriodoNomina(
+          dayjs(e.target.value),
+          dayjs(e.target.value).add(6, "day")
+        )
+      }
+    />
+  )}
+
+  {!periodo && (
+    <Typography color="text.secondary">
+      El administrador aún no ha definido el periodo de nómina
+    </Typography>
+  )}
+
+  {periodo && (
+    <Typography color="text.secondary">
+      Periodo activo: {periodo.fecha_inicio} → {periodo.fecha_fin}
+    </Typography>
+  )}
+
+  {periodo && !loading && (
+    <>
+      {renderTabla("(A)", asesores)}
+      {renderTabla("(C)", encargados)}
+
       {esAdmin && (
-        <TextField
-          type="date"
-          label={
-            periodo
-              ? "Periodo activo"
-              : "Inicio del periodo"
-          }
-          InputLabelProps={{ shrink: true }}
-          disabled={!!periodo}
-          onChange={(e) =>
-            activarPeriodoNomina(
-              dayjs(e.target.value),
-              dayjs(e.target.value).add(6, "day")
-            )
-          }
-        />
+        <Box display="flex" gap={2}>
+          <Button variant="contained" color="error" onClick={cerrarNomina}>
+            Cerrar nómina
+          </Button>
+
+          <Button variant="outlined" onClick={descargarNominaExcel}>
+            Descargar Excel
+          </Button>
+        </Box>
       )}
+    </>
+  )}
 
+</Box> 
 
-      {!periodo && (
-        <Typography color="text.secondary">
-          El administrador aún no ha definido el periodo de nómina
-        </Typography>
-      )}
-
-      {periodo && (
-        <Typography color="text.secondary">
-          Periodo activo: {periodo.fecha_inicio} → {periodo.fecha_fin}
-        </Typography>
-      )}
-
-
-      {periodo && !loading && (
-        <>
-          {renderTabla("(A)", asesores)}
-          {renderTabla("(C)", encargados)}
-
-          {esAdmin && (
-            <Box display="flex" gap={2}>
-              <Button
-                variant="contained"
-                color="error"
-                onClick={cerrarNomina}
-              >
-                Cerrar nómina
-              </Button>
-
-              <Button
-                variant="outlined"
-                onClick={descargarNominaExcel}
-              >
-                Descargar Excel
-              </Button>
-            </Box>
-          )}
-        </>
-      )}
-    </Box>
-    
-  </Box>
+    </Box> 
   );
 };
 
