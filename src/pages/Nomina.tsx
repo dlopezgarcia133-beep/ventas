@@ -28,9 +28,13 @@ const Nomina = () => {
   const [periodo, setPeriodo] = useState<NominaPeriodo | null>(null);
   const [nomina, setNomina] = useState<NominaEmpleado[]>([]);
   const [loading, setLoading] = useState(false);
-  const [edicion, setEdicion] = useState<Record<number, {
-  sueldo_base: number
-  horas_extra: number }>>({});
+  const [edicion, setEdicion] = useState<
+  Record<number, {
+    sueldo_base: string | number
+    horas_extra: string | number
+  }>
+>({});
+
 
 
   const [resumenEmpleado, setResumenEmpleado] = useState<any>(null);
@@ -316,9 +320,9 @@ const Nomina = () => {
                   variant="contained"
                   onClick={() =>
                     actualizarNominaEmpleado(
-                      e.usuario_id,
-                      edicion[e.usuario_id].sueldo_base,
-                      edicion[e.usuario_id].horas_extra
+                      empleadoSeleccionado.usuario_id,
+                      Number(edicion[empleadoSeleccionado.usuario_id].sueldo_base || 0),
+                      Number(edicion[empleadoSeleccionado.usuario_id].horas_extra || 0)
                     )
                   }
                 >
@@ -402,13 +406,13 @@ const Nomina = () => {
       type="number"
       fullWidth
       sx={{ mt: 1 }}
-      value={edicion[empleadoSeleccionado.usuario_id]?.sueldo_base ?? 0}
+      value={edicion[empleadoSeleccionado.usuario_id]?.sueldo_base ?? ""}
       onChange={(e) =>
         setEdicion(prev => ({
           ...prev,
           [empleadoSeleccionado.usuario_id]: {
             ...prev[empleadoSeleccionado.usuario_id],
-            sueldo_base: Number(e.target.value)
+            sueldo_base: e.target.value
           }
         }))
       }
@@ -419,13 +423,13 @@ const Nomina = () => {
       type="number"
       fullWidth
       sx={{ mt: 1 }}
-      value={edicion[empleadoSeleccionado.usuario_id]?.horas_extra ?? 0}
+      value={edicion[empleadoSeleccionado.usuario_id]?.horas_extra ?? ""}
       onChange={(e) =>
         setEdicion(prev => ({
           ...prev,
           [empleadoSeleccionado.usuario_id]: {
             ...prev[empleadoSeleccionado.usuario_id],
-            horas_extra: Number(e.target.value)
+            horas_extra: e.target.value
           }
         }))
       }
