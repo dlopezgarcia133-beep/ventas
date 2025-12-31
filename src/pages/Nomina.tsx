@@ -318,13 +318,16 @@ const Nomina = () => {
                 <Button
                   size="small"
                   variant="contained"
-                  onClick={() =>
+                  onClick={() => {
+                    if (!empleadoSeleccionado) return;
+
                     actualizarNominaEmpleado(
                       empleadoSeleccionado.usuario_id,
-                      Number(edicion[empleadoSeleccionado.usuario_id].sueldo_base || 0),
-                      Number(edicion[empleadoSeleccionado.usuario_id].horas_extra || 0)
-                    )
-                  }
+                      Number(edicion[empleadoSeleccionado.usuario_id]?.sueldo_base || 0),
+                      Number(edicion[empleadoSeleccionado.usuario_id]?.horas_extra || 0)
+                    );
+                  }}
+
                 >
                   Guardar
                 </Button>
