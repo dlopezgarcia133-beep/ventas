@@ -47,6 +47,11 @@ const TraspasosEncargado = () => {
     alert("Completa todos los campos");
     return;
   }
+console.log({
+  producto,
+  cantidad,
+  destino
+});
 
   try {
     await axios.post(
