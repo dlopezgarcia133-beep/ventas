@@ -6,6 +6,8 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { Traspaso } from "../Types";
+import Autocomplete from "@mui/material/Autocomplete";
+
 
 const TraspasosEncargado = () => {
   const [producto, setProducto] = useState("");
@@ -13,6 +15,8 @@ const TraspasosEncargado = () => {
   const [destino, setDestino] = useState("");
   const [modulos, setModulos] = useState<string[]>([]);
   const [traspasos, setTraspasos] = useState<Traspaso[]>([]);
+  const [productos, setProductos] = useState<string[]>([]);
+
 
   const token = localStorage.getItem("token");
   const config = {
@@ -29,37 +33,70 @@ const TraspasosEncargado = () => {
     setTraspasos(res.data);
   };
 
+  const cargarProductos = async () => {
+  const res = await axios.get(
+    `${process.env.REACT_APP_API_URL}/inventario/modulo/productos`,
+    config
+  );
+  setProductos(res.data); // array de strings
+};
+
+
   const solicitarTraspaso = async () => {
-    try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/traspasos/traspasos`, {
+  if (!producto || !cantidad || !destino) {
+    alert("Completa todos los campos");
+    return;
+  }
+
+  try {
+    await axios.post(
+      `${process.env.REACT_APP_API_URL}/traspasos/traspasos`,
+      {
         producto,
         cantidad: parseInt(cantidad),
         modulo_destino: destino,
-      }, config);
-      
-      alert("Traspaso solicitado");
-      setProducto(""); setCantidad(""); setDestino("");
-      cargarTraspasos();
-    } catch (err: any) {
-      alert(err.response?.data?.detail || "Error al solicitar traspaso");
-    }
-  };
+      },
+      config
+    );
+
+    alert("Traspaso solicitado");
+    setProducto("");
+    setCantidad("");
+    setDestino("");
+    cargarTraspasos();
+  } catch (err: any) {
+    alert(err.response?.data?.detail || "Error al solicitar traspaso");
+  }
+};
+
 
   useEffect(() => {
     cargarModulos();
     cargarTraspasos();
   }, []);
 
+
+  useEffect(() => {
+  cargarModulos();
+  cargarTraspasos();
+  cargarProductos();
+}, []);
+
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h5" gutterBottom>Solicitar Traspaso</Typography>
 
       <Box display="flex" gap={2} mb={3}>
-        <TextField
-          label="Producto"
+        <Autocomplete
+          options={productos}
           value={producto}
-          onChange={(e) => setProducto(e.target.value)}
+          onChange={(event, newValue) => setProducto(newValue || "")}
+          renderInput={(params) => (
+            <TextField {...params} label="Producto" />
+          )}
+          sx={{ minWidth: 250 }}
         />
+
         <TextField
           label="Cantidad"
           type="number"
