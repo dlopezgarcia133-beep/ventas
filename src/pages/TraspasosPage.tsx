@@ -35,7 +35,7 @@ const TraspasosEncargado = () => {
 
   const cargarProductos = async () => {
   const res = await axios.get(
-    `${process.env.REACT_APP_API_URL}/inventario/modulo/productos`,
+    `${process.env.REACT_APP_API_URL}/inventario/inventario/general/productos-nombres`,
     config
   );
   setProductos(res.data); // array de strings
