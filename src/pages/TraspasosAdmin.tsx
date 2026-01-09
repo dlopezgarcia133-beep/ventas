@@ -87,8 +87,8 @@ const TraspasosAdmin = () => {
                     onChange={async (e) => {
                       if (!e.target.checked) return
 
-                      await fetch(`/traspasos/${t.id}/ocultar`, {
-                        method: "PATCH",
+                      await fetch(`/traspasos/traspasos/${t.id}/ocultar`, {
+                        method: "PUT",
                         headers: {
                           Authorization: `Bearer ${token}`,
                         },

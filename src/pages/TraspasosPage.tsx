@@ -32,9 +32,6 @@ const TraspasosEncargado = () => {
     const res = await axios.get(`${process.env.REACT_APP_API_URL}/traspasos/traspasos`, config);
     setTraspasos(res.data);
 
-      const soloVisibles = res.data.filter((t: any) => t.visible === true);
-
-    setTraspasos(soloVisibles);
   };
   
 
