@@ -15,9 +15,13 @@ const TraspasosAdmin = () => {
   };
 
   const cargarTraspasos = async () => {
-    const res = await axios.get(`${process.env.REACT_APP_API_URL}/traspasos/traspasos`, config);
-    setTraspasos(res.data);
-  };
+  const res = await axios.get(
+    `${process.env.REACT_APP_API_URL}/traspasos`,
+    config
+  )
+  setTraspasos(res.data)
+}
+
 
   const actualizarEstado = async (id: number, estado: "aprobado" | "rechazado") => {
     try {
@@ -83,25 +87,22 @@ const TraspasosAdmin = () => {
                 <TableCell>
                   <input
                     type="checkbox"
-                    checked={!t.visible_en_pendientes}
+                    title="Marcar como capturado"
                     onChange={async () => {
                       await axios.put(
-                        `${process.env.REACT_APP_API_URL}/traspasos/${t.id}/ocultar`,
+                        `${process.env.REACT_APP_API_URL}/traspasos/traspasos/${t.id}/ocultar`,
                         {},
                         config
                       )
 
+                      // quitarlo de la tabla
                       setTraspasos(prev =>
-                        prev.map(item =>
-                          item.id === t.id
-                            ? { ...item, visible_en_pendientes: false }
-                            : item
-                        )
+                        prev.filter(item => item.id !== t.id)
                       )
                     }}
                   />
-
                 </TableCell>
+
 
               </TableRow>
             ))}
