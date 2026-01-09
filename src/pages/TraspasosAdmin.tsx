@@ -87,11 +87,9 @@ const TraspasosAdmin = () => {
                     onChange={async (e) => {
                       if (!e.target.checked) return
 
-                      await fetch(`/traspasos/traspasos/${t.id}/ocultar`, {
-                        method: "PUT",
-                        headers: {
-                          Authorization: `Bearer ${token}`,
-                        },
+                      await axios.put(`${process.env.REACT_APP_API_URL}/traspasos/traspasos/${t.id}/ocultar`, {
+                        {},
+                        config
                       })
 
                       // 🔥 lo quitamos del estado local
