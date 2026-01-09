@@ -54,6 +54,7 @@ export interface Traspaso {
   modulo_destino: string;
   estado: "pendiente" | "aprobado" | "rechazado";
   fecha: string;
+  visible_en_pendientes: boolean;
 }
 
 
