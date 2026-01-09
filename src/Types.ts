@@ -53,7 +53,7 @@ export interface Traspaso {
   modulo_origen: string;
   modulo_destino: string;
   estado: "pendiente" | "aprobado" | "rechazado";
-  fecha_solicitud: string;
+  fecha: string;
 }
 
 
