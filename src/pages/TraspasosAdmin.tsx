@@ -83,22 +83,24 @@ const TraspasosAdmin = () => {
                 <TableCell>
                   <input
                     type="checkbox"
-                    title="Ocultar de pendientes"
-                    onChange={async (e) => {
-                      if (!e.target.checked) return
-
+                    checked={!t.visible_en_pendientes}
+                    onChange={async () => {
                       await axios.put(
                         `${process.env.REACT_APP_API_URL}/traspasos/${t.id}/ocultar`,
                         {},
                         config
                       )
 
-                      // 🔥 quitarlo del estado local
                       setTraspasos(prev =>
-                        prev.filter(item => item.id !== t.id)
+                        prev.map(item =>
+                          item.id === t.id
+                            ? { ...item, visible_en_pendientes: false }
+                            : item
+                        )
                       )
                     }}
                   />
+
                 </TableCell>
 
               </TableRow>
