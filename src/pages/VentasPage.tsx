@@ -366,20 +366,15 @@ const totalVentasTelefonos = ventasTelefonos
 
           <Autocomplete
             options={productos.filter(
-              (p) => p.tipo_producto === 'accesorio'
+              (p) => !p.toLowerCase().includes('telefono')
             )}
-            getOptionLabel={(option) => option.nombre}
             value={producto}
-            onChange={(e, newValue) => setProducto(newValue)}
+            onChange={(e, newValue) => setProducto(newValue || '')}
             renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Producto"
-                fullWidth
-                margin="normal"
-              />
+              <TextField {...params} label="Producto" fullWidth margin="normal" />
             )}
           />
+
 
    <TextField
   label="Precio Unitario"
