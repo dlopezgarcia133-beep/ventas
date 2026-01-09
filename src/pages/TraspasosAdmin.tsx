@@ -87,18 +87,20 @@ const TraspasosAdmin = () => {
                     onChange={async (e) => {
                       if (!e.target.checked) return
 
-                      await axios.put(`${process.env.REACT_APP_API_URL}/traspasos/traspasos/${t.id}/ocultar`, {
+                      await axios.put(
+                        `${process.env.REACT_APP_API_URL}/traspasos/${t.id}/ocultar`,
                         {},
                         config
-                      })
+                      )
 
-                      // 🔥 lo quitamos del estado local
+                      // 🔥 quitarlo del estado local
                       setTraspasos(prev =>
                         prev.filter(item => item.id !== t.id)
                       )
                     }}
                   />
                 </TableCell>
+
               </TableRow>
             ))}
             {traspasos.length === 0 && (
