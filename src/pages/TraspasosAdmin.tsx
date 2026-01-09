@@ -46,6 +46,7 @@ const TraspasosAdmin = () => {
               <TableCell>Estado</TableCell>
               <TableCell>Fecha</TableCell>
               <TableCell>Acciones</TableCell>
+              <TableCell>Capturado</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -56,7 +57,7 @@ const TraspasosAdmin = () => {
                 <TableCell>{t.modulo_origen}</TableCell>
                 <TableCell>{t.modulo_destino}</TableCell>
                 <TableCell>{t.estado}</TableCell>
-                <TableCell>{new Date(t.fecha_solicitud).toLocaleString()}</TableCell>
+                <TableCell>{new Date(t.fecha).toLocaleString()}</TableCell>
 
                 <TableCell>
                   {t.estado === "pendiente" ? (

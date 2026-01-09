@@ -31,7 +31,12 @@ const TraspasosEncargado = () => {
   const cargarTraspasos = async () => {
     const res = await axios.get(`${process.env.REACT_APP_API_URL}/traspasos/traspasos`, config);
     setTraspasos(res.data);
+
+      const soloVisibles = res.data.filter((t: any) => t.visible === true);
+
+    setTraspasos(soloVisibles);
   };
+  
 
   const cargarProductos = async () => {
   const res = await axios.get(
@@ -139,7 +144,7 @@ console.log({
                 <TableCell>{t.producto}</TableCell>
                 <TableCell>{t.cantidad}</TableCell>
                 <TableCell>{t.modulo_destino}</TableCell>
-                <TableCell>{t.estado}</TableCell>
+
                 <TableCell>
                   <Chip
                     label={t.estado}
@@ -153,7 +158,7 @@ console.log({
                     size="small"
                     />
                     </TableCell>
-                <TableCell>{new Date(t.fecha_solicitud).toLocaleString()}</TableCell>
+                <TableCell>{new Date(t.fecha).toLocaleString()}</TableCell>
               </TableRow>
             ))}
             {traspasos.length === 0 && (
