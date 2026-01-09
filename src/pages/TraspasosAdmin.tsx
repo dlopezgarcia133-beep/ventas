@@ -57,15 +57,48 @@ const TraspasosAdmin = () => {
                 <TableCell>{t.modulo_destino}</TableCell>
                 <TableCell>{t.estado}</TableCell>
                 <TableCell>{new Date(t.fecha_solicitud).toLocaleString()}</TableCell>
+
                 <TableCell>
                   {t.estado === "pendiente" ? (
                     <>
-                      <Button color="success" onClick={() => actualizarEstado(t.id, "aprobado")}>Aprobar</Button>
-                      <Button color="error" onClick={() => actualizarEstado(t.id, "rechazado")}>Rechazar</Button>
+                      <Button
+                        color="success"
+                        onClick={() => actualizarEstado(t.id, "aprobado")}
+                      >
+                        Aprobar
+                      </Button>
+                      <Button
+                        color="error"
+                        onClick={() => actualizarEstado(t.id, "rechazado")}
+                      >
+                        Rechazar
+                      </Button>
                     </>
                   ) : (
                     "-"
                   )}
+                </TableCell>
+
+                <TableCell>
+                  <input
+                    type="checkbox"
+                    title="Ocultar de pendientes"
+                    onChange={async (e) => {
+                      if (!e.target.checked) return
+
+                      await fetch(`/traspasos/${t.id}/ocultar`, {
+                        method: "PATCH",
+                        headers: {
+                          Authorization: `Bearer ${token}`,
+                        },
+                      })
+
+                      // 🔥 lo quitamos del estado local
+                      setTraspasos(prev =>
+                        prev.filter(item => item.id !== t.id)
+                      )
+                    }}
+                  />
                 </TableCell>
               </TableRow>
             ))}
