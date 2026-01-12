@@ -16,7 +16,7 @@ const TraspasosAdmin = () => {
 
   const cargarTraspasos = async () => {
   const res = await axios.get(
-    `${process.env.REACT_APP_API_URL}/traspasos`,
+    `${process.env.REACT_APP_API_URL}/traspasos/traspasos`,
     config
   )
   setTraspasos(res.data)
