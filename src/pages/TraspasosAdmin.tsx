@@ -32,6 +32,15 @@ const TraspasosAdmin = () => {
     }
   };
 
+  const formatearFecha = (fecha: string) => {
+  return new Date(fecha).toLocaleString("es-MX", {
+    timeZone: "America/Mexico_City",
+    dateStyle: "short",
+    timeStyle: "short",
+  })
+}
+
+
   useEffect(() => {
     cargarTraspasos();
   }, []);
@@ -61,7 +70,7 @@ const TraspasosAdmin = () => {
                 <TableCell>{t.modulo_origen}</TableCell>
                 <TableCell>{t.modulo_destino}</TableCell>
                 <TableCell>{t.estado}</TableCell>
-                <TableCell>{new Date(t.fecha).toLocaleString()}</TableCell>
+                <TableCell>{formatearFecha(t.fecha)}</TableCell>
 
                 <TableCell>
                   {t.estado === "pendiente" ? (

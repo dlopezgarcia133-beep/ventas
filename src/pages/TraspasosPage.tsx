@@ -76,6 +76,14 @@ console.log({
   }
 };
 
+const formatearFecha = (fecha: string) => {
+  return new Date(fecha).toLocaleString("es-MX", {
+    timeZone: "America/Mexico_City",
+    dateStyle: "short",
+    timeStyle: "short",
+  })
+}
+
 
   useEffect(() => {
     cargarModulos();
@@ -155,7 +163,7 @@ console.log({
                     size="small"
                     />
                     </TableCell>
-                <TableCell>{new Date(t.fecha).toLocaleString()}</TableCell>
+                <TableCell>{formatearFecha(t.fecha)}</TableCell>
               </TableRow>
             ))}
             {traspasos.length === 0 && (
