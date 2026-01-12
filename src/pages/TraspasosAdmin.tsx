@@ -8,6 +8,8 @@ import { Traspaso } from "../Types";
 
 const TraspasosAdmin = () => {
   const [traspasos, setTraspasos] = useState<Traspaso[]>([]);
+  const [folios, setFolios] = useState<Record<number, string>>({});
+
 
   const token = localStorage.getItem("token");
   const config = {
@@ -23,14 +25,27 @@ const TraspasosAdmin = () => {
 }
 
 
-  const actualizarEstado = async (id: number, estado: "aprobado" | "rechazado") => {
-    try {
-      await axios.put(`${process.env.REACT_APP_API_URL}/traspasos/traspasos/${id}`, { estado }, config);
-      cargarTraspasos();
-    } catch (err: any) {
-      alert(err.response?.data?.detail || "Error al actualizar traspaso");
-    }
-  };
+const actualizarEstado = async (
+  id: number,
+  estado: "aprobado" | "rechazado",
+  folio?: string
+) => {
+  try {
+    await axios.put(
+      `${process.env.REACT_APP_API_URL}/traspasos/traspasos/${id}`,
+      {
+        estado,
+        ...(estado === "aprobado" && { folio }) // 👈 solo si aplica
+      },
+      config
+    );
+
+    cargarTraspasos();
+  } catch (err: any) {
+    alert(err.response?.data?.detail || "Error al actualizar traspaso");
+  }
+};
+
 
   const formatearFecha = (fecha: string) => {
   return new Date(fecha).toLocaleString("es-MX", {
@@ -56,6 +71,7 @@ const TraspasosAdmin = () => {
               <TableCell>Cantidad</TableCell>
               <TableCell>Origen</TableCell>
               <TableCell>Destino</TableCell>
+              <TableCell>Folio Autorización</TableCell>
               <TableCell>Estado</TableCell>
               <TableCell>Fecha</TableCell>
               <TableCell>Acciones</TableCell>
@@ -69,6 +85,22 @@ const TraspasosAdmin = () => {
                 <TableCell>{t.cantidad}</TableCell>
                 <TableCell>{t.modulo_origen}</TableCell>
                 <TableCell>{t.modulo_destino}</TableCell>
+                <TableCell>
+                  <TextField
+                    label="Folio de autorización"
+                    value={folios[t.id] || ""}
+                    onChange={(e) =>
+                      setFolios(prev => ({
+                        ...prev,
+                        [t.id]: e.target.value
+                      }))
+                    }
+                    size="small"
+                    fullWidth
+                  />
+                </TableCell>
+
+
                 <TableCell>{t.estado}</TableCell>
                 <TableCell>{formatearFecha(t.fecha)}</TableCell>
 
@@ -77,10 +109,20 @@ const TraspasosAdmin = () => {
                     <>
                       <Button
                         color="success"
-                        onClick={() => actualizarEstado(t.id, "aprobado")}
+                        onClick={() => {
+                          const folio = folios[t.id];
+
+                          if (!folio?.trim()) {
+                            alert("Debes ingresar el folio de autorización");
+                            return;
+                          }
+
+                          actualizarEstado(t.id, "aprobado", folio);
+                        }}
                       >
                         Aprobar
                       </Button>
+
                       <Button
                         color="error"
                         onClick={() => actualizarEstado(t.id, "rechazado")}
