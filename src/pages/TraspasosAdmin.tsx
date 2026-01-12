@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   Container, Typography, Table, TableHead, TableRow, TableCell,
-  TableBody, TableContainer, Paper, Button
+  TableBody, TableContainer, Paper, Button, TextField, Box
 } from "@mui/material";
 import axios from "axios";
 import { Traspaso } from "../Types";
