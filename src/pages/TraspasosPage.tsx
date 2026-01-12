@@ -75,14 +75,12 @@ console.log({
     alert(err.response?.data?.detail || "Error al solicitar traspaso");
   }
 };
-
-const formatearFecha = (fecha: string) => {
-  return new Date(fecha).toLocaleString("es-MX", {
+const formatearFecha = (fecha: string) =>
+  new Date(fecha).toLocaleString("es-MX", {
     timeZone: "America/Mexico_City",
     dateStyle: "short",
     timeStyle: "short",
   })
-}
 
 
   useEffect(() => {
