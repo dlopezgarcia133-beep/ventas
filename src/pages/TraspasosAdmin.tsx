@@ -90,7 +90,7 @@ const TraspasosAdmin = () => {
                     title="Marcar como capturado"
                     onChange={async () => {
                       await axios.put(
-                        `${process.env.REACT_APP_API_URL}/traspasos/traspasos/${traspasos_id}/ocultar`,
+                        `${process.env.REACT_APP_API_URL}/traspasos/traspasos/${t.id}/ocultar`,
                         {},
                         config
                       )
