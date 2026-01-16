@@ -443,7 +443,6 @@ const [sueldoBase, setSueldoBase] = useState<number>(0);
 
     actualizarNominaEmpleado(
       empleadoSeleccionado.usuario_id,
-      Number(edicion[empleadoSeleccionado.usuario_id]?.sueldo_base || 0),
       Number(edicion[empleadoSeleccionado.usuario_id]?.horas_extra || 0)
     );
   }}
