@@ -74,6 +74,7 @@ export interface Usuario {
     nombre: string;
   } | null;
   is_admin: boolean;
+  sueldo_base: number;
 }
 
 
