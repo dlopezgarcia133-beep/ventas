@@ -30,10 +30,14 @@ const Nomina = () => {
   const [loading, setLoading] = useState(false);
   const [edicion, setEdicion] = useState<
   Record<number, {
-    sueldo_base: string | number
     horas_extra: string | number
   }>
 >({});
+
+const [editandoSueldo, setEditandoSueldo] = useState(false);
+const [sueldoBase, setSueldoBase] = useState<number>(0);
+
+
 
 
 
@@ -137,14 +141,12 @@ const Nomina = () => {
 
   const actualizarNominaEmpleado = async (
     usuarioId: number,
-    sueldoBase: number,
     horasExtra: number
   ) => {
     try {
       await axios.put(
         `${process.env.REACT_APP_API_URL}/nomina/empleado/${usuarioId}`,
         {
-          sueldo_base: sueldoBase,
           horas_extra: horasExtra,
         },
         {
@@ -196,6 +198,17 @@ const Nomina = () => {
     }
   };
 
+  const guardarSueldoBase = async (usuarioId: number) => {
+  await axios.put(
+    `${process.env.REACT_APP_API_URL}/registro/usuarios/${usuarioId}/sueldo`,
+    { sueldo_base: sueldoBase },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+
+  fetchResumenNomina(); // refresca totales
+};
+
+
   // =========================
   // 🔹 EFFECTS
   // =========================
@@ -221,12 +234,12 @@ const Nomina = () => {
   const base: any = {};
   nomina.forEach(e => {
     base[e.usuario_id] = {
-      sueldo_base: e.sueldo_base,
       horas_extra: e.horas_extra
     };
   });
   setEdicion(base);
 }, [nomina]);
+
 
   // =========================
   // 🔹 UI
@@ -266,25 +279,8 @@ const Nomina = () => {
               <TableCell align="right">${e.comisiones}</TableCell>
 
               <TableCell align="right">
-                {esAdmin ? (
-                  <TextField
-                    size="small"
-                    type="number"
-                    value={edicion[e.usuario_id]?.sueldo_base ?? 0}
-                    onChange={(ev) =>
-                      setEdicion(prev => ({
-                        ...prev,
-                        [e.usuario_id]: {
-                          ...prev[e.usuario_id],
-                          sueldo_base: Number(ev.target.value)
-                        }
-                      }))
-                    }
-                  />
-
-                ) : (
-                  `$${e.sueldo_base}`
-                )}
+                 ${e.sueldo_base}
+                  
               </TableCell>
 
               <TableCell align="right">
@@ -323,7 +319,6 @@ const Nomina = () => {
 
                     actualizarNominaEmpleado(
                       empleadoSeleccionado.usuario_id,
-                      Number(edicion[empleadoSeleccionado.usuario_id]?.sueldo_base || 0),
                       Number(edicion[empleadoSeleccionado.usuario_id]?.horas_extra || 0)
                     );
                   }}
@@ -337,6 +332,7 @@ const Nomina = () => {
           ))}
         </TableBody>
       </Table>
+      
     </Paper>
   );
 
@@ -375,6 +371,7 @@ const Nomina = () => {
           );
           if (emp) {
             setEmpleadoSeleccionado(emp);
+            setSueldoBase(emp.sueldo_base);
             fetchResumenEmpleado(emp.usuario_id);
           }
         }}
@@ -404,22 +401,21 @@ const Nomina = () => {
 
     <Typography variant="subtitle2" mt={2}>Nómina</Typography>
 
-    <TextField
-      label="Sueldo base"
-      type="number"
-      fullWidth
-      sx={{ mt: 1 }}
-      value={edicion[empleadoSeleccionado.usuario_id]?.sueldo_base ?? ""}
-      onChange={(e) =>
-        setEdicion(prev => ({
-          ...prev,
-          [empleadoSeleccionado.usuario_id]: {
-            ...prev[empleadoSeleccionado.usuario_id],
-            sueldo_base: e.target.value
-          }
-        }))
-      }
-    />
+            <TextField
+              label="Sueldo base"
+              type="number"
+              fullWidth
+              value={sueldoBase}
+              onChange={(e) => setSueldoBase(Number(e.target.value))}
+            />
+
+            <Button
+              variant="contained"
+              onClick={() => guardarSueldoBase(empleadoSeleccionado.usuario_id)}
+            >
+              Guardar sueldo
+            </Button>
+
 
     <TextField
       label="Horas extra"
