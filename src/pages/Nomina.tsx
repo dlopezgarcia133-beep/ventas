@@ -229,6 +229,13 @@ const [sueldoBase, setSueldoBase] = useState<number>(0);
 }, [nomina]);
 
 
+useEffect(() => {
+  if (empleadoSeleccionado) {
+    setSueldoBase(empleadoSeleccionado.sueldo_base || 0);
+  }
+}, [empleadoSeleccionado]);
+
+
 
   useEffect(() => {
   const base: any = {};
@@ -402,10 +409,8 @@ const [sueldoBase, setSueldoBase] = useState<number>(0);
     <Typography variant="subtitle2" mt={2}>Nómina</Typography>
 
             <TextField
-              label="Sueldo base"
               type="number"
-              fullWidth
-              value={sueldoBase}
+              value={sueldoBase || ""}
               onChange={(e) => setSueldoBase(Number(e.target.value))}
             />
 
