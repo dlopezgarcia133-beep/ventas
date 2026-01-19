@@ -6,6 +6,7 @@ export default function NominaEmpleado() {
   const [data, setData] = useState<MiNominaResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     const cargarNomina = async () => {
@@ -13,7 +14,7 @@ export default function NominaEmpleado() {
         const res = await fetch(
           `${process.env.REACT_APP_API_URL}/nomina/mi-resumen`,
           {
-            credentials: "include",
+             headers: { Authorization: `Bearer ${token}` },
           }
         );
 
