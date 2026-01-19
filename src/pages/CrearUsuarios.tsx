@@ -39,7 +39,7 @@ const CrearUsuario = () => {
       await axios.post(
         `${process.env.REACT_APP_API_URL}/registro/registro`,
         {
-          nombre_completo:
+          nombre_completo: nombreCompleto,
           username,
           password,
           rol,
