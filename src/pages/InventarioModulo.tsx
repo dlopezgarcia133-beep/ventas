@@ -459,7 +459,8 @@ const agregarEntrada = () => {
       producto_id: productoEntrada.id,
       producto: productoEntrada.producto,
       clave: productoEntrada.clave,
-      cantidad
+      cantidad,
+      cantidad: productoEntrada.cantidad ?? 0,
     };
 
     if (index !== -1) {
@@ -1029,6 +1030,7 @@ const confirmarImportacion = async () => {
               <TableCell>Producto</TableCell>
               <TableCell align="right">Cantidad</TableCell>
               <TableCell>Acciones</TableCell>
+              <TableCell align="right">Existencia actual</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -1041,6 +1043,9 @@ const confirmarImportacion = async () => {
                   <IconButton onClick={() => setEntradaLista(prev => prev.filter((_, i) => i !== idx))}>
                     <Delete fontSize="small" />
                   </IconButton>
+                </TableCell>
+                <TableCell align="right">
+                  {p.existencia_actual}
                 </TableCell>
               </TableRow>
             ))}
