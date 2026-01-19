@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { MiNominaResponse } from "@/types/nomina";
+import { MiNominaResponse } from "../Types";
+
 
 export default function NominaEmpleado() {
   const [data, setData] = useState<MiNominaResponse | null>(null);
