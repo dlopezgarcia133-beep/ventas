@@ -16,6 +16,7 @@ const CrearUsuario = () => {
   const [modulos, setModulos] = useState<{ id: number; nombre: string }[]>([]);
   const [mensaje, setMensaje] = useState<{ tipo: "success" | "error"; texto: string } | null>(null);
   const navigate = useNavigate();
+  const [nombreCompleto, setNombreCompleto] = useState("");
   const token = localStorage.getItem("token");
   const config = {
     headers: { Authorization: `Bearer ${token}` },
@@ -38,6 +39,7 @@ const CrearUsuario = () => {
       await axios.post(
         `${process.env.REACT_APP_API_URL}/registro/registro`,
         {
+          nombre_completo:
           username,
           password,
           rol,
@@ -47,6 +49,7 @@ const CrearUsuario = () => {
         config
       );
       setMensaje({ tipo: "success", texto: "Usuario creado correctamente" });
+      setNombreCompleto("");
       setUsername("");
       setPassword("");
       setRol("");
@@ -66,6 +69,14 @@ const CrearUsuario = () => {
         </Typography>
 
         {mensaje && <Alert severity={mensaje.tipo}>{mensaje.texto}</Alert>}
+
+        <TextField
+          label="Nombre completo"
+          value={nombreCompleto}
+          onChange={(e) => setNombreCompleto(e.target.value)}
+          fullWidth
+          margin="normal"
+        />
 
         <TextField
           label="Nombre de usuario"
