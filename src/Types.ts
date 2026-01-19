@@ -218,3 +218,36 @@ export interface NominaEmpleado {
   pago_horas_extra: number;
   total_pagar: number;
 }
+
+
+export interface PeriodoNomina {
+  inicio: string; // YYYY-MM-DD
+  fin: string;    // YYYY-MM-DD
+}
+
+export interface ComisionesNomina {
+  accesorios: number;
+  telefonos: number;
+  chips: number;
+  total: number;
+}
+
+export interface SueldoNomina {
+  base: number;
+  horas_extra: number;
+  pago_horas_extra: number;
+}
+
+export interface EmpleadoNomina {
+  id: number;
+  username: string;
+  modulo: number | null;
+}
+
+export interface MiNominaResponse {
+  empleado: EmpleadoNomina;
+  periodo: PeriodoNomina;
+  comisiones: ComisionesNomina;
+  sueldo: SueldoNomina;
+  total_pagar: number;
+}
