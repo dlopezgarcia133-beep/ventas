@@ -460,7 +460,7 @@ const agregarEntrada = () => {
       producto: productoEntrada.producto,
       clave: productoEntrada.clave,
       cantidad,
-      cantidad: productoEntrada.cantidad ?? 0,
+      existencia_actual: productoEntrada.cantidad ?? 0,
     };
 
     if (index !== -1) {
