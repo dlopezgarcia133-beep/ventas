@@ -455,6 +455,7 @@ const agregarEntrada = () => {
 
   setEntradaLista(prev => {
     const index = prev.findIndex(p => p.producto_id === productoEntrada.id);
+    console.log("productoEntrada", productoEntrada);
 
     const nuevoItem = {
       producto_id: productoEntrada.id,
