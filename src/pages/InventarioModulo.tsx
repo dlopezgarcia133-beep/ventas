@@ -74,6 +74,8 @@ const [productosValidos, setProductosValidos] = useState<any[]>([]);
 const [erroresExcel, setErroresExcel] = useState<any[]>([]);
 const [archivoSeleccionado, setArchivoSeleccionado] = useState<File | null>(null);
 
+const [existenciaActual, setExistenciaActual] = useState<number>(0);
+
 const [esAdmin, setEsAdmin] = useState(false);
 
 
@@ -462,7 +464,7 @@ const agregarEntrada = () => {
       producto: productoEntrada.producto,
       clave: productoEntrada.clave,
       cantidad,
-      existencia_actual: productoEntrada.cantidad ?? 0,
+      existencia_actual: existenciaActual,
     };
 
     if (index !== -1) {
@@ -481,6 +483,18 @@ const agregarEntrada = () => {
   }, 100);
 };
 
+
+const obtenerExistencia = async (productoId: number) => {
+  try {
+    const res = await axios.get(
+      `${process.env.REACT_APP_API_URL}/inventario/modulo/${moduloSeleccionado}/producto/${productoId}`,
+      config
+    );
+    setExistenciaActual(res.data.existencia);
+  } catch {
+    setExistenciaActual(0);
+  }
+};
 
 
 
@@ -959,9 +973,23 @@ const confirmarImportacion = async () => {
   loading={loadingBusqueda}
   value={productoEntrada}
   inputValue={busquedaEntrada}
-  onChange={(e, value) => {
+  onChange={async (e, value) => {
     setProductoEntrada(value);
-  }}
+    if (value) {
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/inventario/modulo/${moduloSeleccionado}/producto/${value.id}`,
+        config
+      );
+      setExistenciaActual(res.data.existencia);
+    } catch {
+      setExistenciaActual(0);
+    }
+  } else {
+    setExistenciaActual(0);
+  }
+}}
+
   onInputChange={(e, value) => {
     setBusquedaEntrada(value);
     buscarProductosEntrada(value);
