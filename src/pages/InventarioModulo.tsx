@@ -447,8 +447,6 @@ const agregarEntrada = () => {
     return;
   }
 
-  if (!cantidadEntrada || Number(cantidadEntrada) <= 0) return;
-
   const cantidad = parseInt(cantidadEntrada, 10);
   if (isNaN(cantidad) || cantidad <= 0) {
     alert("Cantidad inválida");
@@ -456,17 +454,20 @@ const agregarEntrada = () => {
   }
 
   setEntradaLista(prev => {
-    const index = prev.findIndex(p => p.producto_id === productoEntrada.id);
-    
+    const index = prev.findIndex(
+      p => p.clave === productoEntrada.clave
+    );
 
     const nuevoItem = {
-      producto_id: productoEntrada.id,
+      producto_id: productoEntrada.id, // solo referencia
       producto: productoEntrada.producto,
       clave: productoEntrada.clave,
       cantidad,
-      existencia_actual: existenciaActual,
+      existencia_actual
     };
+
     console.log("Añadiendo entrada:", nuevoItem);
+
     if (index !== -1) {
       const copy = [...prev];
       copy[index].cantidad += cantidad;
@@ -484,17 +485,22 @@ const agregarEntrada = () => {
 };
 
 
-const obtenerExistencia = async (productoId: number) => {
+const obtenerExistenciaModulo = async (clave: string) => {
   try {
     const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${moduloSeleccionado}/producto/${productoId}`,
-      config
+      `${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${moduloSeleccionado}/existencia`,
+      {
+        params: { clave },
+        ...config
+      }
     );
-    setExistenciaActual(res.data.existencia);
+
+    return res.data.existencia_actual;
   } catch {
-    setExistenciaActual(0);
+    return 0;
   }
 };
+
 
 
 
@@ -975,19 +981,11 @@ const confirmarImportacion = async () => {
   inputValue={busquedaEntrada}
   onChange={async (e, value) => {
     setProductoEntrada(value);
-    if (value) {
-    try {
-      const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${moduloSeleccionado}/producto/${value.id}`,
-        config
-      );
-      setExistenciaActual(res.data.existencia);
-    } catch {
-      setExistenciaActual(0);
-    }
-  } else {
-    setExistenciaActual(0);
-  }
+     if (!value) return;
+
+  const existencia = await obtenerExistenciaModulo(value.clave);
+
+  setExistenciaActual(existencia);
 }}
 
   onInputChange={(e, value) => {
