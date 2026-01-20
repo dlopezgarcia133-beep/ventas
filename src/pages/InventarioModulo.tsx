@@ -457,7 +457,7 @@ const agregarEntrada = () => {
 
   setEntradaLista(prev => {
     const index = prev.findIndex(p => p.producto_id === productoEntrada.id);
-    console.log("productoEntrada", productoEntrada);
+    
 
     const nuevoItem = {
       producto_id: productoEntrada.id,
@@ -466,7 +466,7 @@ const agregarEntrada = () => {
       cantidad,
       existencia_actual: existenciaActual,
     };
-
+    console.log("Añadiendo entrada:", nuevoItem);
     if (index !== -1) {
       const copy = [...prev];
       copy[index].cantidad += cantidad;
