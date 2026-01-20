@@ -981,11 +981,11 @@ const confirmarImportacion = async () => {
   inputValue={busquedaEntrada}
   onChange={async (e, value) => {
     setProductoEntrada(value);
-     if (!value) return;
+    if (!value) return;
 
-  const existencia = await obtenerExistenciaModulo(value.clave);
+    const existencia = await obtenerExistenciaModulo(value.clave);
 
-  setExistenciaActual(existencia);
+    setExistenciaActual(existencia);
 }}
 
   onInputChange={(e, value) => {
