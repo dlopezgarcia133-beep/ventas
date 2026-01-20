@@ -487,7 +487,7 @@ const agregarEntrada = () => {
 const obtenerExistencia = async (productoId: number) => {
   try {
     const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/inventario/modulo/${moduloSeleccionado}/producto/${productoId}`,
+      `${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${moduloSeleccionado}/producto/${productoId}`,
       config
     );
     setExistenciaActual(res.data.existencia);
@@ -978,7 +978,7 @@ const confirmarImportacion = async () => {
     if (value) {
     try {
       const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/inventario/modulo/${moduloSeleccionado}/producto/${value.id}`,
+        `${process.env.REACT_APP_API_URL}/inventario/inventario/modulo/${moduloSeleccionado}/producto/${value.id}`,
         config
       );
       setExistenciaActual(res.data.existencia);
