@@ -330,7 +330,8 @@ useEffect(() => {
 
                     actualizarNominaEmpleado(
                       empleadoSeleccionado.usuario_id,
-                      Number(edicion[empleadoSeleccionado.usuario_id]?.horas_extra || 0)
+                      Number(edicion[empleadoSeleccionado.usuario_id]?.horas_extra || 0),
+                      Number(edicion[empleadoSeleccionado.usuario_id]?.precio_hora_extra || 0)
                     );
                   }}
 
