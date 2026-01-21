@@ -31,6 +31,7 @@ const Nomina = () => {
   const [edicion, setEdicion] = useState<
   Record<number, {
     horas_extra: string | number
+    precio_hora_extra: number
   }>
 >({});
 
@@ -141,13 +142,15 @@ const [sueldoBase, setSueldoBase] = useState<number>(0);
 
   const actualizarNominaEmpleado = async (
     usuarioId: number,
-    horasExtra: number
+    horasExtra: number,
+    precioHoraExtra: number
   ) => {
     try {
       await axios.put(
         `${process.env.REACT_APP_API_URL}/nomina/empleado/${usuarioId}`,
         {
           horas_extra: horasExtra,
+          precio_hora_extra: precioHoraExtra
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -241,7 +244,8 @@ useEffect(() => {
   const base: any = {};
   nomina.forEach(e => {
     base[e.usuario_id] = {
-      horas_extra: e.horas_extra
+      horas_extra: e.horas_extra,
+      precio_hora_extra: e.precio_hora_extra || 0
     };
   });
   setEdicion(base);
@@ -438,6 +442,23 @@ useEffect(() => {
         }))
       }
     />
+            <TextField
+              label="Precio por hora extra"
+              type="number"
+              fullWidth
+              sx={{ mt: 1 }}
+              value={edicion[empleadoSeleccionado.usuario_id]?.precio_hora_extra ?? ""}
+              onChange={(e) =>
+                setEdicion(prev => ({
+                  ...prev,
+                  [empleadoSeleccionado.usuario_id]: {
+                    ...prev[empleadoSeleccionado.usuario_id],
+                    precio_hora_extra: Number(e.target.value)
+                  }
+                }))
+              }
+            />
+
 
     <Button
       variant="contained"
@@ -448,7 +469,8 @@ useEffect(() => {
 
     actualizarNominaEmpleado(
       empleadoSeleccionado.usuario_id,
-      Number(edicion[empleadoSeleccionado.usuario_id]?.horas_extra || 0)
+      Number(edicion[empleadoSeleccionado.usuario_id]?.horas_extra || 0),
+      Number(edicion[empleadoSeleccionado.usuario_id]?.precio_hora_extra || 0)
     );
   }}
     >
