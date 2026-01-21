@@ -218,6 +218,7 @@ export interface NominaEmpleado {
   horas_extra: number;
   pago_horas_extra: number;
   total_pagar: number;
+  precio_hora_extra: number;
 }
 
 
@@ -243,6 +244,7 @@ export interface EmpleadoNomina {
   id: number;
   username: string;
   modulo: number | null;
+
 }
 
 export interface MiNominaResponse {
