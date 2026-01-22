@@ -30,7 +30,7 @@ const Nomina = () => {
   const [loading, setLoading] = useState(false);
   const [edicion, setEdicion] = useState<
   Record<number, {
-    horas_extra: string | number
+    horas_extra: number
     precio_hora_extra: number
   }>
 >({});
@@ -326,18 +326,16 @@ useEffect(() => {
                   size="small"
                   variant="contained"
                   onClick={() => {
-                    if (!empleadoSeleccionado) return;
-
                     actualizarNominaEmpleado(
-                      empleadoSeleccionado.usuario_id,
-                      Number(edicion[empleadoSeleccionado.usuario_id]?.horas_extra || 0),
-                      Number(edicion[empleadoSeleccionado.usuario_id]?.precio_hora_extra || 0)
+                      e.usuario_id,
+                      Number(edicion[e.usuario_id]?.horas_extra || 0),
+                      Number(edicion[e.usuario_id]?.precio_hora_extra || 0)
                     );
                   }}
-
                 >
                   Guardar
                 </Button>
+
               </TableCell>
 
             </TableRow>
@@ -461,22 +459,23 @@ useEffect(() => {
             />
 
 
-    <Button
-      variant="contained"
-      fullWidth
-      sx={{ mt: 2 }}
-      onClick={() => {
-    if (!empleadoSeleccionado) return;
+            <Button
+              variant="contained"
+              fullWidth
+              sx={{ mt: 2 }}
+              onClick={() => {
+                if (!empleadoSeleccionado) return;
 
-    actualizarNominaEmpleado(
-      empleadoSeleccionado.usuario_id,
-      Number(edicion[empleadoSeleccionado.usuario_id]?.horas_extra || 0),
-      Number(edicion[empleadoSeleccionado.usuario_id]?.precio_hora_extra || 0)
-    );
-  }}
-    >
-      Guardar
-    </Button>
+                actualizarNominaEmpleado(
+                  empleadoSeleccionado.usuario_id,
+                  Number(edicion[empleadoSeleccionado.usuario_id]?.horas_extra || 0),
+                  Number(edicion[empleadoSeleccionado.usuario_id]?.precio_hora_extra || 0)
+                );
+              }}
+            >
+              Guardar
+            </Button>
+
   </>
 )}
 </Paper>
