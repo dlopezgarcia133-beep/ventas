@@ -436,7 +436,7 @@ useEffect(() => {
           ...prev,
           [empleadoSeleccionado.usuario_id]: {
             ...prev[empleadoSeleccionado.usuario_id],
-            horas_extra: e.target.value
+            horas_extra: Number(e.target.value)
           }
         }))
       }
