@@ -325,16 +325,19 @@ useEffect(() => {
                 <Button
                   size="small"
                   variant="contained"
-                  onClick={() => {
+                  onClick={(ev) => {
+                    ev.stopPropagation(); // ⛔ IMPORTANTÍSIMO
+
                     actualizarNominaEmpleado(
                       e.usuario_id,
                       Number(edicion[e.usuario_id]?.horas_extra || 0),
-                      Number(edicion[e.usuario_id]?.precio_hora_extra || 0)
+                      Number(edicion[e.usuario_id]?.precio_hora_extra || 0) // 👈 VIENE DEL PANEL
                     );
                   }}
                 >
                   Guardar
                 </Button>
+
 
               </TableCell>
 
