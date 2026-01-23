@@ -141,27 +141,23 @@ const [sueldoBase, setSueldoBase] = useState<number>(0);
   };
 
   const actualizarNominaEmpleado = async (
-    usuarioId: number,
-    horasExtra: number,
-    precioHoraExtra: number
-  ) => {
-    try {
-      await axios.put(
-        `${process.env.REACT_APP_API_URL}/nomina/empleado/${usuarioId}`,
-        {
-          horas_extra: horasExtra,
-          precio_hora_extra: precioHoraExtra
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+  usuarioId: number,
+  horasExtra: number,
+  precioHoraExtra?: number | null
+) => {
+  await axios.put(
+    `${process.env.REACT_APP_API_URL}/nomina/empleado/${usuarioId}`,
+    {
+      horas_extra: horasExtra,
+      ...(precioHoraExtra !== null && precioHoraExtra !== undefined && {
+        precio_hora_extra: precioHoraExtra
+      })
+    },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
 
-      fetchResumenNomina();
-    } catch (err) {
-      console.error("Error al actualizar nómina del empleado:", err);
-    }
-  };
+  fetchResumenNomina();
+};
 
   const cerrarNomina = async () => {
     try {
@@ -331,7 +327,7 @@ useEffect(() => {
                     actualizarNominaEmpleado(
                       e.usuario_id,
                       Number(edicion[e.usuario_id]?.horas_extra || 0),
-                      Number(edicion[e.usuario_id]?.precio_hora_extra || 0) // 👈 VIENE DEL PANEL
+                      null // 👈 VIENE DEL PANEL
                     );
                   }}
                 >
