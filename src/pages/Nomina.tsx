@@ -40,6 +40,12 @@ const [sueldoBase, setSueldoBase] = useState<number>(0);
 
 
 
+const [inicioA, setInicioA] = useState<Date | null>(null);
+const [finA, setFinA] = useState<Date | null>(null);
+
+const [inicioC, setInicioC] = useState<Date | null>(null);
+const [finC, setFinC] = useState<Date | null>(null);
+
 
 
   const [resumenEmpleado, setResumenEmpleado] = useState<any>(null);
@@ -104,20 +110,39 @@ const [sueldoBase, setSueldoBase] = useState<number>(0);
 
 
 
-  const fetchResumenEmpleado = async (usuarioId: number) => {
+  const fetchResumenEmpleado = async (
+  usuarioId: number,
+  grupo: "A" | "C"
+) => {
+  const fechas =
+    grupo === "A"
+      ? { inicio: inicioA, fin: finA }
+      : { inicio: inicioC, fin: finC };
+
+  if (!fechas.inicio || !fechas.fin) {
+    setResumenEmpleado(null);
+    return;
+  }
+
   try {
     const res = await axios.get(
       `${process.env.REACT_APP_API_URL}/nomina/resumen/empleado/${usuarioId}`,
       {
-        headers: { Authorization: `Bearer ${token}` }
+        params: {
+          fecha_inicio: dayjs(fechas.inicio).format("YYYY-MM-DD"),
+          fecha_fin: dayjs(fechas.fin).format("YYYY-MM-DD"),
+        },
+        headers: { Authorization: `Bearer ${token}` },
       }
     );
+
     setResumenEmpleado(res.data);
   } catch (err) {
     console.error("Error al obtener resumen del empleado", err);
     setResumenEmpleado(null);
   }
 };
+
 
 
   const activarPeriodoNomina = async (inicio: Dayjs, fin: Dayjs) => {
@@ -139,6 +164,12 @@ const [sueldoBase, setSueldoBase] = useState<number>(0);
       console.error("Error al activar periodo de nómina:", err);
     }
   };
+
+
+
+  
+
+
 
   const actualizarNominaEmpleado = async (
   usuarioId: number,
@@ -280,7 +311,7 @@ useEffect(() => {
               sx={{ cursor: "pointer" }}
               onClick={() => {
                 setEmpleadoSeleccionado(e);
-                fetchResumenEmpleado(e.usuario_id);
+                fetchResumenEmpleado(e.usuario_id, e.username.startsWith("A") ? "A" : "C");
               }}>
               <TableCell>{e.username}</TableCell>
               <TableCell align="right">${e.comisiones}</TableCell>
@@ -362,6 +393,7 @@ useEffect(() => {
           setGrupoSeleccionado(e.target.value as "A" | "C");
           setEmpleadoSeleccionado(null);
           setResumenEmpleado(null);
+          e.username.startsWith("A") ? "A" : "C"
         }}
       >
         <MenuItem value="A">Grupo A</MenuItem>
@@ -381,7 +413,10 @@ useEffect(() => {
           if (emp) {
             setEmpleadoSeleccionado(emp);
             setSueldoBase(emp.sueldo_base);
-            fetchResumenEmpleado(emp.usuario_id);
+            fetchResumenEmpleado(
+  emp.usuario_id,
+  emp.username.startsWith("A") ? "A" : "C"
+);
           }
         }}
       >
@@ -509,6 +544,49 @@ useEffect(() => {
       Periodo activo: {periodo.fecha_inicio} → {periodo.fecha_fin}
     </Typography>
   )}
+
+  {esAdmin && periodo && (
+  <Paper sx={{ p: 2, mb: 3 }}>
+    <Typography variant="subtitle1" gutterBottom>
+      Rangos de comisiones
+    </Typography>
+
+    {/* GRUPO A */}
+    <Typography fontWeight="bold" mt={1}>Grupo A</Typography>
+    <Box display="flex" gap={2} mt={1}>
+      <TextField
+        type="date"
+        label="Inicio A"
+        InputLabelProps={{ shrink: true }}
+        onChange={(e) => setInicioA(new Date(e.target.value))}
+      />
+      <TextField
+        type="date"
+        label="Fin A"
+        InputLabelProps={{ shrink: true }}
+        onChange={(e) => setFinA(new Date(e.target.value))}
+      />
+    </Box>
+
+    {/* GRUPO C */}
+    <Typography fontWeight="bold" mt={3}>Grupo C (manual)</Typography>
+    <Box display="flex" gap={2} mt={1}>
+      <TextField
+        type="date"
+        label="Inicio C"
+        InputLabelProps={{ shrink: true }}
+        onChange={(e) => setInicioC(new Date(e.target.value))}
+      />
+      <TextField
+        type="date"
+        label="Fin C"
+        InputLabelProps={{ shrink: true }}
+        onChange={(e) => setFinC(new Date(e.target.value))}
+      />
+    </Box>
+  </Paper>
+)}
+
 
   {periodo && !loading && (
     <>
