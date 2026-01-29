@@ -393,7 +393,7 @@ useEffect(() => {
           setGrupoSeleccionado(e.target.value as "A" | "C");
           setEmpleadoSeleccionado(null);
           setResumenEmpleado(null);
-          e.username.startsWith("A") ? "A" : "C"
+          
         }}
       >
         <MenuItem value="A">Grupo A</MenuItem>
