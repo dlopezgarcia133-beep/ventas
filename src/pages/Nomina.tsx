@@ -91,22 +91,37 @@ const [finC, setFinC] = useState<Date | null>(null);
   };
 
   const fetchResumenNomina = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/nomina/resumen`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setNomina(res.data);
-    } catch (err) {
-      console.error("Error al obtener resumen de nómina:", err);
-      setNomina([]);
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  try {
+    const params: any = {};
+
+    if (inicioA && finA) {
+      params.inicio_a = dayjs(inicioA).format("YYYY-MM-DD");
+      params.fin_a = dayjs(finA).format("YYYY-MM-DD");
     }
-  };
+
+    if (inicioC && finC) {
+      params.inicio_c = dayjs(inicioC).format("YYYY-MM-DD");
+      params.fin_c = dayjs(finC).format("YYYY-MM-DD");
+    }
+
+    const res = await axios.get(
+      `${process.env.REACT_APP_API_URL}/nomina/resumen`,
+      {
+        params,
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    setNomina(res.data);
+  } catch (err) {
+    console.error("Error al obtener resumen de nómina:", err);
+    setNomina([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 
 
@@ -260,6 +275,13 @@ const [finC, setFinC] = useState<Date | null>(null);
 
 
 useEffect(() => {
+  if (periodo) {
+    fetchResumenNomina();
+  }
+}, [inicioA, finA, inicioC, finC]);
+
+
+useEffect(() => {
   if (empleadoSeleccionado) {
     setSueldoBase(empleadoSeleccionado.sueldo_base || 0);
   }
@@ -379,7 +401,13 @@ useEffect(() => {
   return (
   <Box display="flex" gap={3}>
   {/* PANEL IZQUIERDO */}
-  <Paper sx={{ p: 2, width: 320 }}>
+  <Paper sx={{
+    p: 2,
+    width: 320,
+    position: "sticky",
+    top: 80,
+    height: "fit-content"
+  }}>
     <Typography variant="h6" gutterBottom>
       Detalle del empleado
     </Typography>
