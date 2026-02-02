@@ -404,9 +404,10 @@ useEffect(() => {
   <Paper sx={{
     p: 2,
     width: 320,
+    height: "calc(100vh - 120px)",
     position: "sticky",
     top: 80,
-    height: "fit-content"
+    overflowY: "auto"
   }}>
     <Typography variant="h6" gutterBottom>
       Detalle del empleado
