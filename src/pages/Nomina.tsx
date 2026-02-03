@@ -40,11 +40,11 @@ const [sueldoBase, setSueldoBase] = useState<number>(0);
 
 
 
-const [inicioA, setInicioA] = useState<Date | null>(null);
-const [finA, setFinA] = useState<Date | null>(null);
+const [inicioA, setInicioA] = useState<String | null>(null);
+const [finA, setFinA] = useState<String | null>(null);
 
-const [inicioC, setInicioC] = useState<Date | null>(null);
-const [finC, setFinC] = useState<Date | null>(null);
+const [inicioC, setInicioC] = useState<String | null>(null);
+const [finC, setFinC] = useState<String | null>(null);
 
 
 
@@ -144,8 +144,9 @@ const [finC, setFinC] = useState<Date | null>(null);
       `${process.env.REACT_APP_API_URL}/nomina/resumen/empleado/${usuarioId}`,
       {
         params: {
-          fecha_inicio: dayjs(fechas.inicio).format("YYYY-MM-DD"),
-          fecha_fin: dayjs(fechas.fin).format("YYYY-MM-DD"),
+          fecha_inicio: inicioA,
+          fecha_fin: finA,
+
         },
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -590,13 +591,13 @@ useEffect(() => {
         type="date"
         label="Inicio A"
         InputLabelProps={{ shrink: true }}
-        onChange={(e) => setInicioA(new Date(e.target.value))}
+        onChange={(e) => setInicioA(e.target.value)}
       />
       <TextField
         type="date"
         label="Fin A"
         InputLabelProps={{ shrink: true }}
-        onChange={(e) => setFinA(new Date(e.target.value))}
+        onChange={(e) => setFinA(e.target.value)}
       />
     </Box>
 
