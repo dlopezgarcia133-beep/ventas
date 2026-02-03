@@ -150,6 +150,7 @@ const [finC, setFinC] = useState<Date | null>(null);
         headers: { Authorization: `Bearer ${token}` },
       }
     );
+    console.log("Resumen empleado:", res.data);
 
     setResumenEmpleado(res.data);
   } catch (err) {
