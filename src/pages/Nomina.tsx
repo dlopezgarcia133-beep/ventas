@@ -608,13 +608,13 @@ useEffect(() => {
         type="date"
         label="Inicio C"
         InputLabelProps={{ shrink: true }}
-        onChange={(e) => setInicioC(new Date(e.target.value))}
+        onChange={(e) => setInicioC(e.target.value)}
       />
       <TextField
         type="date"
         label="Fin C"
         InputLabelProps={{ shrink: true }}
-        onChange={(e) => setFinC(new Date(e.target.value))}
+        onChange={(e) => setFinC(e.target.value)}
       />
     </Box>
   </Paper>
