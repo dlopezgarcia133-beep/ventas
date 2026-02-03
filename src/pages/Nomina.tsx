@@ -90,19 +90,19 @@ const [finC, setFinC] = useState<String | null>(null);
     }
   };
 
-  const fetchResumenNomina = async () => {
+ const fetchResumenNomina = async () => {
   setLoading(true);
   try {
     const params: any = {};
 
     if (inicioA && finA) {
-      params.inicio_a = dayjs(inicioA).format("YYYY-MM-DD");
-      params.fin_a = dayjs(finA).format("YYYY-MM-DD");
+      params.inicio_a = inicioA;
+      params.fin_a = finA;
     }
 
     if (inicioC && finC) {
-      params.inicio_c = dayjs(inicioC).format("YYYY-MM-DD");
-      params.fin_c = dayjs(finC).format("YYYY-MM-DD");
+      params.inicio_c = inicioC;
+      params.fin_c = finC;
     }
 
     const res = await axios.get(
