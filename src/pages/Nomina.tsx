@@ -194,9 +194,9 @@ const [finC, setFinC] = useState<String | null>(null);
   const actualizarNominaEmpleado = async (
   usuarioId: number,
   horasExtra: number,
-  precioHoraExtra?: number | null,
   sanciones: number,
-  comisionesPendientes: number
+  comisionesPendientes: number,
+  precioHoraExtra?: number | null
 ) => {
   await axios.put(
     `${process.env.REACT_APP_API_URL}/nomina/empleado/${usuarioId}`,
@@ -391,6 +391,8 @@ useEffect(() => {
                     actualizarNominaEmpleado(
                       e.usuario_id,
                       Number(edicion[e.usuario_id]?.horas_extra || 0),
+                      0,
+                      0,
                       null // 👈 VIENE DEL PANEL
                     );
                   }}
@@ -559,11 +561,13 @@ useEffect(() => {
               fullWidth
               sx={{ mt: 2 }}
               onClick={() => {
-                if (!empleadoSeleccionado) return;
-
                 actualizarNominaEmpleado(
                   empleadoSeleccionado.usuario_id,
                   Number(edicion[empleadoSeleccionado.usuario_id]?.horas_extra || 0),
+                  sanciones,
+                  comisionesPendientes,
+                  Number(edicion[empleadoSeleccionado.usuario_id]?.precio_hora_extra || 0)
+                );
                   Number(edicion[empleadoSeleccionado.usuario_id]?.precio_hora_extra || 0)
                 );
               }}
