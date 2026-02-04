@@ -67,6 +67,9 @@ const [finC, setFinC] = useState<String | null>(null);
   const encargados = nomina.filter(e => e.username.startsWith("C"));
 
 
+  const [sanciones, setSanciones] = useState<number>(0);
+  const [comisionesPendientes, setComisionesPendientes] = useState<number>(0);
+
   // =========================
   // 🔹 API CALLS
   // =========================
@@ -286,6 +289,8 @@ useEffect(() => {
 useEffect(() => {
   if (empleadoSeleccionado) {
     setSueldoBase(empleadoSeleccionado.sueldo_base || 0);
+    setSanciones(empleadoSeleccionado.sanciones || 0);
+    setComisionesPendientes(empleadoSeleccionado.comisiones_pendientes || 0);
   }
 }, [empleadoSeleccionado]);
 
@@ -524,6 +529,25 @@ useEffect(() => {
                 }))
               }
             />
+
+            <TextField
+              label="Sanciones (-)"
+              type="number"
+              fullWidth
+              sx={{ mt: 1 }}
+              value={sanciones}
+              onChange={(e) => setSanciones(Number(e.target.value))}
+            />
+
+            <TextField
+              label="Comisiones pendientes (+)"
+              type="number"
+              fullWidth
+              sx={{ mt: 1 }}
+              value={comisionesPendientes}
+              onChange={(e) => setComisionesPendientes(Number(e.target.value))}
+            />
+
 
 
             <Button
