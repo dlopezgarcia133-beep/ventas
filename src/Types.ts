@@ -219,8 +219,8 @@ export interface NominaEmpleado {
   pago_horas_extra: number;
   total_pagar: number;
   precio_hora_extra: number;
-  Sanciones: number;
-  Comisiones_pendientes: number;
+  sanciones: number;
+  comisiones_pendientes: number;
 }
 
 
