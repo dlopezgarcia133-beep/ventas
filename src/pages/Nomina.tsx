@@ -392,7 +392,9 @@ useEffect(() => {
                     actualizarNominaEmpleado(
                       e.usuario_id,
                       Number(edicion[e.usuario_id]?.horas_extra || 0),
-                      null // 👈 VIENE DEL PANEL
+                      null, // 👈 VIENE DEL PANEL
+                      Number(edicion[e.usuario_id]?.sanciones || 0),
+                      Number(edicion[e.usuario_id]?.comisiones_pendientes || 0)
                     );
                   }}
                 >
@@ -565,7 +567,9 @@ useEffect(() => {
                 actualizarNominaEmpleado(
                   empleadoSeleccionado.usuario_id,
                   Number(edicion[empleadoSeleccionado.usuario_id]?.horas_extra || 0),
-                  Number(edicion[empleadoSeleccionado.usuario_id]?.precio_hora_extra || 0)
+                  Number(edicion[empleadoSeleccionado.usuario_id]?.precio_hora_extra || 0),
+                  Number(edicion[empleadoSeleccionado.usuario_id]?.sanciones || 0),
+                  Number(edicion[empleadoSeleccionado.usuario_id]?.comisiones_pendientes || 0)
                 );
               }}
             >
