@@ -194,14 +194,18 @@ const [finC, setFinC] = useState<String | null>(null);
   const actualizarNominaEmpleado = async (
   usuarioId: number,
   horasExtra: number,
-  precioHoraExtra?: number | null
+  precioHoraExtra?: number | null,
+  sanciones: number,
+  comisionesPendientes: number
 ) => {
   await axios.put(
     `${process.env.REACT_APP_API_URL}/nomina/empleado/${usuarioId}`,
     {
       horas_extra: horasExtra,
       ...(precioHoraExtra !== null && precioHoraExtra !== undefined && {
-        precio_hora_extra: precioHoraExtra
+        precio_hora_extra: precioHoraExtra,           
+        sanciones,
+      comisiones_pendientes: comisionesPendientes
       })
     },
     { headers: { Authorization: `Bearer ${token}` } }
