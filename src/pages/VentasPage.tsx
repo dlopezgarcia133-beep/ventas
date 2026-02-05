@@ -488,12 +488,14 @@ const totalVentasTelefonos = ventasTelefonos
               fullWidth
               margin="normal"
             >
-              <MenuItem value="Chip Azul">Chip Azul</MenuItem>
-              <MenuItem value="Chip ATO">Chip ATO</MenuItem>
-              <MenuItem value="Portabilidad">Portabilidad</MenuItem>
-              <MenuItem value="B63">B63</MenuItem>
-              <MenuItem value="Chip Cero/Libre">Chip Cero/Libre (Cadenas)</MenuItem>
-              <MenuItem value="Chip Preactivado">Chip Preactivado (Cadenas)</MenuItem>
+              <MenuItem value="Chip Equipo">Chip Equipo / Promo / ATO</MenuItem>
+              <MenuItem value="Chip Express">Chip Express / ATO</MenuItem>
+              <MenuItem value="Portabilidad">Portabilidad / ATO</MenuItem>
+              <MenuItem value="Chip Cero/Libre">Chip Cero / Libre / EKT</MenuItem>
+              <MenuItem value="Chip Preactivado">Chip Preactivado / Otras Cadenas</MenuItem>
+              <MenuItem value="Chip Coppel">Chip Express Coppel</MenuItem>
+              <MenuItem value="Portabilidad Coppel">Portabilidad Coppel</MenuItem>
+              <MenuItem value="Porta Otras cadenas">Portabilidad / EKT / Otras Cadenas</MenuItem>
               <MenuItem value="Activacion">Activacion (Cadenas)</MenuItem>
             </TextField>
 
