@@ -194,20 +194,19 @@ const [finC, setFinC] = useState<String | null>(null);
   const actualizarNominaEmpleado = async (
   usuarioId: number,
   horasExtra: number,
-  sanciones: number ,
-  comisionesPendientes: number,
-  precioHoraExtra?: number | null,
+  extras?: {
+    precio_hora_extra?: number;
+    sanciones?: number;
+    comisiones_pendientes?: number;
+  }
   
 ) => {
   await axios.put(
     `${process.env.REACT_APP_API_URL}/nomina/empleado/${usuarioId}`,
     {
       horas_extra: horasExtra,
-      ...(precioHoraExtra !== null && precioHoraExtra !== undefined && {
-        precio_hora_extra: precioHoraExtra,           
-        sanciones,
-      comisiones_pendientes: comisionesPendientes
-      })
+      ...(extras ?? {})
+      
     },
     { headers: { Authorization: `Bearer ${token}` } }
   );
@@ -392,9 +391,6 @@ useEffect(() => {
                     actualizarNominaEmpleado(
                       e.usuario_id,
                       Number(edicion[e.usuario_id]?.horas_extra || 0),
-                      null, // 👈 VIENE DEL PANEL
-                      Number(edicion[e.usuario_id]?.sanciones || 0),
-                      Number(edicion[e.usuario_id]?.comisiones_pendientes || 0)
                     );
                   }}
                 >
@@ -567,9 +563,13 @@ useEffect(() => {
                 actualizarNominaEmpleado(
                   empleadoSeleccionado.usuario_id,
                   Number(edicion[empleadoSeleccionado.usuario_id]?.horas_extra || 0),
-                  Number(edicion[empleadoSeleccionado.usuario_id]?.precio_hora_extra || 0),
-                  Number(edicion[empleadoSeleccionado.usuario_id]?.sanciones || 0),
-                  Number(edicion[empleadoSeleccionado.usuario_id]?.comisiones_pendientes || 0)
+                  {
+                    precio_hora_extra: Number(
+                      edicion[empleadoSeleccionado.usuario_id]?.precio_hora_extra || 0
+                    ),
+                    sanciones,
+                    comisiones_pendientes: comisionesPendientes
+                  }
                 );
               }}
             >
