@@ -496,7 +496,7 @@ const totalVentasTelefonos = ventasTelefonos
               <MenuItem value="Chip Coppel">Chip Express Coppel</MenuItem>
               <MenuItem value="Portabilidad Coppel">Portabilidad Coppel</MenuItem>
               <MenuItem value="Porta Otras cadenas">Portabilidad / EKT / Otras Cadenas</MenuItem>
-              <MenuItem value="Activacion">Activacion (Cadenas)</MenuItem>
+              <MenuItem value="Activacion">Telefono Activado de Cadenas</MenuItem>
             </TextField>
 
             <TextField
