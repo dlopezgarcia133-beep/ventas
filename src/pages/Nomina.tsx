@@ -32,6 +32,8 @@ const Nomina = () => {
   Record<number, {
     horas_extra: number
     precio_hora_extra: number
+    sanciones?: number;
+    comisiones_pendientes?: number;
   }>
 >({});
 
