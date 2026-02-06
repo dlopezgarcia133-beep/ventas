@@ -127,6 +127,30 @@ const [finC, setFinC] = useState<String | null>(null);
 
 
 
+const calcularTotalFila = (e: NominaEmpleado) => {
+  const sueldo = e.sueldo_base || 0;
+  const comisiones = e.comisiones || 0;
+
+  const horasExtra = edicion[e.usuario_id]?.horas_extra ?? e.horas_extra ?? 0;
+  const precioHora =
+    edicion[e.usuario_id]?.precio_hora_extra ?? e.precio_hora_extra ?? 0;
+
+  const pagoHorasExtra = horasExtra * precioHora;
+
+  const sanc =
+    empleadoSeleccionado?.usuario_id === e.usuario_id
+      ? sanciones
+      : e.sanciones || 0;
+
+  const comPend =
+    empleadoSeleccionado?.usuario_id === e.usuario_id
+      ? comisionesPendientes
+      : e.comisiones_pendientes || 0;
+
+  return sueldo + comisiones + pagoHorasExtra + comPend - sanc;
+};
+
+
 
   const fetchResumenEmpleado = async (
   usuarioId: number,
@@ -378,27 +402,15 @@ useEffect(() => {
 
               <TableCell align="right">${e.pago_horas_extra}</TableCell>
               <TableCell align="right">
-                <strong>${e.total_pagar}</strong>
+                <strong>
+                  ${calcularTotalFila(e).toFixed(2)}
+                </strong>
               </TableCell>
-              <TableCell align="center">Acciones</TableCell>
-              <TableCell align="center">
-                <Button
-                  size="small"
-                  variant="contained"
-                  onClick={(ev) => {
-                    ev.stopPropagation(); // ⛔ IMPORTANTÍSIMO
-
-                    actualizarNominaEmpleado(
-                      e.usuario_id,
-                      Number(edicion[e.usuario_id]?.horas_extra || 0),
-                    );
-                  }}
-                >
-                  Guardar
-                </Button>
+              
+              
 
 
-              </TableCell>
+              
 
             </TableRow>
           ))}
@@ -658,6 +670,37 @@ useEffect(() => {
     <>
       {renderTabla("(A)", asesores)}
       {renderTabla("(C)", encargados)}
+
+            {esAdmin && (
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{ mt: 2 }}
+                onClick={async () => {
+                  for (const e of nomina) {
+                    await actualizarNominaEmpleado(
+                      e.usuario_id,
+                      Number(edicion[e.usuario_id]?.horas_extra || 0),
+                      {
+                        precio_hora_extra:
+                          edicion[e.usuario_id]?.precio_hora_extra || 0,
+                        sanciones:
+                          empleadoSeleccionado?.usuario_id === e.usuario_id
+                            ? sanciones
+                            : e.sanciones,
+                        comisiones_pendientes:
+                          empleadoSeleccionado?.usuario_id === e.usuario_id
+                            ? comisionesPendientes
+                            : e.comisiones_pendientes,
+                      }
+                    );
+                  }
+                }}
+              >
+                Guardar cambios
+              </Button>
+            )}
+
 
       {esAdmin && (
         <Box display="flex" gap={2}>
