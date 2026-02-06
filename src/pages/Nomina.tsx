@@ -235,7 +235,7 @@ const calcularTotalFila = (e: NominaEmpleado) => {
     { headers: { Authorization: `Bearer ${token}` } }
   );
 
-  fetchResumenNomina();
+  
 };
 
   const cerrarNomina = async () => {
@@ -400,7 +400,11 @@ useEffect(() => {
                 )}
               </TableCell>
 
-              <TableCell align="right">${e.pago_horas_extra}</TableCell>
+              <TableCell align="right">
+                ${(edicion[e.usuario_id]?.horas_extra ?? e.horas_extra ?? 0) *
+                  (edicion[e.usuario_id]?.precio_hora_extra ?? e.precio_hora_extra ?? 0)}
+              </TableCell>
+
               <TableCell align="right">
                 <strong>
                   ${calcularTotalFila(e).toFixed(2)}
@@ -682,8 +686,7 @@ useEffect(() => {
                       e.usuario_id,
                       Number(edicion[e.usuario_id]?.horas_extra || 0),
                       {
-                        precio_hora_extra:
-                          edicion[e.usuario_id]?.precio_hora_extra || 0,
+                        precio_hora_extra: edicion[e.usuario_id]?.precio_hora_extra || 0,
                         sanciones:
                           empleadoSeleccionado?.usuario_id === e.usuario_id
                             ? sanciones
@@ -695,10 +698,13 @@ useEffect(() => {
                       }
                     );
                   }
+
+                  // ✅ AHORA sí refrescas todo
+                  fetchResumenNomina();
                 }}
               >
                 Guardar cambios
-              </Button>
+</Button>
             )}
 
 
