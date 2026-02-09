@@ -77,23 +77,65 @@ const Nomina = () => {
   // =========================
 
   const fetchPeriodoActivo = async () => {
-    try {
-      const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/nomina/periodo/activo`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setPeriodo(res.data);
-    } catch (err: any) {
-      if (err.response?.status === 404) {
-        setPeriodo(null);
-        setNomina([]);
-      } else {
-        console.error("Error al obtener periodo activo:", err);
+  try {
+    const res = await axios.get(
+      `${process.env.REACT_APP_API_URL}/nomina/periodo/activo`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
       }
+    );
+
+    setPeriodo(res.data);
+
+    // 🔹 sincronizar fechas
+    setInicioA(res.data.inicio_a);
+    setFinA(res.data.fin_a);
+    setInicioC(res.data.inicio_c);
+    setFinC(res.data.fin_c);
+
+  } catch (err: any) {
+    if (err.response?.status === 404) {
+      setPeriodo(null);
+      setNomina([]);
+    } else {
+      console.error("Error al obtener periodo activo:", err);
     }
-  };
+  }
+};
+
+
+  const guardarFechasPeriodo = async () => {
+  try {
+    const payload: any = {};
+
+    if (inicioA && finA) {
+      payload.inicio_a = inicioA;
+      payload.fin_a = finA;
+    }
+
+    if (inicioC && finC) {
+      payload.inicio_c = inicioC;
+      payload.fin_c = finC;
+    }
+
+    await axios.put(
+      `${process.env.REACT_APP_API_URL}/nomina/periodo/fechas`,
+      payload,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    // 🔄 Recargar todo
+    await fetchPeriodoActivo();
+    await fetchResumenNomina();
+
+  } catch (error) {
+    console.error("Error al guardar fechas del periodo", error);
+    alert("Error al guardar fechas");
+  }
+};
+
 
   const fetchResumenNomina = async () => {
     setLoading(true);
@@ -654,12 +696,14 @@ const Nomina = () => {
               <TextField
                 type="date"
                 label="Inicio A"
+                value={inicioA || ""}
                 InputLabelProps={{ shrink: true }}
                 onChange={(e) => setInicioA(e.target.value)}
               />
               <TextField
                 type="date"
                 label="Fin A"
+                value={finA || ""}
                 InputLabelProps={{ shrink: true }}
                 onChange={(e) => setFinA(e.target.value)}
               />
@@ -671,17 +715,28 @@ const Nomina = () => {
               <TextField
                 type="date"
                 label="Inicio C"
+                value={inicioC || ""}
                 InputLabelProps={{ shrink: true }}
                 onChange={(e) => setInicioC(e.target.value)}
               />
               <TextField
                 type="date"
                 label="Fin C"
+                value={finC || ""}
                 InputLabelProps={{ shrink: true }}
                 onChange={(e) => setFinC(e.target.value)}
               />
             </Box>
           </Paper>
+          
+          <Button
+  variant="contained"
+  sx={{ mt: 2 }}
+  onClick={guardarFechasPeriodo}
+>
+  Guardar rangos de comisiones
+</Button>
+
         )}
 
 
