@@ -729,7 +729,9 @@ const Nomina = () => {
             </Box>
           </Paper>
           
-          <Button
+          
+        )}
+        <Button
   variant="contained"
   sx={{ mt: 2 }}
   onClick={guardarFechasPeriodo}
@@ -737,7 +739,6 @@ const Nomina = () => {
   Guardar rangos de comisiones
 </Button>
 
-        )}
 
 
         {periodo && !loading && (
