@@ -758,14 +758,8 @@ const Nomina = () => {
                       Number(edicion[e.usuario_id]?.horas_extra || 0),
                       {
                         precio_hora_extra: edicion[e.usuario_id]?.precio_hora_extra || 0,
-                        sanciones:
-                          empleadoSeleccionado?.usuario_id === e.usuario_id
-                            ? sanciones
-                            : e.sanciones,
-                        comisiones_pendientes:
-                          empleadoSeleccionado?.usuario_id === e.usuario_id
-                            ? comisionesPendientes
-                            : e.comisiones_pendientes,
+                        sanciones: edicion[e.usuario_id]?.sanciones || 0,
+                        comisiones_pendientes: edicion[e.usuario_id]?.comisiones_pendientes || 0,
                       }
                     );
                   }
