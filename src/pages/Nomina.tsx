@@ -69,8 +69,7 @@ const Nomina = () => {
   const encargados = nomina.filter(e => e.username.startsWith("C"));
 
 
-  const [sanciones, setSanciones] = useState<number>(0);
-  const [comisionesPendientes, setComisionesPendientes] = useState<number>(0);
+
 
   // =========================
   // 🔹 API CALLS
@@ -370,8 +369,11 @@ const Nomina = () => {
     nomina.forEach(e => {
       base[e.usuario_id] = {
         horas_extra: e.horas_extra,
-        precio_hora_extra: e.precio_hora_extra || 0
+        precio_hora_extra: e.precio_hora_extra || 0,
+        sanciones: e.sanciones || 0,
+        comisiones_pendientes: e.comisiones_pendientes || 0,
       };
+
     });
     setEdicion(base);
   }, [nomina]);
@@ -630,24 +632,28 @@ const Nomina = () => {
               variant="contained"
               fullWidth
               sx={{ mt: 2 }}
-              onClick={() => {
+              onClick={async () => {
                 if (!empleadoSeleccionado) return;
 
-                actualizarNominaEmpleado(
+                const data = edicion[empleadoSeleccionado.usuario_id];
+
+                await actualizarNominaEmpleado(
                   empleadoSeleccionado.usuario_id,
-                  Number(edicion[empleadoSeleccionado.usuario_id]?.horas_extra || 0),
+                  data?.horas_extra || 0,
                   {
-                    precio_hora_extra: Number(
-                      edicion[empleadoSeleccionado.usuario_id]?.precio_hora_extra || 0
-                    ),
-                    sanciones,
-                    comisiones_pendientes: comisionesPendientes
+                    precio_hora_extra: data?.precio_hora_extra || 0,
+                    sanciones: data?.sanciones || 0,
+                    comisiones_pendientes: data?.comisiones_pendientes || 0,
                   }
                 );
+
+                // 🔄 refresca desde backend
+                fetchResumenNomina();
               }}
             >
               Guardar
             </Button>
+
 
           </>
         )}
