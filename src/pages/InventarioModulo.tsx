@@ -1073,7 +1073,7 @@ const confirmarImportacion = async () => {
                   </IconButton>
                 </TableCell>
                 <TableCell align="right">
-                  {p.existencia_actual}
+                  {p.existenciaActual}
                 </TableCell>
               </TableRow>
             ))}
