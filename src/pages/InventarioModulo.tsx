@@ -212,7 +212,8 @@ const buscarProductosConteo = async (texto: string) => {
     producto_id: productoEncontrado.id, // ✅ SIEMPRE INT
     producto: productoEncontrado.producto,
     clave: productoEncontrado.clave,
-    cantidad
+    cantidad,
+    existencia_actual:existenciaActual || 0
   };
 
   if (editarIndex !== null) {
@@ -1073,7 +1074,7 @@ const confirmarImportacion = async () => {
                   </IconButton>
                 </TableCell>
                 <TableCell align="right">
-                  {p.existenciaActual}
+                  {p.existencia_actual}
                 </TableCell>
               </TableRow>
             ))}
