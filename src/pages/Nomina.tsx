@@ -354,13 +354,20 @@ const Nomina = () => {
   }, [inicioA, finA, inicioC, finC]);
 
 
-  useEffect(() => {
-    if (empleadoSeleccionado) {
-      setSueldoBase(empleadoSeleccionado.sueldo_base || 0);
-      setSanciones(empleadoSeleccionado.sanciones || 0);
-      setComisionesPendientes(empleadoSeleccionado.comisiones_pendientes || 0);
+useEffect(() => {
+  if (!empleadoSeleccionado) return;
+
+  setEdicion(prev => ({
+    ...prev,
+    [empleadoSeleccionado.usuario_id]: {
+      horas_extra: empleadoSeleccionado.horas_extra || 0,
+      precio_hora_extra: empleadoSeleccionado.precio_hora_extra || 0,
+      sanciones: empleadoSeleccionado.sanciones || 0,
+      comisiones_pendientes: empleadoSeleccionado.comisiones_pendientes || 0,
     }
-  }, [empleadoSeleccionado]);
+  }));
+}, [empleadoSeleccionado]);
+
 
 
 
