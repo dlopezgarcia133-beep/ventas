@@ -212,8 +212,7 @@ const buscarProductosConteo = async (texto: string) => {
     producto_id: productoEncontrado.id, // ✅ SIEMPRE INT
     producto: productoEncontrado.producto,
     clave: productoEncontrado.clave,
-    cantidad,
-    existencia_actual:existenciaActual || 0
+    cantidad
   };
 
   if (editarIndex !== null) {
