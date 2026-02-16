@@ -347,11 +347,6 @@ const Nomina = () => {
   }, [nomina]);
 
 
-  useEffect(() => {
-    if (periodo) {
-      fetchResumenNomina();
-    }
-  }, [inicioA, finA, inicioC, finC]);
 
 
 useEffect(() => {
@@ -382,7 +377,22 @@ useEffect(() => {
       };
 
     });
-    setEdicion(base);
+    setEdicion(prev => {
+  const nuevo: any = { ...prev };
+
+  nomina.forEach(e => {
+    if (!nuevo[e.usuario_id]) {
+      nuevo[e.usuario_id] = {
+        horas_extra: e.horas_extra,
+        precio_hora_extra: e.precio_hora_extra || 0,
+        sanciones: e.sanciones || 0,
+        comisiones_pendientes: e.comisiones_pendientes || 0,
+      };
+    }
+  });
+
+  return nuevo;
+});
   }, [nomina]);
 
 
