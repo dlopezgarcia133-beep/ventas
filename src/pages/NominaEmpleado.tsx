@@ -8,6 +8,31 @@ export default function NominaEmpleado() {
   const [error, setError] = useState("");
   const token = localStorage.getItem("token");
 
+
+  const hoy = new Date();
+const diaSemana = hoy.getDay(); // 0=Domingo, 1=Lunes ... 3=Miércoles
+
+let diasHastaMiercoles;
+
+if (diaSemana <= 3) {
+  // Si estamos antes o en miércoles
+  diasHastaMiercoles = 3 - diaSemana;
+} else {
+  // Si ya pasó miércoles, ir al siguiente
+  diasHastaMiercoles = 7 - diaSemana + 3;
+}
+
+const fechaPago = new Date(hoy);
+fechaPago.setDate(hoy.getDate() + diasHastaMiercoles);
+
+const fechaPagoFormateada = fechaPago.toLocaleDateString("es-MX", {
+  weekday: "long",
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
+
   useEffect(() => {
     const cargarNomina = async () => {
       try {
@@ -65,6 +90,16 @@ export default function NominaEmpleado() {
       <hr />
 
       <h2>Total a pagar: ${total_pagar}</h2>
+
+      <div style={{
+        marginTop: 15,
+        padding: 10,
+        background: "#eef6ff",
+        borderRadius: 8
+      }}>
+        📅 <b>Fecha de pago:</b> {fechaPagoFormateada}
+      </div>
+
     </div>
   );
 }
