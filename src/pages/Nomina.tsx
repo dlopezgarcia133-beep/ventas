@@ -485,15 +485,17 @@ useEffect(() => {
   );
 
   return (
-    <Box display="flex" gap={3}>
+    <Box display="flex" gap={3} alignItems="flex-start">
+
       {/* PANEL IZQUIERDO */}
       <Paper sx={{
         p: 2,
-        width: 320,
-        height: "calc(100vh - 120px)",
+        width: 300,
         position: "sticky",
-        top: 80,
-        overflowY: "auto"
+        top: 20,
+        maxHeight: "calc(100vh - 40px)",
+        overflowY: "auto",
+        alignSelf: "flex-start"
       }}>
         <Typography variant="h6" gutterBottom>
           Detalle del empleado

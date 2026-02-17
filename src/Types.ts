@@ -195,7 +195,8 @@ type EntradaItem = {
   producto_id: number;
   clave: string;
   producto?: string;
-  cantidad: number; // cantidad RECIBIDA
+  cantidad: number;
+   // cantidad RECIBIDA
 };
 
 
