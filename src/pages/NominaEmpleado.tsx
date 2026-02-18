@@ -86,6 +86,8 @@ const fechaPagoFormateada = fechaPago.toLocaleDateString("es-MX", {
       <p>Sueldo base: ${sueldo.base}</p>
       <p>Horas extra: {sueldo.horas_extra}</p>
       <p>Pago horas extra: ${sueldo.pago_horas_extra}</p>
+      <p>Sanciones : ${sueldo.sanciones}</p>
+      <p>Comisiones pendientes: ${sueldo.comisiones_pendientes}</p>
 
       <hr />
 
