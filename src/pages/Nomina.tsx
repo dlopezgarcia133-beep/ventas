@@ -485,17 +485,14 @@ useEffect(() => {
   );
 
   return (
-    <Box display="flex" gap={3} alignItems="flex-start">
+    <Box display="flex" gap={3} alignItems="flex-start" sx={{ height: "100vh", overflow: "hidden" }}>
 
       {/* PANEL IZQUIERDO */}
       <Paper sx={{
         p: 2,
         width: 300,
-        position: "sticky",
-        top: 20,
-        maxHeight: "calc(100vh - 40px)",
         overflowY: "auto",
-        alignSelf: "flex-start"
+        height: "100%"
       }}>
         <Typography variant="h6" gutterBottom>
           Detalle del empleado
@@ -680,7 +677,11 @@ useEffect(() => {
 
 
 
-      <Box flex={1}>
+      <Box flex={1}
+        sx={{
+          height: "100%",
+          overflowY: "auto"
+        }}>
 
         {esAdmin && (
           <TextField
