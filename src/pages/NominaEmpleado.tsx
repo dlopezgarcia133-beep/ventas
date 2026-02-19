@@ -63,7 +63,12 @@ const fechaPagoFormateada = fechaPago.toLocaleDateString("es-MX", {
   if (error) return <p>{error}</p>;
   if (!data) return null;
 
-  const { empleado, periodo, comisiones, sueldo, total_pagar } = data;
+  const empleado = data?.empleado;
+  const periodo = data?.periodo;
+  const comisiones = data?.comisiones;
+  const sueldo = data?.sueldo ?? {};
+  const total_pagar = data?.total_pagar ?? 0;
+
 
   return (
     <div style={{ maxWidth: 500 }}>
@@ -86,8 +91,8 @@ const fechaPagoFormateada = fechaPago.toLocaleDateString("es-MX", {
       <p>Sueldo base: ${sueldo.base}</p>
       <p>Horas extra: {sueldo.horas_extra}</p>
       <p>Pago horas extra: ${sueldo.pago_horas_extra}</p>
-      <p>Sanciones : ${sueldo.sanciones}</p>
-      <p>Comisiones pendientes: ${sueldo.comisiones_pendientes}</p>
+      <p>Sanciones: ${sueldo?.sanciones ?? 0}</p>
+      <p>Comisiones pendientes: ${sueldo?.comisiones_pendientes ?? 0}</p>
 
       <hr />
 
