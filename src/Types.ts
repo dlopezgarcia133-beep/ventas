@@ -241,6 +241,8 @@ export interface SueldoNomina {
   base: number;
   horas_extra: number;
   pago_horas_extra: number;
+  sanciones?: number;
+  comisiones_pendientes?: number;
 }
 
 export interface EmpleadoNomina {
