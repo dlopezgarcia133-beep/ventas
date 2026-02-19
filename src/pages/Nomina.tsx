@@ -417,6 +417,8 @@ useEffect(() => {
             <TableCell align="right">Sueldo base</TableCell>
             <TableCell align="right">Horas extra</TableCell>
             <TableCell align="right">Pago horas</TableCell>
+            <TableCell align="right">Sanciones</TableCell>
+            <TableCell align="right">Comisiones pendientes</TableCell>  
             <TableCell align="right">Total</TableCell>
           </TableRow>
         </TableHead>
@@ -464,6 +466,49 @@ useEffect(() => {
                 ${(edicion[e.usuario_id]?.horas_extra ?? e.horas_extra ?? 0) *
                   (edicion[e.usuario_id]?.precio_hora_extra ?? e.precio_hora_extra ?? 0)}
               </TableCell>
+
+              <TableCell align="right">
+                {esAdmin ? (
+                  <TextField
+                    size="small"
+                    type="number"
+                    value={edicion[e.usuario_id]?.sanciones ?? e.sanciones ?? 0}
+                    onChange={(ev) =>
+                      setEdicion(prev => ({
+                        ...prev,
+                        [e.usuario_id]: {
+                          ...prev[e.usuario_id],
+                          sanciones: Number(ev.target.value)
+                        }
+                      }))
+                    }
+                  />
+                ) : (
+                  e.sanciones ?? 0
+                )}
+              </TableCell>
+
+              <TableCell align="right">
+                {esAdmin ? (
+                  <TextField
+                    size="small"
+                    type="number"
+                    value={edicion[e.usuario_id]?.comisiones_pendientes ?? e.comisiones_pendientes ?? 0}
+                    onChange={(ev) =>
+                      setEdicion(prev => ({
+                        ...prev,
+                        [e.usuario_id]: {
+                          ...prev[e.usuario_id],
+                          comisiones_pendientes: Number(ev.target.value)
+                        }
+                      }))
+                    }
+                  />
+                ) : (
+                  e.comisiones_pendientes ?? 0
+                )}
+              </TableCell>
+
 
               <TableCell align="right">
                 <strong>
