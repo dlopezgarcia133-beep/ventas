@@ -18,9 +18,11 @@ interface Kardex {
 
 const Kardex = () => {
     const [data, setData] = useState<Kardex[]>([]);
+    const token = localStorage.getItem('token');
+    const config = { headers: { Authorization: `Bearer ${token}` } };
 
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_API_URL}/kardex/kardex`)
+    axios.get(`${process.env.REACT_APP_API_URL}/kardex/kardex`, config)
       .then(res => {
         setData(res.data);
         console.log(res.data);
