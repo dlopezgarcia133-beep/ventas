@@ -20,9 +20,10 @@ const Kardex = () => {
     const [data, setData] = useState<Kardex[]>([]);
 
   useEffect(() => {
-    axios.get("/kardex/kardex")
+    axios.get(`${process.env.REACT_APP_API_URL}/kardex/kardex`)
       .then(res => setData(res.data))
       .catch(err => console.error(err));
+      console.log(res.data);
   }, []);
 
   return (
