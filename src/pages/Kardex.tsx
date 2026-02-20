@@ -21,9 +21,12 @@ const Kardex = () => {
 
   useEffect(() => {
     axios.get(`${process.env.REACT_APP_API_URL}/kardex/kardex`)
-      .then(res => setData(res.data))
+      .then(res => {
+        setData(res.data);
+        console.log(res.data);
+      })
       .catch(err => console.error(err));
-      console.log(res.data);
+      
   }, []);
 
   return (
