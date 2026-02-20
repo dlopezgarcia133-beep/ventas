@@ -20,7 +20,7 @@ const Kardex = () => {
     const [data, setData] = useState<Kardex[]>([]);
 
   useEffect(() => {
-    axios.get("/inventario/kardex")
+    axios.get("/kardex/kardex")
       .then(res => setData(res.data))
       .catch(err => console.error(err));
   }, []);
