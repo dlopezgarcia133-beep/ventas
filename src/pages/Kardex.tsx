@@ -1,7 +1,7 @@
 import {
   Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, Typography,
-  TextField, Button, Box
+  TextField, Button, Box, MenuItem
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -22,10 +22,13 @@ const Kardex = () => {
   const [data, setData] = useState<Kardex[]>([]);
   const token = localStorage.getItem('token');
 
+
   // filtros
   const [producto, setProducto] = useState("");
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
+  const [modulos, setModulos] = useState<any[]>([]);
+  const [moduloId, setModuloId] = useState("");
 
   const config = {
     headers: { Authorization: `Bearer ${token}` }
@@ -38,6 +41,7 @@ const Kardex = () => {
     if (producto) params.producto = producto;
     if (fechaInicio) params.fecha_inicio = fechaInicio;
     if (fechaFin) params.fecha_fin = fechaFin;
+    if (moduloId) params.modulo_id = moduloId;
 
     const res = await axios.get(
       `${process.env.REACT_APP_API_URL}/kardex/kardex`,
@@ -47,8 +51,17 @@ const Kardex = () => {
     setData(res.data);
   };
 
+  const cargarModulos = async () => {
+  const res = await axios.get(
+    `${process.env.REACT_APP_API_URL}/registro/modulos`,
+    config
+  );
+  setModulos(res.data);
+};
+
   useEffect(() => {
     cargarKardex();
+    cargarModulos();
   }, []);
 
   return (
@@ -57,6 +70,23 @@ const Kardex = () => {
         <Typography variant="h6">Filtros</Typography>
 
         <Box display="flex" gap={2} mt={2} flexWrap="wrap">
+
+          <TextField
+            select
+            label="Módulo"
+            value={moduloId}
+            onChange={(e) => setModuloId(e.target.value)}
+            size="small"
+            sx={{ minWidth: 200 }}
+          >
+            <MenuItem value="">Todos</MenuItem>
+
+            {modulos.map((m) => (
+              <MenuItem key={m.id} value={m.id}>
+                {m.nombre}
+              </MenuItem>
+            ))}
+          </TextField>
 
           <TextField
             label="Producto"
