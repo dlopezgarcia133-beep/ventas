@@ -1,6 +1,7 @@
 import {
   Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, Typography
+  TableHead, TableRow, Paper, Typography,
+  TextField, Button, Box
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -17,69 +18,120 @@ interface Kardex {
 }
 
 const Kardex = () => {
-    const [data, setData] = useState<Kardex[]>([]);
-    const token = localStorage.getItem('token');
-    const config = { headers: { Authorization: `Bearer ${token}` } };
+
+  const [data, setData] = useState<Kardex[]>([]);
+  const token = localStorage.getItem('token');
+
+  // filtros
+  const [producto, setProducto] = useState("");
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
+
+  const config = {
+    headers: { Authorization: `Bearer ${token}` }
+  };
+
+  const cargarKardex = async () => {
+
+    let params: any = {};
+
+    if (producto) params.producto = producto;
+    if (fechaInicio) params.fecha_inicio = fechaInicio;
+    if (fechaFin) params.fecha_fin = fechaFin;
+
+    const res = await axios.get(
+      `${process.env.REACT_APP_API_URL}/kardex/kardex`,
+      { ...config, params }
+    );
+
+    setData(res.data);
+  };
 
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_API_URL}/kardex/kardex`, config)
-      .then(res => {
-        setData(res.data);
-        console.log(res.data);
-      })
-      .catch(err => console.error(err));
-      
+    cargarKardex();
   }, []);
 
   return (
-    <TableContainer component={Paper}>
-      <Typography variant="h6" sx={{ p: 2 }}>
-        Historial Kardex
-      </Typography>
+    <>
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Typography variant="h6">Filtros</Typography>
 
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Fecha</TableCell>
-            <TableCell>Producto</TableCell>
-            <TableCell>Tipo</TableCell>
-            <TableCell>Movimiento</TableCell>
-            <TableCell>Cantidad</TableCell>
-            <TableCell>Origen</TableCell>
-            <TableCell>Destino</TableCell>
-          </TableRow>
-        </TableHead>
+        <Box display="flex" gap={2} mt={2} flexWrap="wrap">
 
-        <TableBody>
-          {data.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell>
-                {new Date(row.fecha).toLocaleString()}
-              </TableCell>
+          <TextField
+            label="Producto"
+            value={producto}
+            onChange={(e) => setProducto(e.target.value)}
+            size="small"
+          />
 
-              <TableCell>{row.producto}</TableCell>
-              <TableCell>{row.tipo_producto}</TableCell>
+          <TextField
+            label="Fecha inicio"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            value={fechaInicio}
+            onChange={(e) => setFechaInicio(e.target.value)}
+            size="small"
+          />
 
-              <TableCell>
-                {row.tipo_movimiento}
-              </TableCell>
+          <TextField
+            label="Fecha fin"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            value={fechaFin}
+            onChange={(e) => setFechaFin(e.target.value)}
+            size="small"
+          />
 
-              <TableCell>{row.cantidad}</TableCell>
+          <Button
+            variant="contained"
+            onClick={cargarKardex}
+          >
+            Buscar
+          </Button>
 
-              <TableCell>
-                {row.modulo_origen_id ?? "-"}
-              </TableCell>
+        </Box>
+      </Paper>
 
-              <TableCell>
-                {row.modulo_destino_id ?? "-"}
-              </TableCell>
+      <TableContainer component={Paper}>
+        <Typography variant="h6" sx={{ p: 2 }}>
+          Historial Kardex
+        </Typography>
+
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Fecha</TableCell>
+              <TableCell>Producto</TableCell>
+              <TableCell>Tipo</TableCell>
+              <TableCell>Movimiento</TableCell>
+              <TableCell>Cantidad</TableCell>
+              <TableCell>Origen</TableCell>
+              <TableCell>Destino</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
-}
+          </TableHead>
 
+          <TableBody>
+            {data.map((row) => (
+              <TableRow key={row.id}>
+                <TableCell>
+                  {new Date(row.fecha).toLocaleString()}
+                </TableCell>
+
+                <TableCell>{row.producto}</TableCell>
+                <TableCell>{row.tipo_producto}</TableCell>
+                <TableCell>{row.tipo_movimiento}</TableCell>
+                <TableCell>{row.cantidad}</TableCell>
+                <TableCell>{row.modulo_origen_id ?? "-"}</TableCell>
+                <TableCell>{row.modulo_destino_id ?? "-"}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+      </TableContainer>
+    </>
+  );
+};
 
 export default Kardex;
