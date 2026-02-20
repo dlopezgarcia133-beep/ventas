@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import { AppBar, Toolbar, Typography, Button, Box, MenuItem } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { obtenerRolDesdeToken } from "./Token";
 
@@ -10,6 +10,10 @@ const Navbar = () => {
   const [usuario, setUsuario] = useState(localStorage.getItem("usuario") || "");
   const [modulo, setModulo] = useState(localStorage.getItem("modulo") || "");
   const [rolM, setRolM] = useState(localStorage.getItem("rol") || "");
+
+  const [anchorInventario, setAnchorInventario] = useState<null | HTMLElement>(null);
+  const [anchorAdmin, setAnchorAdmin] = useState<null | HTMLElement>(null);
+  const [anchorVentas, setAnchorVentas] = useState<null | HTMLElement>(null);
 
   // 🔹 Actualizar datos cuando cambie localStorage (después del login)
   useEffect(() => {
@@ -48,6 +52,14 @@ const Navbar = () => {
     }
   };
 
+  const openMenu = (event: React.MouseEvent<HTMLElement>, setFn: any) => {
+    setFn(event.currentTarget);
+  };
+
+  const closeMenu = (setFn: any) => {
+    setFn(null);
+  };
+
   return (
     <AppBar position="static" color="primary">
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -71,28 +83,73 @@ const Navbar = () => {
         <Box>
           {rolToken === "admin" && (
             <>
-            <Button color="inherit" component={Link} to="/nomina">
-                Nomina
+              <Button
+                color="inherit"
+                onClick={(e) => openMenu(e, setAnchorVentas)}
+              >
+                Ventas
               </Button>
-            <Button color="inherit" component={Link} to="/corte">
-                Cortes
-              </Button>
-              <Button color="inherit" component={Link} to="/comisiones">
-                Comisiones
-              </Button>
-              <Button color="inherit" component={Link} to="/traspasos/admin">
-                Traspasos
-              </Button>
-              <Button color="inherit" component={Link} to="/usuarios">
-                Usuarios
-              </Button>
-              <Button color="inherit" component={Link} to="/inventario">
+
+              <Menu
+                anchorEl={anchorVentas}
+                open={Boolean(anchorVentas)}
+                onClose={() => closeMenu(setAnchorVentas)}
+              >
+                <MenuItem component={Link} to="/ventas">Ventas</MenuItem>
+                <MenuItem component={Link} to="/ventas/chips">Chips</MenuItem>
+                <MenuItem component={Link} to="/corte">Cortes</MenuItem>
+              </Menu>
+
+              <Button
+                color="inherit"
+                onClick={(e) => openMenu(e, setAnchorInventario)}
+              >
                 Inventario
               </Button>
-              <Button color="inherit" component={Link} to="/ventas/chips">
-                Chips
+
+              <Menu
+                anchorEl={anchorInventario}
+                open={Boolean(anchorInventario)}
+                onClose={() => closeMenu(setAnchorInventario)}
+              >
+                <MenuItem component={Link} to="/inventario">
+                  Inventario
+                </MenuItem>
+
+                <MenuItem component={Link} to="/traspasos/admin">
+                  Traspasos
+                </MenuItem>
+
+                <MenuItem component={Link} to="/kardex">
+                  Kardex
+                </MenuItem>
+              </Menu>
+
+              <Button
+                color="inherit"
+                onClick={(e) => openMenu(e, setAnchorAdmin)}
+              >
+                Administración
               </Button>
-              
+
+              <Menu
+                anchorEl={anchorAdmin}
+                open={Boolean(anchorAdmin)}
+                onClose={() => closeMenu(setAnchorAdmin)}
+              >
+                <MenuItem component={Link} to="/usuarios">
+                  Usuarios
+                </MenuItem>
+
+                <MenuItem component={Link} to="/nomina">
+                  Nómina
+                </MenuItem>
+
+                <MenuItem component={Link} to="/comisiones">
+                  Comisiones
+                </MenuItem>
+              </Menu>
+
             </>
           )}
 
