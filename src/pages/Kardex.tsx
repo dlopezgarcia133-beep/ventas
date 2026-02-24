@@ -12,8 +12,8 @@ interface Kardex {
   tipo_producto: string;
   cantidad: number;
   tipo_movimiento: string;
-  modulo_origen_id?: number;
-  modulo_destino_id?: number;
+  origen?: string;
+  destino?: string;
   fecha: string;
 }
 
@@ -152,8 +152,8 @@ const Kardex = () => {
                 <TableCell>{row.tipo_producto}</TableCell>
                 <TableCell>{row.tipo_movimiento}</TableCell>
                 <TableCell>{row.cantidad}</TableCell>
-                <TableCell>{row.modulo_origen_id ?? "-"}</TableCell>
-                <TableCell>{row.modulo_destino_id ?? "-"}</TableCell>
+                <TableCell>{row.origen ?? "-"}</TableCell>
+                <TableCell>{row.destino ?? "-"}</TableCell>
               </TableRow>
             ))}
           </TableBody>
