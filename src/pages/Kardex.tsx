@@ -1,7 +1,7 @@
 import {
   Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, Typography,
-  TextField, Button, Box, MenuItem
+  TextField, Button, Box, MenuItem, FormControl, InputLabel, Select
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -29,6 +29,7 @@ const Kardex = () => {
   const [fechaFin, setFechaFin] = useState("");
   const [modulos, setModulos] = useState<any[]>([]);
   const [moduloId, setModuloId] = useState("");
+  const [tipoMovimiento, setTipoMovimiento] = useState("");
 
   const config = {
     headers: { Authorization: `Bearer ${token}` }
@@ -42,6 +43,7 @@ const Kardex = () => {
     if (fechaInicio) params.fecha_inicio = fechaInicio;
     if (fechaFin) params.fecha_fin = fechaFin;
     if (moduloId) params.modulo_id = moduloId;
+    if (tipoMovimiento) params.tipo_movimiento = tipoMovimiento;
 
     const res = await axios.get(
       `${process.env.REACT_APP_API_URL}/kardex/kardex`,
@@ -94,6 +96,23 @@ const Kardex = () => {
             onChange={(e) => setProducto(e.target.value)}
             size="small"
           />
+          <FormControl size="small" sx={{ minWidth: 180 }}>
+            <InputLabel>Movimiento</InputLabel>
+
+            <Select
+              value={tipoMovimiento}
+              label="Movimiento"
+              onChange={(e) => setTipoMovimiento(e.target.value)}
+            >
+              <MenuItem value="">Todos</MenuItem>
+              <MenuItem value="ENTRADA">Entrada</MenuItem>
+              <MenuItem value="VENTA">Venta</MenuItem>
+              <MenuItem value="TRASPASO_ENTRADA">Traspaso Entrada</MenuItem>
+              <MenuItem value="TRASPASO_SALIDA">Traspaso Salida</MenuItem>
+              <MenuItem value="CANCELACION_VENTA">Cancelación</MenuItem>
+            </Select>
+
+          </FormControl>
 
           <TextField
             label="Fecha inicio"
