@@ -222,10 +222,12 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
       }}
     >
       <option value="">Rechazar con motivo</option>
-      <option value="No tiene llamada">No tiene llamada</option>
-      <option value="No tiene Recarga">No tiene Recarga</option>
-      <option value="Duplicado">Duplicado</option>
-      <option value="No existe">No existe</option>
+      <option value="Activacion sin llamada">Activacion sin llamada</option>
+      <option value="No es su clasificacion">No es su clasificacion</option>
+      <option value="Esta Preactivado">Esta Preactivado</option>
+      <option value="No tiene recarga">No tiene recarga</option>
+      <option value="Linea esta duplicada">Linea esta duplicada</option>
+      <option value="No esta en el ciclo">No esta en el ciclo</option>
     </select>
   )}
 </TableCell>
