@@ -31,6 +31,8 @@ const Kardex = () => {
   const [moduloId, setModuloId] = useState("");
   const [tipoMovimiento, setTipoMovimiento] = useState("");
 
+  const usuario = JSON.parse(localStorage.getItem("user") || "{}");
+
   const config = {
     headers: { Authorization: `Bearer ${token}` }
   };
@@ -73,23 +75,24 @@ const Kardex = () => {
 
         <Box display="flex" gap={2} mt={2} flexWrap="wrap">
 
-          <TextField
-            select
-            label="Módulo"
-            value={moduloId}
-            onChange={(e) => setModuloId(e.target.value)}
-            size="small"
-            sx={{ minWidth: 200 }}
-          >
-            <MenuItem value="">Todos</MenuItem>
+          {usuario.rol === "admin" && (
+            <TextField
+              select
+              label="Módulo"
+              value={moduloId}
+              onChange={(e) => setModuloId(e.target.value)}
+              size="small"
+              sx={{ minWidth: 200 }}
+            >
+              <MenuItem value="">Todos</MenuItem>
 
-            {modulos.map((m) => (
-              <MenuItem key={m.id} value={m.id}>
-                {m.nombre}
-              </MenuItem>
-            ))}
-          </TextField>
-
+              {modulos.map((m) => (
+                <MenuItem key={m.id} value={m.id}>
+                  {m.nombre}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
           <TextField
             label="Producto"
             value={producto}

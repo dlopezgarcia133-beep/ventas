@@ -182,6 +182,9 @@ const Navbar = () => {
 
           {rolToken === "encargado" && (
             <>
+              <Button color="inherit" component={Link} to="/kardex">
+                Kardex
+              </Button>
              <Button color="inherit" component={Link} to="/nominaEmpleado">
                 Nomina
               </Button> 
