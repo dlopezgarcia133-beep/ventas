@@ -5,6 +5,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { obtenerRolDesdeToken } from "../components/Token";
 
 interface Kardex {
   id: number;
@@ -32,6 +33,7 @@ const Kardex = () => {
   const [tipoMovimiento, setTipoMovimiento] = useState("");
 
   const usuario = JSON.parse(localStorage.getItem("user") || "{}");
+  const rolToken = obtenerRolDesdeToken();
 
   const config = {
     headers: { Authorization: `Bearer ${token}` }
@@ -75,7 +77,7 @@ const Kardex = () => {
 
         <Box display="flex" gap={2} mt={2} flexWrap="wrap">
 
-          {usuario.rol === "admin" && (
+          {rolToken === "admin" && (
             <TextField
               select
               label="Módulo"
