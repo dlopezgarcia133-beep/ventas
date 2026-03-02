@@ -90,68 +90,46 @@ const totalTarjeta =
 
     {/* TABLA DE ACCESORIOS */}
     <Box mt={5}>
-  <Typography variant="h6" gutterBottom>
-    🛍️ Detalle de Ventas Accesorios
-  </Typography>
+      <Typography variant="h6" gutterBottom>🛍️ Detalle de Ventas Accesorios</Typography>
+      <Paper>
+        <Box p={2} component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Nombre</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Producto</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Cantidad</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Precio</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Total</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Fecha</th>
 
-  <Paper sx={{ overflowX: "auto" }}>
-    <Box
-      component="table"
-      sx={{
-        width: "100%",
-        borderCollapse: "collapse",
-        minWidth: 900
-      }}
-    >
-      <thead>
-        <tr style={{ backgroundColor: "#f5f5f5" }}>
-          <th style={thStyle}>Empleado</th>
-          <th style={thStyleProducto}>Producto</th>
-          <th style={thStyleCenter}>Cantidad</th>
-          <th style={thStyleRight}>Precio</th>
-          <th style={thStyleRight}>Total</th>
-          <th style={thStyleCenter}>Fecha</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {ventas
-          .filter((v) => v.tipo_producto === "accesorio")
-          .map((v) => (
-            <tr key={v.id} style={{ borderBottom: "1px solid #eee" }}>
-              <td style={tdStyle}>{v.empleado?.username}</td>
-
-              <td style={tdProducto}>
-                {v.producto}
-              </td>
-
-              <td style={tdCenter}>{v.cantidad}</td>
-
-              <td style={tdRight}>
-                ${(v.precio_unitario ?? 0).toFixed(2)}
-              </td>
-
-              <td style={tdRight}>
-                ${(v.total ?? 0).toFixed(2)}
-              </td>
-
-              <td style={tdCenter}>
-                {new Date(v.fecha).toLocaleString()}
-              </td>
             </tr>
-          ))}
+          </thead>
+          <tbody>
+            {ventas.filter((v) => v.tipo_producto === "accesorio").map((v) => (
+              <tr key={v.id}>
+                <td style={{ padding: 8 }}>{v.empleado?.username}</td>
+                <td style={{ padding: 8 }}>{v.producto}</td>
+                <td style={{ padding: 8 }}>{v.cantidad}</td>
+                <td style={{ padding: 8 }}>${v.precio_unitario?.toFixed(2)}</td>
+                <td style={{ padding: 8 }}>${v.total?.toFixed(2)}</td>
+                <td style={{ padding: 8 }}>{(v.fecha).toLocaleString()}</td>
 
-        {ventas.filter((v) => v.tipo_producto === "accesorio").length === 0 && (
-          <tr>
-            <td colSpan={6} style={{ padding: 12, textAlign: "center" }}>
-              No hay ventas de accesorios
-            </td>
-          </tr>
-        )}
-      </tbody>
+              </tr>
+            ))}
+            {ventas.filter((v) => v.tipo_producto === "accesorio").length === 0 && (
+              <tr>
+                <td colSpan={8} style={{ padding: 8, textAlign: "center" }}>No hay ventas de accesorios</td>
+              </tr>
+            )}
+          </tbody>
+        </Box>
+      </Paper>
+      <Box mt={2} textAlign="right">
+          <Typography variant="subtitle1" fontWeight="bold">
+            Total Ventas Accesorios: ${totalAccesorios.toFixed(2)}
+          </Typography>
+        </Box>
     </Box>
-  </Paper>
-</Box>
 
     {/* TABLA DE TELÉFONOS */}
     <Box mt={5}>
