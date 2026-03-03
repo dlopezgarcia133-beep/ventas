@@ -3,6 +3,7 @@ import axios from "axios";
 import { Usuario, VentaChip } from "../Types";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Checkbox, Box, IconButton } from "@mui/material";
 import { Delete } from "@mui/icons-material";
+import { obtenerRolDesdeToken } from "../components/Token";
 
 const ChipsRechazados = () => {
   const [rechazados, setRechazados] = useState<VentaChip[]>([]);
@@ -11,8 +12,8 @@ const ChipsRechazados = () => {
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<number | null>(null);
   const token = localStorage.getItem("token");
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const esAdmin = user?.rol === "admin";
+  const usuario = JSON.parse(localStorage.getItem("user") || "{}");
+  const rolToken = obtenerRolDesdeToken();
 
   const fetchRechazados = async () => {
     try {
@@ -87,7 +88,7 @@ const eliminarChip = async (id: number) => {
     <TableContainer component={Paper} sx={{ mt: 4 }}>
       <Typography variant="h6" sx={{ p: 2 }}>INCUBADORA</Typography>
       <Box sx={{ mb: 2 }}>
-        {esAdmin && (
+        {rolToken === "admin" && (
           <Box sx={{ mb: 2 }}>
             <Typography variant="subtitle1">Filtrar por empleado:</Typography>
             <select
@@ -114,8 +115,8 @@ const eliminarChip = async (id: number) => {
             <TableCell>Tipo Chip</TableCell>
             <TableCell>Fecha</TableCell>
             <TableCell>Motivo de Rechazo</TableCell>
-            {esAdmin && <TableCell>Eliminar</TableCell>}
-            {esAdmin && <TableCell>Validar</TableCell>}
+            {rolToken === "admin" && <TableCell>Eliminar</TableCell>}
+            {rolToken === "admin" && <TableCell>Validar</TableCell>}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -126,7 +127,7 @@ const eliminarChip = async (id: number) => {
               <TableCell>{chip.tipo_chip}</TableCell>
               <TableCell>{chip.fecha}</TableCell>
               <TableCell>{chip.descripcion_rechazo}</TableCell>
-              {esAdmin && (
+              {rolToken === "admin" && (
                 <TableCell>
                   <IconButton
                     color="error"
@@ -137,7 +138,7 @@ const eliminarChip = async (id: number) => {
                 </TableCell>
               )}
 
-              {esAdmin && (
+              {rolToken === "admin" && (
                 <TableCell>
                   <Checkbox
                     checked={false}
