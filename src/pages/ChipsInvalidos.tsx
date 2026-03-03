@@ -47,12 +47,21 @@ const ChipsRechazados = () => {
     cargarUsuarios();
   }, []);
 
-  const revertirRechazo = async (id: number) => {
+const validarChip = async (id: number) => {
   try {
-    await axios.put(`${process.env.REACT_APP_API_URL}/ventas/revertir_rechazo/${id}`);
-    setRechazados(prev => prev.filter(c => c.id !== id)); 
+    await axios.put(
+      `${process.env.REACT_APP_API_URL}/ventas/validar_chip_incubadora/${id}`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    // Lo quitamos de la tabla inmediatamente
+    setRechazados(prev => prev.filter(c => c.id !== id));
+
   } catch (error) {
-    console.error("Error al revertir rechazo", error);
+    console.error("Error al validar chip", error);
   }
 };
 
@@ -115,11 +124,11 @@ const eliminarChip = async (id: number) => {
                   onClick={() => eliminarChip(chip.id)}> <Delete/></IconButton>
               </TableCell>
               <TableCell>
-                  <Checkbox
-                    checked={false} // siempre desmarcado porque no es validación
-                    onChange={() => revertirRechazo(chip.id)}
-                    color="success"
-                  />
+                <Checkbox
+                  checked={false}
+                  onChange={() => validarChip(chip.id)}
+                  color="success"
+                />
                 
               </TableCell>
             </TableRow>
