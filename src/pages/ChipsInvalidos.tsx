@@ -11,6 +11,9 @@ const ChipsRechazados = () => {
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<number | null>(null);
   const token = localStorage.getItem("token");
 
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const esAdmin = user?.rol === "admin";
+
   const fetchRechazados = async () => {
     try {
       const params: any = {};
@@ -82,22 +85,26 @@ const eliminarChip = async (id: number) => {
 
   return (
     <TableContainer component={Paper} sx={{ mt: 4 }}>
-      <Typography variant="h6" sx={{ p: 2 }}>Chips Invalidos</Typography>
+      <Typography variant="h6" sx={{ p: 2 }}>INCUBADORA</Typography>
       <Box sx={{ mb: 2 }}>
-        <Typography variant="subtitle1">Filtrar por empleado:</Typography>
-        <select
-          value={empleadoSeleccionado ?? ""}
-          onChange={(e) =>
-            setEmpleadoSeleccionado(e.target.value ? Number(e.target.value) : null)
-          }
-        >
-          <option value="">(Todos los empleados)</option>
-          {usuarios.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.username}
-            </option>
-          ))}
-        </select>
+        {esAdmin && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle1">Filtrar por empleado:</Typography>
+            <select
+              value={empleadoSeleccionado ?? ""}
+              onChange={(e) =>
+                setEmpleadoSeleccionado(e.target.value ? Number(e.target.value) : null)
+              }
+            >
+              <option value="">(Todos los empleados)</option>
+              {usuarios.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.username}
+                </option>
+              ))}
+            </select>
+          </Box>
+        )}
       </Box>
       <Table>
         <TableHead>
@@ -107,8 +114,8 @@ const eliminarChip = async (id: number) => {
             <TableCell>Tipo Chip</TableCell>
             <TableCell>Fecha</TableCell>
             <TableCell>Motivo de Rechazo</TableCell>
-            <TableCell>Eliminar</TableCell>
-            <TableCell>Validar</TableCell>
+            {esAdmin && <TableCell>Eliminar</TableCell>}
+            {esAdmin && <TableCell>Validar</TableCell>}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -119,18 +126,26 @@ const eliminarChip = async (id: number) => {
               <TableCell>{chip.tipo_chip}</TableCell>
               <TableCell>{chip.fecha}</TableCell>
               <TableCell>{chip.descripcion_rechazo}</TableCell>
-              <TableCell>
-                <IconButton color="error"
-                  onClick={() => eliminarChip(chip.id)}> <Delete/></IconButton>
-              </TableCell>
-              <TableCell>
-                <Checkbox
-                  checked={false}
-                  onChange={() => validarChip(chip.id)}
-                  color="success"
-                />
-                
-              </TableCell>
+              {esAdmin && (
+                <TableCell>
+                  <IconButton
+                    color="error"
+                    onClick={() => eliminarChip(chip.id)}
+                  >
+                    <Delete />
+                  </IconButton>
+                </TableCell>
+              )}
+
+              {esAdmin && (
+                <TableCell>
+                  <Checkbox
+                    checked={false}
+                    onChange={() => validarChip(chip.id)}
+                    color="success"
+                  />
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
