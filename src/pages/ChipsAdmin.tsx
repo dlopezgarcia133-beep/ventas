@@ -253,6 +253,7 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
             <Typography variant="h5" gutterBottom>
               Validación de Chips Vendidos
             </Typography>
+            <Button href="/chips_invalidos">Incubadora</Button>
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
