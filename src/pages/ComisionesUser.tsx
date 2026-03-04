@@ -91,9 +91,7 @@ const ComisionesUsuario = () => {
 
       {!data ? <Typography>Cargando...</Typography> : (
         <>
-          <Typography variant="h6" gutterBottom>
-            Ciclo de comisión: {data.inicio_ciclo} al {data.fin_ciclo}
-          </Typography>
+          
           <Typography variant="subtitle1">
             Pago programado para el: <strong>{data.fecha_pago}</strong>
           </Typography>
