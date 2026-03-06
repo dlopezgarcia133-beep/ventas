@@ -56,10 +56,13 @@ const actualizarEstado = async (
   })
 }
 
-const traspasosFiltrados = traspasos.filter((t) =>
-  t.folio_autorizacion?.toLowerCase().includes(buscarFolio.toLowerCase())
-);
+const traspasosFiltrados = traspasos.filter((t) => {
+  if (!buscarFolio) return true;
 
+  return (t.folio_autorizacion || "")
+    .toLowerCase()
+    .includes(buscarFolio.toLowerCase());
+});
 
   useEffect(() => {
     cargarTraspasos();
