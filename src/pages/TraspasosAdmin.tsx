@@ -57,18 +57,12 @@ const actualizarEstado = async (
 }
 
 const traspasosFiltrados = traspasos.filter((t) => {
+  if (!buscarFolio) return true;
 
-  // siempre mostrar pendientes
-  if (t.estado === "pendiente") return true
-
-  // si no hay búsqueda mostrar todo
-  if (!buscarFolio) return true
-
-  // buscar por folio en aprobados
-  return (t.folio_autorizacion || "")
+  return (t.folio || "")
     .toLowerCase()
-    .includes(buscarFolio.toLowerCase())
-})
+    .includes(buscarFolio.toLowerCase());
+});
 
   useEffect(() => {
     cargarTraspasos();
@@ -78,14 +72,15 @@ const traspasosFiltrados = traspasos.filter((t) => {
     <Container sx={{ mt: 4 }}>
       <Typography variant="h5" gutterBottom>Solicitudes de Traspaso</Typography>
 
-      <Box sx={{ mb: 2, mt: 2 }}>
-        <TextField
-          label="Buscar por folio"
-          value={buscarFolio}
-          onChange={(e) => setBuscarFolio(e.target.value)}
-          size="small"
-        />
-      </Box>
+      <TextField
+        label="Buscar traspaso por folio"
+        placeholder="Ej: A123"
+        value={buscarFolio}
+        onChange={(e) => setBuscarFolio(e.target.value)}
+        size="small"
+        sx={{ width: 250 }}
+      />
+
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
