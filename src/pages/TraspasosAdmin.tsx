@@ -18,12 +18,15 @@ const TraspasosAdmin = () => {
   };
 
   const cargarTraspasos = async () => {
-  const res = await axios.get(
-    `${process.env.REACT_APP_API_URL}/traspasos/traspasos`,
-    config
-  )
-  setTraspasos(res.data)
-}
+
+    const url = buscarFolio
+      ? `${process.env.REACT_APP_API_URL}/traspasos/traspasos?folio=${buscarFolio}`
+      : `${process.env.REACT_APP_API_URL}/traspasos/traspasos`
+
+    const res = await axios.get(url, config)
+
+    setTraspasos(res.data)
+  }
 
 
 const actualizarEstado = async (
@@ -65,8 +68,8 @@ const traspasosFiltrados = traspasos.filter((t) => {
 });
 
   useEffect(() => {
-    cargarTraspasos();
-  }, []);
+    cargarTraspasos()
+}, [buscarFolio])
 
   return (
     <Container sx={{ mt: 4 }}>
