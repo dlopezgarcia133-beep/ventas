@@ -57,12 +57,18 @@ const actualizarEstado = async (
 }
 
 const traspasosFiltrados = traspasos.filter((t) => {
-  if (!buscarFolio) return true;
 
+  // siempre mostrar pendientes
+  if (t.estado === "pendiente") return true
+
+  // si no hay búsqueda mostrar todo
+  if (!buscarFolio) return true
+
+  // buscar por folio en aprobados
   return (t.folio_autorizacion || "")
     .toLowerCase()
-    .includes(buscarFolio.toLowerCase());
-});
+    .includes(buscarFolio.toLowerCase())
+})
 
   useEffect(() => {
     cargarTraspasos();
