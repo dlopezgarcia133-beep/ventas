@@ -19,8 +19,8 @@ const TraspasosAdmin = () => {
 
   const cargarTraspasos = async () => {
 
-    const url = buscarFolio
-      ? `${process.env.REACT_APP_API_URL}/traspasos/traspasos?folio=${buscarFolio}`
+    const url = buscarFolio.trim()
+      ? `${process.env.REACT_APP_API_URL}/traspasos/traspasos?folio=${buscarFolio.trim()}`
       : `${process.env.REACT_APP_API_URL}/traspasos/traspasos`
 
     const res = await axios.get(url, config)
