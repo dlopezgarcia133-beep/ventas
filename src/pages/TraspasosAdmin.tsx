@@ -10,6 +10,7 @@ const TraspasosAdmin = () => {
   const [traspasos, setTraspasos] = useState<Traspaso[]>([]);
   const [folios, setFolios] = useState<Record<number, string>>({});
 
+  const [buscarFolio, setBuscarFolio] = useState("");
 
   const token = localStorage.getItem("token");
   const config = {
@@ -55,6 +56,10 @@ const actualizarEstado = async (
   })
 }
 
+const traspasosFiltrados = traspasos.filter((t) =>
+  t.folio_autorizacion?.toLowerCase().includes(buscarFolio.toLowerCase())
+);
+
 
   useEffect(() => {
     cargarTraspasos();
@@ -63,6 +68,15 @@ const actualizarEstado = async (
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h5" gutterBottom>Solicitudes de Traspaso</Typography>
+
+      <Box sx={{ mb: 2, mt: 2 }}>
+        <TextField
+          label="Buscar por folio"
+          value={buscarFolio}
+          onChange={(e) => setBuscarFolio(e.target.value)}
+          size="small"
+        />
+      </Box>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
