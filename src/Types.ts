@@ -55,6 +55,7 @@ export interface Traspaso {
   estado: "pendiente" | "aprobado" | "rechazado";
   fecha: string;
   visible_en_pendientes: boolean;
+  folio_autorizacion?: string
 }
 
 

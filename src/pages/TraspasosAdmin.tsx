@@ -93,7 +93,7 @@ const traspasosFiltrados = traspasos.filter((t) =>
             </TableRow>
           </TableHead>
           <TableBody>
-            {traspasos.map((t) => (
+            {traspasosFiltrados.map((t) => (
               <TableRow key={t.id}>
                 <TableCell>{t.producto}</TableCell>
                 <TableCell>{t.cantidad}</TableCell>
