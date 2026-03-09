@@ -136,6 +136,7 @@ export interface VentaChip {
   comision_manual: number;
   clave_b63: string;
   descripcion_rechazo: string;
+  es_incubadora: boolean;
   empleado?: {
     username: string;
   };
