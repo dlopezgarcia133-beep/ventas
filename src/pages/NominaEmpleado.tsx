@@ -1,37 +1,32 @@
 import { useEffect, useState } from "react";
 import { MiNominaResponse } from "../Types";
 
-
 export default function NominaEmpleado() {
   const [data, setData] = useState<MiNominaResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const token = localStorage.getItem("token");
 
-
   const hoy = new Date();
-const diaSemana = hoy.getDay(); // 0=Domingo, 1=Lunes ... 3=Miércoles
+  const diaSemana = hoy.getDay();
 
-let diasHastaMiercoles;
+  let diasHastaMiercoles;
 
-if (diaSemana <= 3) {
-  // Si estamos antes o en miércoles
-  diasHastaMiercoles = 3 - diaSemana;
-} else {
-  // Si ya pasó miércoles, ir al siguiente
-  diasHastaMiercoles = 7 - diaSemana + 3;
-}
+  if (diaSemana <= 3) {
+    diasHastaMiercoles = 3 - diaSemana;
+  } else {
+    diasHastaMiercoles = 7 - diaSemana + 3;
+  }
 
-const fechaPago = new Date(hoy);
-fechaPago.setDate(hoy.getDate() + diasHastaMiercoles);
+  const fechaPago = new Date(hoy);
+  fechaPago.setDate(hoy.getDate() + diasHastaMiercoles);
 
-const fechaPagoFormateada = fechaPago.toLocaleDateString("es-MX", {
-  weekday: "long",
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
-
+  const fechaPagoFormateada = fechaPago.toLocaleDateString("es-MX", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   useEffect(() => {
     const cargarNomina = async () => {
@@ -39,7 +34,7 @@ const fechaPagoFormateada = fechaPago.toLocaleDateString("es-MX", {
         const res = await fetch(
           `${process.env.REACT_APP_API_URL}/nomina/mi-resumen`,
           {
-             headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
 
@@ -59,54 +54,135 @@ const fechaPagoFormateada = fechaPago.toLocaleDateString("es-MX", {
     cargarNomina();
   }, []);
 
-  if (loading) return <p>Cargando nómina...</p>;
-  if (error) return <p>{error}</p>;
+  if (loading) return <p style={{ textAlign: "center" }}>Cargando nómina...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
   if (!data) return null;
 
-  const empleado = data?.empleado;
-  const periodo = data?.periodo;
-  const comisiones = data?.comisiones;
-  const sueldo = data?.sueldo ?? {};
-  const total_pagar = data?.total_pagar ?? 0;
+  const { empleado, periodo, comisiones, sueldo, total_pagar } = data;
 
+  const card = {
+    background: "#fff",
+    padding: 20,
+    borderRadius: 12,
+    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+    marginBottom: 20,
+  };
+
+  const row = {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  };
 
   return (
-    <div style={{ maxWidth: 500 }}>
-      <h2>Nómina</h2>
+    <div
+      style={{
+        maxWidth: 600,
+        margin: "auto",
+        fontFamily: "system-ui",
+        padding: 20,
+      }}
+    >
+      <h2 style={{ textAlign: "center", marginBottom: 20 }}>
+        💰 Mi Nómina
+      </h2>
 
-      <p><b>Empleado:</b> {empleado.username}</p>
-      <p><b>Periodo:</b> {periodo.inicio} → {periodo.fin}</p>
-
-      <hr />
-
-      <h3>Comisiones</h3>
-      <p>Accesorios: ${comisiones.accesorios}</p>
-      <p>Teléfonos: ${comisiones.telefonos}</p>
-      <p>Chips: ${comisiones.chips}</p>
-      <p><b>Total comisiones: ${comisiones.total}</b></p>
-
-      <hr />
-
-      <h3>Sueldo</h3>
-      <p>Sueldo base: ${sueldo.base}</p>
-      <p>Horas extra: {sueldo.horas_extra}</p>
-      <p>Pago horas extra: ${sueldo.pago_horas_extra}</p>
-      <p>Sanciones: ${sueldo?.sanciones ?? 0}</p>
-      <p>Comisiones pendientes: ${sueldo?.comisiones_pendientes ?? 0}</p>
-
-      <hr />
-
-      <h2>Total a pagar: ${total_pagar}</h2>
-
-      <div style={{
-        marginTop: 15,
-        padding: 10,
-        background: "#eef6ff",
-        borderRadius: 8
-      }}>
-        📅 <b>Fecha de pago:</b> {fechaPagoFormateada}
+      {/* EMPLEADO */}
+      <div style={card}>
+        <h3>👤 Empleado</h3>
+        <p>
+          <b>{empleado.username}</b>
+        </p>
+        <p>
+          Periodo: {periodo.inicio} → {periodo.fin}
+        </p>
       </div>
 
+      {/* COMISIONES */}
+      <div style={card}>
+        <h3>📊 Comisiones</h3>
+
+        <div style={row}>
+          <span>Accesorios</span>
+          <b>${comisiones.accesorios}</b>
+        </div>
+
+        <div style={row}>
+          <span>Teléfonos</span>
+          <b>${comisiones.telefonos}</b>
+        </div>
+
+        <div style={row}>
+          <span>Chips</span>
+          <b>${comisiones.chips}</b>
+        </div>
+
+        <hr />
+
+        <div style={{ ...row, fontSize: 18 }}>
+          <b>Total comisiones</b>
+          <b>${comisiones.total}</b>
+        </div>
+      </div>
+
+      {/* SUELDO */}
+      <div style={card}>
+        <h3>💼 Sueldo</h3>
+
+        <div style={row}>
+          <span>Sueldo base</span>
+          <b>${sueldo.base}</b>
+        </div>
+
+        <div style={row}>
+          <span>Horas extra</span>
+          <b>{sueldo.horas_extra}</b>
+        </div>
+
+        <div style={row}>
+          <span>Pago horas extra</span>
+          <b>${sueldo.pago_horas_extra}</b>
+        </div>
+
+        <div style={row}>
+          <span>Sanciones</span>
+          <b>-${sueldo?.sanciones ?? 0}</b>
+        </div>
+
+        <div style={row}>
+          <span>Comisiones pendientes</span>
+          <b>${sueldo?.comisiones_pendientes ?? 0}</b>
+        </div>
+      </div>
+
+      {/* TOTAL */}
+      <div
+        style={{
+          background: "#0f172a",
+          color: "white",
+          padding: 20,
+          borderRadius: 12,
+          textAlign: "center",
+          marginBottom: 20,
+        }}
+      >
+        <h2>Total a pagar</h2>
+        <h1>${total_pagar}</h1>
+      </div>
+
+      {/* FECHA PAGO */}
+      <div
+        style={{
+          background: "#e8f3ff",
+          padding: 15,
+          borderRadius: 10,
+          textAlign: "center",
+        }}
+      >
+        📅 <b>Fecha de pago</b>
+        <br />
+        {fechaPagoFormateada}
+      </div>
     </div>
   );
 }
