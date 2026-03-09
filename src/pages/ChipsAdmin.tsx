@@ -7,6 +7,7 @@ import {
 import axios from "axios";
 import { Usuario, VentaChip } from "../Types";
 import { obtenerRolDesdeToken } from "../components/Token";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 
 const ChipsAdmin = () => {
@@ -56,6 +57,25 @@ useEffect(() => {
 
   cargarUsuarios();
 }, []);
+
+const eliminarChip = async (id: number) => {
+  const confirmar = window.confirm("¿Seguro que quieres eliminar este chip?");
+  if (!confirmar) return;
+
+  try {
+    await axios.delete(
+      `${process.env.REACT_APP_API_URL}/ventas/eliminar_chip/${id}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    setChips((prev) => prev.filter((chip) => chip.id !== id));
+  } catch (error) {
+    console.error("Error al eliminar chip:", error);
+    alert("No se pudo eliminar el chip");
+  }
+};
 
 
 
@@ -265,6 +285,7 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
                     <TableCell>Fecha</TableCell>
                     <TableCell>Hora</TableCell>
                     <TableCell>Detalles</TableCell>
+                    <TableCell>Eliminar</TableCell>
                     
                   </TableRow>
                 </TableHead>
@@ -281,6 +302,16 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
                         {chip.validado ? (
                           chip.comision ? `$${chip.comision}` : "Sin comisión"
                         ) : chip.descripcion_rechazo ?? "Pendiente"}
+                      </TableCell>
+                      <TableCell>
+                        {!chip.validado && (
+                          <Button
+                            color="error"
+                            onClick={() => eliminarChip(chip.id)}
+                          >
+                            <DeleteIcon />
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
