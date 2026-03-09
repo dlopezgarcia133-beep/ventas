@@ -176,6 +176,7 @@ export interface ComisionData {
     numero_telefono: string;
     comision: number;
     comision_manual: number;
+    es_incubadora: boolean;
     fecha: string;
     hora: string;
   }[];

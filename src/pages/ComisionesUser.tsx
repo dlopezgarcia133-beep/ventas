@@ -176,7 +176,9 @@ const ComisionesUsuario = () => {
                   <TableCell>{v.tipo_chip}</TableCell>
                   <TableCell>{v.numero_telefono}</TableCell>
                   <TableCell>${v.comision.toFixed(2)}</TableCell>
-                  <TableCell>{v.es_incubadora ? "Sí" : "No"}</TableCell>
+                      <TableCell>
+                        {v.es_incubadora ? "🧪 Incubadora" : "-"}
+                      </TableCell>
                   <TableCell>{v.fecha}</TableCell>
                   <TableCell>{v.hora}</TableCell>
                 </TableRow>
