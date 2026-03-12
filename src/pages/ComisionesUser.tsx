@@ -19,7 +19,7 @@ const ComisionesUsuario = () => {
   const navigate = useNavigate();
 
   const fetchCicloActual = async () => {
-    const res = await axios.get(`${process.env.REACT_APP_API_URL}/comisiones/comisiones/ciclo`, {
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/comisiones/ciclo`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setData(res.data);
