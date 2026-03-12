@@ -91,8 +91,8 @@ const eliminarComision = async (producto: string) => {
 const fetchCicloActual = async () => {
   try {
     const endpoint = empleadoSeleccionado
-      ? `${process.env.REACT_APP_API_URL}/ventas/comisiones/ciclo/${empleadoSeleccionado}`
-      : `${process.env.REACT_APP_API_URL}/ventas/comisiones/ciclo`;
+      ? `${process.env.REACT_APP_API_URL}/comisiones/comisiones/ciclo/${empleadoSeleccionado}`
+      : `${process.env.REACT_APP_API_URL}/comisiones/comisiones/ciclo`;
 
     const res = await axios.get(endpoint, {
       headers: { Authorization: `Bearer ${token}` },
