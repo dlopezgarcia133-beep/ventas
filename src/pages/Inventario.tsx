@@ -212,8 +212,17 @@ const confirmarImportacion = async () => {
   }, []);
 
   return (
-    <Container sx={{ mt: 4 }}>
-      <Typography variant="h5" gutterBottom>Inventario General</Typography>
+  <Container sx={{ mt: 4 }}>
+
+    <Typography variant="h5" gutterBottom>
+      Inventario General
+    </Typography>
+
+    {/* BUSCADOR GENERAL */}
+    <Paper sx={{ p: 3, mb: 3 }}>
+      <Typography variant="h6" gutterBottom>
+        Buscar en inventario
+      </Typography>
 
       <TextField
         label="Buscar producto o teléfono"
@@ -221,190 +230,181 @@ const confirmarImportacion = async () => {
         value={filtro}
         onChange={(e) => setFiltro(e.target.value)}
         fullWidth
-        sx={{ mb: 3 }}
       />
+    </Paper>
 
-      <Box sx={{ mt: 3 }}>
-  <TextField
-    label="Buscar producto en módulos"
-    value={buscarProductoModulo}
-    onChange={(e) => setBuscarProductoModulo(e.target.value)}
-    size="small"
-    sx={{ width: 300 }}
-  />
+    {/* BUSCAR EN MODULOS */}
+    <Paper sx={{ p: 3, mb: 3 }}>
+      <Typography variant="h6" gutterBottom>
+        Buscar producto en módulos
+      </Typography>
 
-  <Button
-    variant="contained"
-    sx={{ ml: 2 }}
-    onClick={buscarEnModulos}
-  >
-    Buscar
-  </Button>
-</Box>
+      <Box display="flex" gap={2} alignItems="center">
+        <TextField
+          label="Producto"
+          value={buscarProductoModulo}
+          onChange={(e) => setBuscarProductoModulo(e.target.value)}
+          size="small"
+          sx={{ width: 300 }}
+        />
 
+        <Button
+          variant="contained"
+          onClick={buscarEnModulos}
+        >
+          Buscar
+        </Button>
+      </Box>
+    </Paper>
 
-<TextField
+    {/* IMPORTAR EXCEL */}
+    <Paper sx={{ p: 3, mb: 3 }}>
+      <Typography variant="h6" gutterBottom>
+        Importar inventario
+      </Typography>
+
+      <TextField
         type="file"
         inputProps={{ accept: ".xlsx,.xls" }}
         onChange={manejarPreviewExcel}
-        variant="outlined"
-        sx={{ mb: 3 }}
       />
 
       {mostrandoPreview && previewValido.length > 0 && (
-  <Box
-    display="flex"
-    justifyContent="space-between"
-    alignItems="center"
-    mt={3}
-    p={2}
-    bgcolor="#f5f5f5"
-    borderRadius={2}
-  >
-    <Typography color="text.secondary">
-      Se importarán {previewValido.length} productos
-      {previewErrores.length > 0 && ` (${previewErrores.length} con errores)`}
-    </Typography>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mt={3}
+          p={2}
+          bgcolor="#f5f5f5"
+          borderRadius={2}
+        >
+          <Typography color="text.secondary">
+            Se importarán {previewValido.length} productos
+            {previewErrores.length > 0 &&
+              ` (${previewErrores.length} con errores)`}
+          </Typography>
 
-    <Button
-      variant="contained"
-      color="success"
-      size="large"
-      onClick={confirmarImportacion}
-    >
-      Confirmar importación
-    </Button>
-  </Box>
-)}
+          <Button
+            variant="contained"
+            color="success"
+            size="large"
+            onClick={confirmarImportacion}
+          >
+            Confirmar importación
+          </Button>
+        </Box>
+      )}
+    </Paper>
 
+    {/* AGREGAR PRODUCTO */}
+    <Paper sx={{ p: 3, mb: 3 }}>
+      <Typography variant="h6" gutterBottom>
+        Agregar producto
+      </Typography>
 
-
-      <Box display="flex" gap={2} mb={3} flexWrap="wrap">
-        <Select value={tipo} onChange={(e) => setTipo(e.target.value as 'producto' | 'telefono')}>
+      <Box display="flex" gap={2} flexWrap="wrap">
+        <Select
+          value={tipo}
+          onChange={(e) =>
+            setTipo(e.target.value as "producto" | "telefono")
+          }
+        >
           <MenuItem value="producto">Producto</MenuItem>
           <MenuItem value="telefono">Teléfono</MenuItem>
-          </Select>
-            <TextField label="Producto" value={nuevo.producto} onChange={(e) => setNuevo({ ...nuevo, producto: e.target.value })} />
-            <TextField label="Clave" value={nuevo.clave} onChange={(e) => setNuevo({ ...nuevo, clave: e.target.value })} />
-        
-        <TextField label="Precio" type="number" value={nuevo.precio} onChange={(e) => setNuevo({ ...nuevo, precio: e.target.value })} />
-        <TextField label="Cantidad" type="number" value={nuevo.cantidad} onChange={(e) => setNuevo({ ...nuevo, cantidad: e.target.value })} />
-        <Button variant="contained" onClick={agregar}>Agregar</Button>
-      </Box>
+        </Select>
 
-      <Button 
-        variant="outlined" 
-        color="secondary" 
-        sx={{ mt: 2, ml: 1 }}
+        <TextField
+          label="Producto"
+          value={nuevo.producto}
+          onChange={(e) =>
+            setNuevo({ ...nuevo, producto: e.target.value })
+          }
+        />
+
+        <TextField
+          label="Clave"
+          value={nuevo.clave}
+          onChange={(e) =>
+            setNuevo({ ...nuevo, clave: e.target.value })
+          }
+        />
+
+        <TextField
+          label="Precio"
+          type="number"
+          value={nuevo.precio}
+          onChange={(e) =>
+            setNuevo({ ...nuevo, precio: e.target.value })
+          }
+        />
+
+        <TextField
+          label="Cantidad"
+          type="number"
+          value={nuevo.cantidad}
+          onChange={(e) =>
+            setNuevo({ ...nuevo, cantidad: e.target.value })
+          }
+        />
+
+        <Button variant="contained" onClick={agregar}>
+          Agregar
+        </Button>
+      </Box>
+    </Paper>
+
+    {/* RESULTADOS POR MODULO */}
+    {resultadosModulo.length > 0 && (
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Inventario por módulo
+        </Typography>
+
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Producto</TableCell>
+                <TableCell>Módulo</TableCell>
+                <TableCell>Cantidad</TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
+              {resultadosModulo.map((r, index) => (
+                <TableRow key={index}>
+                  <TableCell>{r.producto}</TableCell>
+                  <TableCell>{r.modulo}</TableCell>
+                  <TableCell>{r.cantidad}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+    )}
+
+    {/* BOTONES */}
+    <Box display="flex" gap={2} mt={2}>
+      <Button
+        variant="outlined"
+        color="secondary"
         onClick={() => navigate("/inventario/modulo")}
       >
         Inventario por Módulo
       </Button>
 
+      <Button
+        variant="contained"
+        onClick={() => navigate("/inventario/diferencias")}
+      >
+        Reporte de inventarios
+      </Button>
+    </Box>
 
-      <TableContainer component={Paper} sx={{ mt: 2 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Producto</TableCell>
-              <TableCell>Módulo</TableCell>
-              <TableCell>Cantidad</TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {resultadosModulo.map((r, index) => (
-              <TableRow key={index}>
-                <TableCell>{r.producto}</TableCell>
-                <TableCell>{r.modulo}</TableCell>
-                <TableCell>{r.cantidad}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {filtro && (
-        <TableContainer component={Paper} sx={{ mt: 3 }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Nombre</TableCell>
-                <TableCell>Clave</TableCell>
-                <TableCell>Precio</TableCell>
-                <TableCell>Cantidad</TableCell>
-                <TableCell>Acciones</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {productosFiltrados.map((item) => (
-                <TableRow
-                  key={`${item.tipo}-${item.id}`}
-                  hover
-                  selected={selectedItem?.id === item.id && selectedItem?.tipo === item.tipo}
-                  onClick={() => setSelectedItem(item)}
-                  sx={{ cursor: "pointer" }}
-                >
-                  <TableCell>{item.nombre}</TableCell>
-                  <TableCell>{item.clave}</TableCell>
-                  <TableCell>
-                    {editando === `${item.tipo}-${item.id}` ? (
-                      <TextField
-                        type="number"
-                        value={editarData.precio}
-                        size="small"
-                        onChange={(e) => setEditarData({ ...editarData, precio: e.target.value })}
-                      />
-                    ) : (
-                      `$${item.precio}`
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {editando === `${item.tipo}-${item.id}` ? (
-                      <TextField
-                        type="number"
-                        value={editarData.cantidad}
-                        size="small"
-                        onChange={(e) => setEditarData({ ...editarData, cantidad: e.target.value })}
-                      />
-                    ) : (
-                      item.cantidad
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {editando === `${item.tipo}-${item.id}` ? (
-                      <IconButton onClick={() => guardarCambios(item)}>
-                        <Save />
-                      </IconButton>
-                    ) : (
-                      <IconButton onClick={() => comenzarEdicion(item)}>
-                        <Edit />
-                      </IconButton>
-                    )}
-                    <IconButton color="error" onClick={() => eliminarItem(item)}>
-                      <Delete />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {productosFiltrados.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} align="center">No se encontraron coincidencias</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        
-      )}
-      <button 
-  onClick={() => navigate("/inventario/diferencias")}
-  className="bg-blue-600 text-white px-4 py-2 rounded"
->
-  Reporte de inventarios
-</button>
-    </Container>
-  );
+  </Container>
+)
 };
 
 export default InventarioAdmin;
