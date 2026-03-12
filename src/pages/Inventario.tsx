@@ -29,8 +29,20 @@ const [previewErrores, setPreviewErrores] = useState<any[]>([]);
 const [archivoExcel, setArchivoExcel] = useState<File | null>(null);
 const [mostrandoPreview, setMostrandoPreview] = useState(false);
 
+  const [buscarProductoModulo, setBuscarProductoModulo] = useState("");
+  const [resultadosModulo, setResultadosModulo] = useState([]);
 
 
+
+
+  const buscarEnModulos = async () => {
+  const res = await axios.get(
+    `${process.env.REACT_APP_API_URL}/inventario/inventario/buscar-modulos?producto=${buscarProductoModulo}`,
+    config
+  )
+
+  setResultadosModulo(res.data)
+}
 
   const cargarInventario = async () => {
     const resProd = await axios.get(`${process.env.REACT_APP_API_URL}/inventario/inventario/general`, config);
@@ -212,17 +224,23 @@ const confirmarImportacion = async () => {
         sx={{ mb: 3 }}
       />
 
-      <Box display="flex" gap={2} mb={3}>
-        <TextField
-          label="Nueva cantidad"
-          type="number"
-          value={nuevaCantidad}
-          onChange={(e) => setNuevaCantidad(e.target.value)}
-        />
-        <Button variant="contained" onClick={actualizarCantidad}>
-          Actualizar Cantidad
-        </Button>
-      </Box>
+      <Box sx={{ mt: 3 }}>
+  <TextField
+    label="Buscar producto en módulos"
+    value={buscarProductoModulo}
+    onChange={(e) => setBuscarProductoModulo(e.target.value)}
+    size="small"
+    sx={{ width: 300 }}
+  />
+
+  <Button
+    variant="contained"
+    sx={{ ml: 2 }}
+    onClick={buscarEnModulos}
+  >
+    Buscar
+  </Button>
+</Box>
 
 
 <TextField
@@ -282,6 +300,29 @@ const confirmarImportacion = async () => {
       >
         Inventario por Módulo
       </Button>
+
+
+      <TableContainer component={Paper} sx={{ mt: 2 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Producto</TableCell>
+              <TableCell>Módulo</TableCell>
+              <TableCell>Cantidad</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {resultadosModulo.map((r, index) => (
+              <TableRow key={index}>
+                <TableCell>{r.producto}</TableCell>
+                <TableCell>{r.modulo}</TableCell>
+                <TableCell>{r.cantidad}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       {filtro && (
         <TableContainer component={Paper} sx={{ mt: 3 }}>
