@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import { Edit, Delete, Save } from '@mui/icons-material';
 import axios from 'axios';
-import { InventarioGeneral, InventarioTelefono } from '../Types';
+import { InventarioGeneral, InventarioTelefono, ProductoModulo } from '../Types';
 import { useNavigate } from "react-router-dom";
 
 const InventarioAdmin = () => {
@@ -30,7 +30,7 @@ const [archivoExcel, setArchivoExcel] = useState<File | null>(null);
 const [mostrandoPreview, setMostrandoPreview] = useState(false);
 
   const [buscarProductoModulo, setBuscarProductoModulo] = useState("");
-  const [resultadosModulo, setResultadosModulo] = useState([]);
+  const [resultadosModulo, setResultadosModulo] = useState<ProductoModulo[]>([])
 
 
 

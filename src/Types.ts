@@ -262,3 +262,10 @@ export interface MiNominaResponse {
   sueldo: SueldoNomina;
   total_pagar: number;
 }
+
+
+export interface ProductoModulo {
+  producto: string
+  modulo: string
+  cantidad: number
+}
