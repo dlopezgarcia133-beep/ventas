@@ -91,7 +91,7 @@ const eliminarComision = async (producto: string) => {
 const fetchCicloActual = async () => {
   try {
     const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/comisiones/comisiones/ciclo`,
+      `${process.env.REACT_APP_API_URL}/comisiones/ciclo`,
       {
         params: empleadoSeleccionado
           ? { empleado_id: empleadoSeleccionado }
