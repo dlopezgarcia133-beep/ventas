@@ -90,27 +90,27 @@ const eliminarComision = async (producto: string) => {
 
 const fetchCicloActual = async () => {
   try {
-
-    const params: any = {};
-
-    if (empleadoSeleccionado) {
-      params.empleado_id = empleadoSeleccionado;
-    }
-
     const res = await axios.get(
       `${process.env.REACT_APP_API_URL}/comisiones/comisiones/ciclo`,
       {
-        params,
+        params: empleadoSeleccionado
+          ? { empleado_id: empleadoSeleccionado }
+          : {},
         headers: { Authorization: `Bearer ${token}` },
       }
     );
 
-    console.log("Datos recibidos ciclo actual:", res.data);
+    console.log("Respuesta API:", res.data);
+
+    if (!res.data) {
+      console.warn("La API devolvió null");
+      return;
+    }
+
     setData(res.data);
 
-  } catch (err: any) {
-    console.error("Error al obtener comisiones actuales", err);
-    alert(err.response?.data?.detail || "Error al obtener datos del ciclo");
+  } catch (error) {
+    console.error("Error obteniendo ciclo actual:", error);
     setData(null);
   }
 };
