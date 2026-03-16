@@ -483,9 +483,13 @@ const agregarEntrada = () => {
   setCantidadEntrada("");
   setBusquedaEntrada("");
 
+  // 🔥 Forzar que el buscador se active otra vez
   setTimeout(() => {
-    inputBusquedaRef.current?.focus();
-  }, 100);
+    if (inputBusquedaRef.current) {
+      inputBusquedaRef.current.focus();
+      inputBusquedaRef.current.click(); // abre autocomplete
+    }
+  }, 150);
 };
 
 
