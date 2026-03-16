@@ -78,6 +78,8 @@ const [existenciaActual, setExistenciaActual] = useState<number>(0);
 
 const [esAdmin, setEsAdmin] = useState(false);
 
+const inputBusquedaRef = useRef<HTMLInputElement>(null);
+const inputCantidadRef = useRef<HTMLInputElement>(null);
 
 
   const token = localStorage.getItem("token");
@@ -479,8 +481,10 @@ const agregarEntrada = () => {
 
   setProductoEntrada(null);
   setCantidadEntrada("");
+  setBusquedaEntrada("");
+
   setTimeout(() => {
-    inputClaveRef.current?.focus();
+    inputBusquedaRef.current?.focus();
   }, 100);
 };
 
@@ -984,24 +988,24 @@ const confirmarImportacion = async () => {
     if (!value) return;
 
     const existencia = await obtenerExistenciaModulo(value.clave);
-
     setExistenciaActual(existencia);
-}}
 
+    // 🔥 mover foco a cantidad
+    setTimeout(() => {
+      inputCantidadRef.current?.focus();
+    }, 100);
+  }}
   onInputChange={(e, value) => {
     setBusquedaEntrada(value);
     buscarProductosEntrada(value);
   }}
-  getOptionLabel={(option) =>
-    `${option.clave} - ${option.producto}`
-  }
-  isOptionEqualToValue={(option, value) =>
-    option.id === value.id
-  }
+  getOptionLabel={(option) => `${option.clave} - ${option.producto}`}
+  isOptionEqualToValue={(option, value) => option.id === value.id}
   renderInput={(params) => (
     <TextField
       {...params}
-      label="Buscar por clave o producto"
+      label="Buscar producto"
+      fullWidth
       InputProps={{
         ...params.InputProps,
         endAdornment: (
@@ -1023,19 +1027,20 @@ const confirmarImportacion = async () => {
           <strong>Producto:</strong> {productoEntrada.clave} ({productoEntrada.producto})
         </Typography>
 
-        <TextField
-          label="Cantidad recibida"
-          type="number"
-          value={cantidadEntrada}
-          onChange={(e) => setCantidadEntrada(e.target.value)}
-           onKeyDown={(e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      agregarEntrada();
-    }
-  }}
-          sx={{ mt: 2, width: 200 }}
-        />
+              <TextField
+                label="Cantidad recibida"
+                type="number"
+                value={cantidadEntrada}
+                inputRef={inputCantidadRef}
+                onChange={(e) => setCantidadEntrada(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    agregarEntrada();
+                  }
+                }}
+                sx={{ mt: 2, width: 200 }}
+              />
 
         <Button
           variant="contained"
