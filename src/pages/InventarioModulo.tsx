@@ -1007,21 +1007,22 @@ const confirmarImportacion = async () => {
   getOptionLabel={(option) => `${option.clave} - ${option.producto}`}
   isOptionEqualToValue={(option, value) => option.id === value.id}
   renderInput={(params) => (
-    <TextField
-      {...params}
-      label="Buscar producto"
-      fullWidth
-      InputProps={{
-        ...params.InputProps,
-        endAdornment: (
-          <>
-            {loadingBusqueda && <CircularProgress size={20} />}
-            {params.InputProps.endAdornment}
-          </>
-        ),
-      }}
-    />
-  )}
+  <TextField
+    {...params}
+    label="Buscar producto"
+    fullWidth
+    inputRef={inputBusquedaRef}
+    InputProps={{
+      ...params.InputProps,
+      endAdornment: (
+        <>
+          {loadingBusqueda && <CircularProgress size={20} />}
+          {params.InputProps.endAdornment}
+        </>
+      ),
+    }}
+  />
+)}
 />
 
 
