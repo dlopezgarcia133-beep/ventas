@@ -102,7 +102,7 @@ const fetchCicloActual = async () => {
 
     console.log("Respuesta API:", res.data);
 
-    if (!res.data) {
+    if (res.data === null || res.data === undefined) {
       console.warn("La API devolvió null");
       return;
     }
@@ -175,9 +175,7 @@ useEffect(() => {
   cargarUsuarios();
 }, []);
 
-  useEffect(() => {
-    if (modo === "actual") fetchCicloActual();
-  }, [modo]);
+
 
   useEffect(() => {
   if (modo === "actual") fetchCicloActual();
