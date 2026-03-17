@@ -46,7 +46,7 @@ const [mostrandoPreview, setMostrandoPreview] = useState(false);
 
   const cargarInventario = async () => {
     const resProd = await axios.get(`${process.env.REACT_APP_API_URL}/inventario/inventario/general`, config);
-    setProductos(resProd.data);
+    setProductos(resProd.data.data);
     const resTel = await axios.get(`${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general`, config);
     setTelefonos(resTel.data);
   };
@@ -144,7 +144,8 @@ const eliminarItem = async (item: any) => {
 };
 
 
-  const productosFiltrados = [...productos.map(p => ({
+  const productosFiltrados = [
+  ...productos.map(p => ({
     id: p.id,
     nombre: p.producto,
     clave: p.clave,
@@ -159,9 +160,15 @@ const eliminarItem = async (item: any) => {
     precio: t.precio,
     cantidad: t.cantidad,
     tipo: 'telefono'
-  }))].filter((item) =>
-    item.nombre.toLowerCase().includes(filtro.toLowerCase())
+  }))
+].filter((item) => {
+  const texto = filtro.toLowerCase();
+  console.log(productos);
+  return (
+    item.nombre.toLowerCase().includes(texto) ||
+    item.clave?.toLowerCase().includes(texto)
   );
+});
 
 
 
