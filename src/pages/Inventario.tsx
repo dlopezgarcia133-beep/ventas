@@ -47,6 +47,7 @@ const [mostrandoPreview, setMostrandoPreview] = useState(false);
   const cargarInventario = async () => {
     const resProd = await axios.get(`${process.env.REACT_APP_API_URL}/inventario/inventario/general`, config);
     setProductos(resProd.data.data);
+    console.log("Productos:", resProd.data);
     const resTel = await axios.get(`${process.env.REACT_APP_API_URL}/inventario_telefonos/inventario_telefonos/general`, config);
     setTelefonos(resTel.data);
   };
