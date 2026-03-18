@@ -374,7 +374,7 @@ const confirmarImportacion = async () => {
             <TableBody>
               {productosFiltrados.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell>{item.producto}</TableCell>
+                  <TableCell>{item.nombre}</TableCell>
                   <TableCell>{item.clave}</TableCell>
                   <TableCell>{item.precio}</TableCell>
                   <TableCell>{item.cantidad}</TableCell>
