@@ -359,6 +359,7 @@ const confirmarImportacion = async () => {
         <Paper sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" gutterBottom>
             Resultados de inventario
+            
           </Typography>
 
           <TableContainer>
@@ -375,7 +376,7 @@ const confirmarImportacion = async () => {
               <TableBody>
                 {productosFiltrados.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell>{item.producto}</TableCell>
+                    <TableCell>{item.nombre}</TableCell>
                     <TableCell>{item.clave}</TableCell>
                     <TableCell>{item.precio}</TableCell>
                     <TableCell>{item.cantidad}</TableCell>
