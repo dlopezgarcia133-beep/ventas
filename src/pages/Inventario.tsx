@@ -355,35 +355,37 @@ const confirmarImportacion = async () => {
     </Paper>
 
 
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Resultados de inventario
-        </Typography>
+      {filtro.trim() !== "" && (
+  <Paper sx={{ p: 3, mb: 3 }}>
+    <Typography variant="h6" gutterBottom>
+      Resultados de inventario
+    </Typography>
 
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Producto</TableCell>
-                <TableCell>Clave</TableCell>
-                <TableCell>Precio</TableCell>
-                <TableCell>Cantidad</TableCell>
-              </TableRow>
-            </TableHead>
+    <TableContainer>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Producto</TableCell>
+            <TableCell>Clave</TableCell>
+            <TableCell>Precio</TableCell>
+            <TableCell>Cantidad</TableCell>
+          </TableRow>
+        </TableHead>
 
-            <TableBody>
-              {productosFiltrados.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.nombre}</TableCell>
-                  <TableCell>{item.clave}</TableCell>
-                  <TableCell>{item.precio}</TableCell>
-                  <TableCell>{item.cantidad}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+        <TableBody>
+          {productosFiltrados.map((item) => (
+            <TableRow key={item.id}>
+              <TableCell>{item.producto}</TableCell>
+              <TableCell>{item.clave}</TableCell>
+              <TableCell>{item.precio}</TableCell>
+              <TableCell>{item.cantidad}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  </Paper>
+)}
     {/* RESULTADOS POR MODULO */}
     {resultadosModulo.length > 0 && (
       <Paper sx={{ p: 3, mb: 3 }}>
