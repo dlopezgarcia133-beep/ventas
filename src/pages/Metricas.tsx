@@ -19,9 +19,9 @@ interface MetricaEmpleado {
   username: string;
   total_accesorios: number;
   total_telefonos: number;
-  Contado: number;
-  Paguitos: number;
-  Pajoy: number;
+  contado: number;
+  paguitos: number;
+  pajoy: number;
 }
 
 const Metricas = () => {
@@ -160,15 +160,15 @@ const Metricas = () => {
                     </TableCell>
 
                     <TableCell align="center">
-                      {row.Contado || 0}
+                      {row.contado || 0}
                     </TableCell>
 
                     <TableCell align="center">
-                      {row.Paguitos || 0}
+                      {row.paguitos || 0}
                     </TableCell>
 
                     <TableCell align="center">
-                      {row.Pajoy || 0}
+                      {row.pajoy || 0}
                     </TableCell>
                   </TableRow>
                 ))
