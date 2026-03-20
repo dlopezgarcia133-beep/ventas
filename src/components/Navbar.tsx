@@ -148,6 +148,10 @@ const Navbar = () => {
                 <MenuItem component={Link} to="/comisiones">
                   Comisiones
                 </MenuItem>
+
+                <MenuItem component={Link} to="/metricas">
+                  Metricas
+                </MenuItem>
               </Menu>
 
             </>

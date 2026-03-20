@@ -18,6 +18,7 @@ import DiferenciasInventario from './pages/InventarioDiferencias';
 import Nomina from './pages/Nomina';
 import NominaEmpleado from './pages/NominaEmpleado';
 import Kardex from './pages/Kardex';
+import Metricas from './pages/Metricas';
 
 const App: React.FC = () => {
   const routes = useRoutes([
@@ -39,6 +40,7 @@ const App: React.FC = () => {
     { path: '/nomina', element: <Nomina /> },
     { path: '/nominaEmpleado', element: <NominaEmpleado /> },
     { path: '/kardex', element: <Kardex /> },
+    { path: '/metricas', element: <Metricas /> },
   ]);
 
   return routes;
