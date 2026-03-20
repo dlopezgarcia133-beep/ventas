@@ -21,6 +21,7 @@ interface MetricaEmpleado {
   total_telefonos: number;
   contado: number;
   paguitos: number;
+    pajoy: number;
 }
 
 const Metricas = () => {
@@ -122,6 +123,7 @@ const Metricas = () => {
               <TableCell align="right"><strong>Teléfonos</strong></TableCell>
               <TableCell align="center"><strong>Contado</strong></TableCell>
               <TableCell align="center"><strong>Paguitos</strong></TableCell>
+              <TableCell align="center"><strong>Pajoy</strong></TableCell>
             </TableRow>
           </TableHead>
 
@@ -163,6 +165,10 @@ const Metricas = () => {
 
                     <TableCell align="center">
                       {row.paguitos || 0}
+                    </TableCell>
+
+                    <TableCell align="center">
+                      {row.pajoy || 0}
                     </TableCell>
                   </TableRow>
                 ))
