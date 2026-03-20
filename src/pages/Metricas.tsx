@@ -16,7 +16,7 @@ import {
 
 interface MetricaEmpleado {
   empleado_id: number;
-  nombre: string;
+  username: string;
   total_accesorios: number;
   total_telefonos: number;
   contado: number;
@@ -147,7 +147,7 @@ const Metricas = () => {
                 )
                 .map((row) => (
                   <TableRow key={row.empleado_id}>
-                    <TableCell>{row.nombre}</TableCell>
+                    <TableCell>{row.username}</TableCell>
 
                     <TableCell align="right">
                       ${(row.total_accesorios || 0).toLocaleString()}
