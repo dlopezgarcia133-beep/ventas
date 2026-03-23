@@ -25,7 +25,7 @@ import {
 
 interface MetricaEmpleado {
   empleado_id: number;
-  empleado: string;
+  username: string;
   total_ventas: number;
   total_accesorios: number;
   total_telefonos: number;
@@ -155,7 +155,7 @@ const Metricas = () => {
                 .sort((a, b) => (b.total_ventas || 0) - (a.total_ventas || 0))
                 .map((row) => (
                   <TableRow key={row.empleado_id}>
-                    <TableCell>{row.empleado}</TableCell>
+                    <TableCell>{row.username}</TableCell>
 
                     <TableCell align="right">
                       ${(row.total_ventas || 0).toLocaleString()}
