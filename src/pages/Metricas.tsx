@@ -43,7 +43,7 @@ const Metricas = () => {
       setLoading(true);
 
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/metricas/empleados`,
+        `${process.env.REACT_APP_API_URL}/dashboard/metricas/empleados`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
