@@ -52,7 +52,7 @@ const Metricas = () => {
       );
 
       const json = await res.json();
-      setData(json);
+      setData(Array.isArray(json.data) ? json.data : []);
 
     } catch (error) {
       console.error("Error cargando métricas", error);
@@ -67,8 +67,13 @@ const Metricas = () => {
 
   // 🔥 Totales generales
   const totalVentas = data.reduce((acc, i) => acc + (i.total_ventas || 0), 0);
-  const totalAccesorios = data.reduce((acc, i) => acc + (i.total_accesorios || 0), 0);
-  const totalTelefonos = data.reduce((acc, i) => acc + (i.total_telefonos || 0), 0);
+    const totalAccesorios = Array.isArray(data)
+        ? data.reduce((acc, item) => acc + (item.total_accesorios || 0), 0)
+        : 0;
+
+    const totalTelefonos = Array.isArray(data)
+        ? data.reduce((acc, item) => acc + (item.total_telefonos || 0), 0)
+        : 0;
 
   return (
     <Container sx={{ mt: 4 }}>
