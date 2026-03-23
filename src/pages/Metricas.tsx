@@ -11,12 +11,22 @@ import {
   TableContainer,
   Button,
   Box,
-  CircularProgress
+  CircularProgress,
+  Grid
 } from "@mui/material";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip
+} from "recharts";
 
 interface MetricaEmpleado {
   empleado_id: number;
-  username: string;
+  empleado: string;
+  total_ventas: number;
   total_accesorios: number;
   total_telefonos: number;
   contado: number;
@@ -27,14 +37,13 @@ interface MetricaEmpleado {
 const Metricas = () => {
   const [data, setData] = useState<MetricaEmpleado[]>([]);
   const [loading, setLoading] = useState(false);
-  const [rango, setRango] = useState("");
 
   const fetchMetricas = async () => {
     try {
       setLoading(true);
 
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/dashboard/metricas/empleados`,
+        `${process.env.REACT_APP_API_URL}/metricas/empleados`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -43,9 +52,7 @@ const Metricas = () => {
       );
 
       const json = await res.json();
-
-      setData(json.data || []);
-      setRango(`${json.inicio} - ${json.fin}`);
+      setData(json);
 
     } catch (error) {
       console.error("Error cargando métricas", error);
@@ -59,59 +66,56 @@ const Metricas = () => {
   }, []);
 
   // 🔥 Totales generales
-  const totalAccesorios = data.reduce(
-    (acc, item) => acc + (item.total_accesorios || 0),
-    0
-  );
-
-  const totalTelefonos = data.reduce(
-    (acc, item) => acc + (item.total_telefonos || 0),
-    0
-  );
+  const totalVentas = data.reduce((acc, i) => acc + (i.total_ventas || 0), 0);
+  const totalAccesorios = data.reduce((acc, i) => acc + (i.total_accesorios || 0), 0);
+  const totalTelefonos = data.reduce((acc, i) => acc + (i.total_telefonos || 0), 0);
 
   return (
     <Container sx={{ mt: 4 }}>
       {/* HEADER */}
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-      >
-        <Typography variant="h5">
-          Métricas de Empleados
-        </Typography>
-
-        <Button
-          variant="contained"
-          onClick={fetchMetricas}
-          disabled={loading}
-        >
-          {loading ? "Actualizando..." : "Actualizar"}
+      <Box display="flex" justifyContent="space-between" mb={2}>
+        <Typography variant="h5">Dashboard de Métricas</Typography>
+        <Button variant="contained" onClick={fetchMetricas}>
+          Actualizar
         </Button>
       </Box>
 
-      {/* RANGO */}
-      <Typography variant="subtitle1" sx={{ mb: 2 }}>
-        Periodo: {rango || "Cargando..."}
-      </Typography>
+      {/* KPIs */}
+      <Grid container spacing={2} mb={3}>
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="subtitle2">Ventas Totales</Typography>
+            <Typography variant="h5">${totalVentas.toLocaleString()}</Typography>
+          </Paper>
+        </Grid>
 
-      {/* CARDS */}
-      <Box display="flex" gap={2} mb={3}>
-        <Paper sx={{ p: 2, flex: 1 }}>
-          <Typography variant="subtitle2">Total Accesorios</Typography>
-          <Typography variant="h6">
-            ${totalAccesorios.toLocaleString()}
-          </Typography>
-        </Paper>
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="subtitle2">Accesorios</Typography>
+            <Typography variant="h5">${totalAccesorios.toLocaleString()}</Typography>
+          </Paper>
+        </Grid>
 
-        <Paper sx={{ p: 2, flex: 1 }}>
-          <Typography variant="subtitle2">Total Teléfonos</Typography>
-          <Typography variant="h6">
-            ${totalTelefonos.toLocaleString()}
-          </Typography>
-        </Paper>
-      </Box>
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="subtitle2">Teléfonos</Typography>
+            <Typography variant="h5">${totalTelefonos.toLocaleString()}</Typography>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* GRÁFICA */}
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Typography variant="h6" mb={2}>Ventas por Empleado</Typography>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={data}>
+            <XAxis dataKey="empleado" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="total_ventas" />
+          </BarChart>
+        </ResponsiveContainer>
+      </Paper>
 
       {/* TABLA */}
       <TableContainer component={Paper}>
@@ -119,6 +123,7 @@ const Metricas = () => {
           <TableHead>
             <TableRow>
               <TableCell><strong>Empleado</strong></TableCell>
+              <TableCell align="right"><strong>Total</strong></TableCell>
               <TableCell align="right"><strong>Accesorios</strong></TableCell>
               <TableCell align="right"><strong>Teléfonos</strong></TableCell>
               <TableCell align="center"><strong>Contado</strong></TableCell>
@@ -130,26 +135,26 @@ const Metricas = () => {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={7} align="center">
                   <CircularProgress />
                 </TableCell>
               </TableRow>
             ) : data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={7} align="center">
                   Sin datos
                 </TableCell>
               </TableRow>
             ) : (
-              [...data] // 🔥 evita mutar el state
-                .sort(
-                  (a, b) =>
-                    (b.total_telefonos || 0) -
-                    (a.total_telefonos || 0)
-                )
+              [...data]
+                .sort((a, b) => (b.total_ventas || 0) - (a.total_ventas || 0))
                 .map((row) => (
                   <TableRow key={row.empleado_id}>
-                    <TableCell>{row.username}</TableCell>
+                    <TableCell>{row.empleado}</TableCell>
+
+                    <TableCell align="right">
+                      ${(row.total_ventas || 0).toLocaleString()}
+                    </TableCell>
 
                     <TableCell align="right">
                       ${(row.total_accesorios || 0).toLocaleString()}
@@ -159,17 +164,9 @@ const Metricas = () => {
                       ${(row.total_telefonos || 0).toLocaleString()}
                     </TableCell>
 
-                    <TableCell align="center">
-                      {row.contado || 0}
-                    </TableCell>
-
-                    <TableCell align="center">
-                      {row.paguitos || 0}
-                    </TableCell>
-
-                    <TableCell align="center">
-                      {row.pajoy || 0}
-                    </TableCell>
+                    <TableCell align="center">{row.contado || 0}</TableCell>
+                    <TableCell align="center">{row.paguitos || 0}</TableCell>
+                    <TableCell align="center">{row.pajoy || 0}</TableCell>
                   </TableRow>
                 ))
             )}
