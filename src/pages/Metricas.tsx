@@ -233,18 +233,24 @@ const Metricas = () => {
       {/* GRÁFICAS */}
       <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={2} mb={3}>
         
-         <Paper sx={{ p: 2, gridColumn: "span 6" }}>
-          <Typography>Ventas por empleado</Typography>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={dataGrafica}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="empleado" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="total" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Paper>
+
+        <Paper sx={{ p: 2, gridColumn: "span 6" }}>
+        <Typography variant="h6">Top Empleados</Typography>
+
+        {loading ? (
+          <CircularProgress />
+        ) : (
+          top.map((e, i) => (
+            <Box key={i} display="flex" justifyContent="space-between" py={1}>
+              <Typography>{e.username}</Typography>
+              <Typography>
+                ${(e.total_accesorios + e.total_telefonos).toLocaleString()}
+              </Typography>
+            </Box>
+          ))
+        )}
+      </Paper>
+         
 
          <Paper sx={{ p: 2, gridColumn: "span 3" }}>
           <Typography>Tipo de venta</Typography>
@@ -277,6 +283,7 @@ const Metricas = () => {
 
       </Box>
 
+        <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={2}>
       {/* LINEA */}
       <Paper sx={{ p: 2, mb: 3 }}>
         <Typography>Ventas por día</Typography>
@@ -305,23 +312,20 @@ const Metricas = () => {
   </ResponsiveContainer>
 </Paper>
 
+ </Box>
       {/* TOP EMPLEADOS */}
-      <Paper sx={{ p: 2 }}>
-        <Typography variant="h6">Top Empleados</Typography>
-
-        {loading ? (
-          <CircularProgress />
-        ) : (
-          top.map((e, i) => (
-            <Box key={i} display="flex" justifyContent="space-between" py={1}>
-              <Typography>{e.username}</Typography>
-              <Typography>
-                ${(e.total_accesorios + e.total_telefonos).toLocaleString()}
-              </Typography>
-            </Box>
-          ))
-        )}
-      </Paper>
+      <Paper sx={{ p: 2, gridColumn: "span 6" }}>
+          <Typography>Ventas por empleado</Typography>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={dataGrafica}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="empleado" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="total" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Paper>
     </Container>
   );
 };
