@@ -34,7 +34,7 @@ interface MetricaEmpleado {
   pajoy: number;
 }
 
-const COLORS = ["#1976d2", "#2e7d32", "#ed6c02"];
+const COLORS = ["#1976d2", "#ed6c02", "#2e7d32"];
 
 const Metricas = () => {
   const [data, setData] = useState<MetricaEmpleado[]>([]);
@@ -46,6 +46,8 @@ const Metricas = () => {
   const [fechaFin, setFechaFin] = useState("");
   const [mes, setMes] = useState("");
   const [anio, setAnio] = useState(new Date().getFullYear());
+
+  const [ventasModulo, setVentasModulo] = useState<any[]>([]);
 
   const API = process.env.REACT_APP_API_URL;
 
@@ -71,8 +73,14 @@ const Metricas = () => {
       `${process.env.REACT_APP_API_URL}/dashboard/top-productos?fecha_inicio=${inicio}&fecha_fin=${fin}`
     );
     const json3 = await res3.json();
+    const res4 = await fetch(
+        `${process.env.REACT_APP_API_URL}/dashboard/ventas-por-modulo?fecha_inicio=${inicio}&fecha_fin=${fin}`
+    );
+      const json4 = await res4.json();
 
-    setData(Array.isArray(json.data) ? json.data : []);
+      setVentasModulo(Array.isArray(json4) ? json4 : []);
+
+      setData(Array.isArray(json.data) ? json.data : []);
     setVentasDia(Array.isArray(json2) ? json2 : []);
     setTopProductos(Array.isArray(json3) ? json3 : []);
 
@@ -140,9 +148,9 @@ const Metricas = () => {
   }));
 
   return (
-    <Container sx={{ mt: 4 }}>
+    <Container maxWidth={false} sx={{ mt: 4, px: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Dashboard Pro
+        Metricas de Ventas
       </Typography>
 
       {/* FILTROS */}
@@ -223,9 +231,9 @@ const Metricas = () => {
       </Box>
 
       {/* GRÁFICAS */}
-      <Box display="grid" gridTemplateColumns="repeat(auto-fit, minmax(300px,1fr))" gap={2} mb={3}>
+      <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={2} mb={3}>
         
-        <Paper sx={{ p: 2 }}>
+         <Paper sx={{ p: 2, gridColumn: "span 6" }}>
           <Typography>Ventas por empleado</Typography>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={dataGrafica}>
@@ -238,7 +246,7 @@ const Metricas = () => {
           </ResponsiveContainer>
         </Paper>
 
-        <Paper sx={{ p: 2 }}>
+         <Paper sx={{ p: 2, gridColumn: "span 3" }}>
           <Typography>Tipo de venta</Typography>
                   {dataPie.some(d => d.value > 0) && (
                       <ResponsiveContainer width="100%" height={300}>
@@ -254,7 +262,7 @@ const Metricas = () => {
                   )}
         </Paper>
 
-        <Paper sx={{ p: 2 }}>
+        <Paper sx={{ p: 2, gridColumn: "span 3" }}>
           <Typography>Top Productos</Typography>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={topProductos} layout="vertical">
@@ -282,6 +290,20 @@ const Metricas = () => {
           </LineChart>
         </ResponsiveContainer>
       </Paper>
+
+      <Paper sx={{ p: 2, gridColumn: "span 4" }}>
+  <Typography>Ventas por módulo</Typography>
+
+  <ResponsiveContainer width="100%" height={300}>
+    <BarChart data={ventasModulo}>
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="modulo" />
+      <YAxis />
+      <Tooltip />
+      <Bar dataKey="total" />
+    </BarChart>
+  </ResponsiveContainer>
+</Paper>
 
       {/* TOP EMPLEADOS */}
       <Paper sx={{ p: 2 }}>
