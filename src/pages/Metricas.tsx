@@ -4,7 +4,8 @@ import {
   Typography,
   Paper,
   Box,
-  CircularProgress
+  CircularProgress,
+  TextField, MenuItem
 } from "@mui/material";
 import {
   BarChart,
@@ -16,6 +17,7 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
+  LineChart, Line,
   Cell
 } from "recharts";
 import { MetricaEmpleado } from "../Types";
@@ -23,22 +25,46 @@ import { MetricaEmpleado } from "../Types";
 const COLORS = ["#1976d2", "#2e7d32", "#ed6c02"];
 
 const Metricas = () => {
-  const [data, setData] = useState<MetricaEmpleado[]>([])
-  const [loading, setLoading] = useState(false);
+    const [data, setData] = useState<MetricaEmpleado[]>([])
+    const [loading, setLoading] = useState(false);
+    const [fechaInicio, setFechaInicio] = useState("");
+    const [fechaFin, setFechaFin] = useState("");
+    const [mes, setMes] = useState("");
+    const [anio, setAnio] = useState(new Date().getFullYear());
+    const [ventasDia, setVentasDia] = useState<any[]>([]);
+    const [topProductos, setTopProductos] = useState<any[]>([]);
 
+ const fetchData = async () => {
+  setLoading(true);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/dashboard/metricas/empleados`);
-      const json = await res.json();
-      setData(Array.isArray(json.data) ? json.data : []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+  try {
+    let url = `${process.env.REACT_APP_API_URL}/dashboard/metricas/empleados?`;
+
+    if (fechaInicio && fechaFin) {
+      url += `fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
+    } else if (mes) {
+      url += `mes=${mes}&anio=${anio}`;
     }
-  };
+
+    const res = await fetch(url);
+    const json = await res.json();
+
+    const res2 = await fetch(`${process.env.REACT_APP_API_URL}/dashboard/ventas-por-dia?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`);
+      const json2 = await res2.json();
+      setVentasDia(Array.isArray(json2) ? json2 : []);
+
+
+      const res3 = await fetch(`${process.env.REACT_APP_API_URL}/dashboard/top-productos?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`);
+      const json3 = await res3.json();
+      setTopProductos(Array.isArray(json3) ? json3 : []);
+
+    setData(Array.isArray(json.data) ? json.data : []);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchData();
@@ -75,6 +101,50 @@ const Metricas = () => {
       <Typography variant="h4" gutterBottom>
         Dashboard Pro
       </Typography>
+          <Box display="flex" gap={2} mb={3} flexWrap="wrap">
+
+              <TextField
+                  type="date"
+                  label="Fecha inicio"
+                  InputLabelProps={{ shrink: true }}
+                  value={fechaInicio}
+                  onChange={(e) => setFechaInicio(e.target.value)}
+              />
+
+              <TextField
+                  type="date"
+                  label="Fecha fin"
+                  InputLabelProps={{ shrink: true }}
+                  value={fechaFin}
+                  onChange={(e) => setFechaFin(e.target.value)}
+              />
+
+              <TextField
+                  select
+                  label="Mes"
+                  value={mes}
+                  onChange={(e) => setMes(e.target.value)}
+                  sx={{ minWidth: 150 }}
+              >
+                  {[...Array(12)].map((_, i) => (
+                      <MenuItem key={i + 1} value={i + 1}>
+                          {`Mes ${i + 1}`}
+                      </MenuItem>
+                  ))}
+              </TextField>
+
+              <TextField
+                  type="number"
+                  label="Año"
+                  value={anio}
+                  onChange={(e) => setAnio(Number(e.target.value))}
+              />
+
+              <Button variant="contained" onClick={fetchData}>
+                  Filtrar
+              </Button>
+
+          </Box>
 
       <Box display="grid" gridTemplateColumns="repeat(4,1fr)" gap={2} mb={3}>
         <Paper sx={{ p: 2 }}>
@@ -109,20 +179,48 @@ const Metricas = () => {
           </ResponsiveContainer>
         </Paper>
 
-        <Paper sx={{ p: 2 }}>
-          <Typography>Tipo de venta</Typography>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie data={dataPie} dataKey="value" nameKey="name" outerRadius={100}>
-                {dataPie.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </Paper>
-      </Box>
+              <Paper sx={{ p: 2 }}>
+                  <Typography>Tipo de venta</Typography>
+                  <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                          <Pie data={dataPie} dataKey="value" nameKey="name" outerRadius={100}>
+                              {dataPie.map((_, i) => (
+                                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                              ))}
+                          </Pie>
+                          <Tooltip />
+                      </PieChart>
+                  </ResponsiveContainer>
+              </Paper>
+
+              <Paper sx={{ p: 2 }}>
+                  <Typography>Top Productos</Typography>
+
+                  <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={topProductos} layout="vertical">
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis type="number" />
+                          <YAxis dataKey="producto" type="category" />
+                          <Tooltip />
+                          <Bar dataKey="total_vendidos" />
+                      </BarChart>
+                  </ResponsiveContainer>
+              </Paper>
+          </Box>
+
+          <Paper sx={{ p: 2, mb: 3 }}>
+              <Typography>Ventas por día</Typography>
+
+              <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={ventasDia}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="fecha" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="total" />
+                  </LineChart>
+              </ResponsiveContainer>
+          </Paper>
 
       <Paper sx={{ p: 2 }}>
         <Typography variant="h6">Top Empleados</Typography>
