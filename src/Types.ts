@@ -269,3 +269,13 @@ export interface ProductoModulo {
   modulo: string
   cantidad: number
 }
+
+export interface MetricaEmpleado {
+  empleado_id: number;
+  username: string;
+  total_accesorios: number;
+  total_telefonos: number;
+  contado: number;
+  paguitos: number;
+  pajoy: number;
+}
