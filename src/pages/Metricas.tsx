@@ -41,48 +41,54 @@ const Metricas = () => {
   const [ventasDia, setVentasDia] = useState<any[]>([]);
   const [topProductos, setTopProductos] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [mes, setMes] = useState<string>("");
 
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
-  const [mes, setMes] = useState("");
-  const [anio, setAnio] = useState(new Date().getFullYear());
+
+ const [moduloSeleccionado, setModuloSeleccionado] = useState("");
 
   const [ventasModulo, setVentasModulo] = useState<any[]>([]);
 
   const API = process.env.REACT_APP_API_URL;
 
-  const fetchDataWithDates = async (inicio?: string, fin?: string) => {
+  const fetchDataWithDates = async (
+  inicio?: string,
+  fin?: string,
+  modulo?: string
+) => {
   setLoading(true);
 
   try {
-    let url = `${process.env.REACT_APP_API_URL}/dashboard/metricas/empleados?`;
+    let params = new URLSearchParams();
 
     if (inicio && fin) {
-      url += `fecha_inicio=${inicio}&fecha_fin=${fin}`;
+      params.append("fecha_inicio", inicio);
+      params.append("fecha_fin", fin);
     }
 
-    const res = await fetch(url);
-    const json = await res.json();
+    if (modulo) {
+      params.append("modulo", modulo);
+    }
 
-    const res2 = await fetch(
-      `${process.env.REACT_APP_API_URL}/dashboard/ventas-por-dia?fecha_inicio=${inicio}&fecha_fin=${fin}`
-    );
+    const baseUrl = process.env.REACT_APP_API_URL;
+
+    const [res1, res2, res3, res4] = await Promise.all([
+      fetch(`${baseUrl}/dashboard/metricas/empleados?${params}`),
+      fetch(`${baseUrl}/dashboard/ventas-por-dia?${params}`),
+      fetch(`${baseUrl}/dashboard/top-productos?${params}`),
+      fetch(`${baseUrl}/dashboard/ventas-por-modulo?${params}`)
+    ]);
+
+    const json1 = await res1.json();
     const json2 = await res2.json();
-
-    const res3 = await fetch(
-      `${process.env.REACT_APP_API_URL}/dashboard/top-productos?fecha_inicio=${inicio}&fecha_fin=${fin}`
-    );
     const json3 = await res3.json();
-    const res4 = await fetch(
-        `${process.env.REACT_APP_API_URL}/dashboard/ventas-por-modulo?fecha_inicio=${inicio}&fecha_fin=${fin}`
-    );
-      const json4 = await res4.json();
+    const json4 = await res4.json();
 
-      setVentasModulo(Array.isArray(json4) ? json4 : []);
-
-      setData(Array.isArray(json.data) ? json.data : []);
+    setData(Array.isArray(json1.data) ? json1.data : []);
     setVentasDia(Array.isArray(json2) ? json2 : []);
     setTopProductos(Array.isArray(json3) ? json3 : []);
+    setVentasModulo(Array.isArray(json4) ? json4 : []);
 
   } catch (err) {
     console.error(err);
@@ -147,6 +153,9 @@ const Metricas = () => {
     fecha: new Date(v.fecha).toLocaleDateString()
   }));
 
+    
+
+
   return (
     <Container maxWidth={false} sx={{ mt: 4, px: 4 }}>
       <Typography variant="h4" gutterBottom>
@@ -166,42 +175,31 @@ const Metricas = () => {
           }}
         />
 
-        <TextField
-          type="date"
-          label="Fecha fin"
-          InputLabelProps={{ shrink: true }}
-          value={fechaFin}
-          onChange={(e) => {
-            setFechaFin(e.target.value);
-            setMes("");
-          }}
-        />
+              <TextField
+                  type="date"
+                  label="Fecha fin"
+                  InputLabelProps={{ shrink: true }}
+                  value={fechaFin}
+                  onChange={(e) => {
+                      setFechaFin(e.target.value);
+                      setMes("");
+                  }}
+              />
 
-        <TextField
-          select
-          label="Mes"
-          value={mes}
-          onChange={(e) => {
-            setMes(e.target.value);
-            setFechaInicio("");
-            setFechaFin("");
-          }}
-          sx={{ minWidth: 150 }}
-        >
-          {[...Array(12)].map((_, i) => (
-            <MenuItem key={i + 1} value={i + 1}>
-              {`Mes ${i + 1}`}
-            </MenuItem>
-          ))}
-        </TextField>
-
-        <TextField
-          type="number"
-          label="Año"
-          value={anio}
-          onChange={(e) => setAnio(Number(e.target.value))}
-        />
-
+              <TextField
+                  select
+                  label="Módulo"
+                  value={moduloSeleccionado}
+                  onChange={(e) => setModuloSeleccionado(e.target.value)}
+                  sx={{ minWidth: 150 }}
+              >
+                  <MenuItem value="">Todos</MenuItem>
+                  {ventasModulo.map((m, i) => (
+                      <MenuItem key={i} value={m.modulo}>
+                          {m.modulo}
+                      </MenuItem>
+                  ))}
+              </TextField>
         <Button variant="contained" onClick={() => fetchDataWithDates(fechaInicio, fechaFin)}>
           Filtrar
         </Button>
