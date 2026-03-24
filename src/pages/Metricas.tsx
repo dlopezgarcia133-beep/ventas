@@ -268,7 +268,7 @@ const Metricas = () => {
                   )}
         </Paper>
 
-        <Paper sx={{ p: 2, gridColumn: "span 4" }}>
+        <Paper sx={{ p: 2, gridColumn: "span 5" }}>
           <Typography>Top Productos</Typography>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={topProductos} layout="vertical">
@@ -283,7 +283,7 @@ const Metricas = () => {
 
       </Box>
 
-        <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={2}>
+        <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={3} mb={3}>
       {/* LINEA */}
       <Paper sx={{  p: 2, gridColumn: "span 3" }}>
         <Typography>Ventas por día</Typography>
