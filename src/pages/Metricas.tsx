@@ -285,7 +285,7 @@ const Metricas = () => {
 
         <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={3} mb={3}>
       {/* LINEA */}
-      <Paper sx={{  p: 2, gridColumn: "span 3" }}>
+      <Paper sx={{  p: 2, gridColumn: "span 5" }}>
         <Typography>Ventas por día</Typography>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={ventasDiaFormateado}>
@@ -298,7 +298,7 @@ const Metricas = () => {
         </ResponsiveContainer>
       </Paper>
 
-      <Paper sx={{ p: 2, gridColumn: "span 3" }}>
+      <Paper sx={{ p: 2, gridColumn: "span 5" }}>
   <Typography>Ventas por módulo</Typography>
 
   <ResponsiveContainer width="100%" height={300}>
