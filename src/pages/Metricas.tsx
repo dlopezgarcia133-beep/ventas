@@ -5,7 +5,8 @@ import {
   Paper,
   Box,
   CircularProgress,
-  TextField, MenuItem,
+  TextField,
+  MenuItem,
   Button
 } from "@mui/material";
 import {
@@ -18,59 +19,73 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  LineChart, Line,
+  LineChart,
+  Line,
   Cell
 } from "recharts";
-import { MetricaEmpleado } from "../Types";
+
+interface MetricaEmpleado {
+  empleado_id: number;
+  username: string;
+  total_accesorios: number;
+  total_telefonos: number;
+  contado: number;
+  paguitos: number;
+  pajoy: number;
+}
 
 const COLORS = ["#1976d2", "#2e7d32", "#ed6c02"];
 
 const Metricas = () => {
-    const [data, setData] = useState<MetricaEmpleado[]>([])
-    const [loading, setLoading] = useState(false);
-    const [fechaInicio, setFechaInicio] = useState("");
-    const [fechaFin, setFechaFin] = useState("");
-    const [mes, setMes] = useState("");
-    const [anio, setAnio] = useState(new Date().getFullYear());
-    const [ventasDia, setVentasDia] = useState<any[]>([]);
-    const [topProductos, setTopProductos] = useState<any[]>([]);
+  const [data, setData] = useState<MetricaEmpleado[]>([]);
+  const [ventasDia, setVentasDia] = useState<any[]>([]);
+  const [topProductos, setTopProductos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
- const fetchData = async () => {
-  setLoading(true);
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
+  const [mes, setMes] = useState("");
+  const [anio, setAnio] = useState(new Date().getFullYear());
 
-  try {
-    let url = `${process.env.REACT_APP_API_URL}/dashboard/metricas/empleados?`;
+  const API = process.env.REACT_APP_API_URL;
 
-    if (fechaInicio && fechaFin) {
-      url += `fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
-    } else if (mes) {
-      url += `mes=${mes}&anio=${anio}`;
-    }
+  const fetchData = async () => {
+    setLoading(true);
 
-    const res = await fetch(url);
-    const json = await res.json();
+    try {
+      let params = "";
 
-    const res2 = await fetch(`${process.env.REACT_APP_API_URL}/dashboard/ventas-por-dia?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`);
+      if (fechaInicio && fechaFin) {
+        params = `fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
+      } else if (mes) {
+        params = `mes=${mes}&anio=${anio}`;
+      }
+
+      const res = await fetch(`${API}/dashboard/metricas/empleados?${params}`);
+      const json = await res.json();
+
+      const res2 = await fetch(`${API}/dashboard/ventas-por-dia?${params}`);
       const json2 = await res2.json();
-      setVentasDia(Array.isArray(json2) ? json2 : []);
 
-
-      const res3 = await fetch(`${process.env.REACT_APP_API_URL}/dashboard/top-productos?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`);
+      const res3 = await fetch(`${API}/dashboard/top-productos?${params}`);
       const json3 = await res3.json();
+
+      setData(Array.isArray(json.data) ? json.data : []);
+      setVentasDia(Array.isArray(json2) ? json2 : []);
       setTopProductos(Array.isArray(json3) ? json3 : []);
 
-    setData(Array.isArray(json.data) ? json.data : []);
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (err) {
+      console.error("Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchData();
   }, []);
 
+  // 🔥 KPIs
   const totalAccesorios = data.reduce((a, i) => a + (i.total_accesorios || 0), 0);
   const totalTelefonos = data.reduce((a, i) => a + (i.total_telefonos || 0), 0);
   const totalGeneral = totalAccesorios + totalTelefonos;
@@ -82,91 +97,120 @@ const Metricas = () => {
 
   const ticketPromedio = ventasCount ? totalGeneral / ventasCount : 0;
 
+  // 🔥 Gráfica empleados
   const dataGrafica = data.map((i) => ({
     empleado: i.username,
     total: (i.total_accesorios || 0) + (i.total_telefonos || 0)
   }));
 
+  // 🔥 Pie
   const dataPie = [
-    { name: "Contado", value: data.reduce((a, i) => a + i.contado, 0) },
-    { name: "Paguitos", value: data.reduce((a, i) => a + i.paguitos, 0) },
-    { name: "Pajoy", value: data.reduce((a, i) => a + i.pajoy, 0) }
+    { name: "Contado", value: data.reduce((a, i) => a + (i.contado || 0), 0) },
+    { name: "Paguitos", value: data.reduce((a, i) => a + (i.paguitos || 0), 0) },
+    { name: "Pajoy", value: data.reduce((a, i) => a + (i.pajoy || 0), 0) }
   ];
 
+  // 🔥 Top empleados
   const top = [...data]
-    .sort((a, b) => (b.total_telefonos + b.total_accesorios) - (a.total_telefonos + a.total_accesorios))
+    .sort(
+      (a, b) =>
+        (b.total_telefonos + b.total_accesorios) -
+        (a.total_telefonos + a.total_accesorios)
+    )
     .slice(0, 5);
+
+  // 🔥 Formatear fechas
+  const ventasDiaFormateado = ventasDia.map((v) => ({
+    ...v,
+    fecha: new Date(v.fecha).toLocaleDateString()
+  }));
 
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
         Dashboard Pro
       </Typography>
-          <Box display="flex" gap={2} mb={3} flexWrap="wrap">
 
-              <TextField
-                  type="date"
-                  label="Fecha inicio"
-                  InputLabelProps={{ shrink: true }}
-                  value={fechaInicio}
-                  onChange={(e) => setFechaInicio(e.target.value)}
-              />
+      {/* FILTROS */}
+      <Box display="flex" gap={2} mb={3} flexWrap="wrap">
+        <TextField
+          type="date"
+          label="Fecha inicio"
+          InputLabelProps={{ shrink: true }}
+          value={fechaInicio}
+          onChange={(e) => {
+            setFechaInicio(e.target.value);
+            setMes("");
+          }}
+        />
 
-              <TextField
-                  type="date"
-                  label="Fecha fin"
-                  InputLabelProps={{ shrink: true }}
-                  value={fechaFin}
-                  onChange={(e) => setFechaFin(e.target.value)}
-              />
+        <TextField
+          type="date"
+          label="Fecha fin"
+          InputLabelProps={{ shrink: true }}
+          value={fechaFin}
+          onChange={(e) => {
+            setFechaFin(e.target.value);
+            setMes("");
+          }}
+        />
 
-              <TextField
-                  select
-                  label="Mes"
-                  value={mes}
-                  onChange={(e) => setMes(e.target.value)}
-                  sx={{ minWidth: 150 }}
-              >
-                  {[...Array(12)].map((_, i) => (
-                      <MenuItem key={i + 1} value={i + 1}>
-                          {`Mes ${i + 1}`}
-                      </MenuItem>
-                  ))}
-              </TextField>
+        <TextField
+          select
+          label="Mes"
+          value={mes}
+          onChange={(e) => {
+            setMes(e.target.value);
+            setFechaInicio("");
+            setFechaFin("");
+          }}
+          sx={{ minWidth: 150 }}
+        >
+          {[...Array(12)].map((_, i) => (
+            <MenuItem key={i + 1} value={i + 1}>
+              {`Mes ${i + 1}`}
+            </MenuItem>
+          ))}
+        </TextField>
 
-              <TextField
-                  type="number"
-                  label="Año"
-                  value={anio}
-                  onChange={(e) => setAnio(Number(e.target.value))}
-              />
+        <TextField
+          type="number"
+          label="Año"
+          value={anio}
+          onChange={(e) => setAnio(Number(e.target.value))}
+        />
 
-              <Button variant="contained" onClick={fetchData}>
-                  Filtrar
-              </Button>
+        <Button variant="contained" onClick={fetchData}>
+          Filtrar
+        </Button>
+      </Box>
 
-          </Box>
-
-      <Box display="grid" gridTemplateColumns="repeat(4,1fr)" gap={2} mb={3}>
+      {/* KPIs */}
+      <Box display="grid" gridTemplateColumns="repeat(auto-fit, minmax(200px,1fr))" gap={2} mb={3}>
         <Paper sx={{ p: 2 }}>
           <Typography variant="subtitle2">Ventas Totales</Typography>
           <Typography variant="h6">${totalGeneral.toLocaleString()}</Typography>
         </Paper>
+
         <Paper sx={{ p: 2 }}>
           <Typography variant="subtitle2">Accesorios</Typography>
           <Typography variant="h6">${totalAccesorios.toLocaleString()}</Typography>
         </Paper>
+
         <Paper sx={{ p: 2 }}>
           <Typography variant="subtitle2">Teléfonos</Typography>
           <Typography variant="h6">${totalTelefonos.toLocaleString()}</Typography>
         </Paper>
+
         <Paper sx={{ p: 2 }}>
           <Typography variant="subtitle2">Ticket Promedio</Typography>
           <Typography variant="h6">${ticketPromedio.toFixed(2)}</Typography>
         </Paper>
       </Box>
 
-      <Box display="grid" gridTemplateColumns="2fr 1fr" gap={2} mb={3}>
+      {/* GRÁFICAS */}
+      <Box display="grid" gridTemplateColumns="repeat(auto-fit, minmax(300px,1fr))" gap={2} mb={3}>
+        
         <Paper sx={{ p: 2 }}>
           <Typography>Ventas por empleado</Typography>
           <ResponsiveContainer width="100%" height={300}>
@@ -180,51 +224,53 @@ const Metricas = () => {
           </ResponsiveContainer>
         </Paper>
 
-              <Paper sx={{ p: 2 }}>
-                  <Typography>Tipo de venta</Typography>
-                  <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                          <Pie data={dataPie} dataKey="value" nameKey="name" outerRadius={100}>
-                              {dataPie.map((_, i) => (
-                                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                              ))}
-                          </Pie>
-                          <Tooltip />
-                      </PieChart>
-                  </ResponsiveContainer>
-              </Paper>
+        <Paper sx={{ p: 2 }}>
+          <Typography>Tipo de venta</Typography>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie data={dataPie} dataKey="value" nameKey="name" outerRadius={100}>
+                {dataPie.map((_, i) => (
+                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </Paper>
 
-              <Paper sx={{ p: 2 }}>
-                  <Typography>Top Productos</Typography>
+        <Paper sx={{ p: 2 }}>
+          <Typography>Top Productos</Typography>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={topProductos} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" />
+              <YAxis dataKey="producto" type="category" />
+              <Tooltip />
+              <Bar dataKey="total_vendidos" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Paper>
 
-                  <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={topProductos} layout="vertical">
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis type="number" />
-                          <YAxis dataKey="producto" type="category" />
-                          <Tooltip />
-                          <Bar dataKey="total_vendidos" />
-                      </BarChart>
-                  </ResponsiveContainer>
-              </Paper>
-          </Box>
+      </Box>
 
-          <Paper sx={{ p: 2, mb: 3 }}>
-              <Typography>Ventas por día</Typography>
+      {/* LINEA */}
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Typography>Ventas por día</Typography>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={ventasDiaFormateado}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="fecha" />
+            <YAxis />
+            <Tooltip />
+            <Line type="monotone" dataKey="total" />
+          </LineChart>
+        </ResponsiveContainer>
+      </Paper>
 
-              <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={ventasDia}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="fecha" />
-                      <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="total" />
-                  </LineChart>
-              </ResponsiveContainer>
-          </Paper>
-
+      {/* TOP EMPLEADOS */}
       <Paper sx={{ p: 2 }}>
         <Typography variant="h6">Top Empleados</Typography>
+
         {loading ? (
           <CircularProgress />
         ) : (
