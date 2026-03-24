@@ -18,12 +18,14 @@ import {
   Pie,
   Cell
 } from "recharts";
+import { MetricaEmpleado } from "../Types";
 
 const COLORS = ["#1976d2", "#2e7d32", "#ed6c02"];
 
 const Metricas = () => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<MetricaEmpleado[]>([])
   const [loading, setLoading] = useState(false);
+
 
   const fetchData = async () => {
     setLoading(true);
