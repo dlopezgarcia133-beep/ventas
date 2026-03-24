@@ -252,7 +252,7 @@ const Metricas = () => {
       </Paper>
          
 
-         <Paper sx={{ p: 2, gridColumn: "span 5" }}>
+         <Paper sx={{ p: 2, gridColumn: "span 4" }}>
           <Typography>Tipo de venta</Typography>
                   {dataPie.some(d => d.value > 0) && (
                       <ResponsiveContainer width="100%" height={300}>
@@ -268,7 +268,7 @@ const Metricas = () => {
                   )}
         </Paper>
 
-        <Paper sx={{ p: 2, gridColumn: "span 5" }}>
+        <Paper sx={{ p: 2, gridColumn: "span 4" }}>
           <Typography>Top Productos</Typography>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={topProductos} layout="vertical">
@@ -285,7 +285,7 @@ const Metricas = () => {
 
         <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={2}>
       {/* LINEA */}
-      <Paper sx={{  p: 2, gridColumn: "span 4" }}>
+      <Paper sx={{  p: 2, gridColumn: "span 3" }}>
         <Typography>Ventas por día</Typography>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={ventasDiaFormateado}>
@@ -298,7 +298,7 @@ const Metricas = () => {
         </ResponsiveContainer>
       </Paper>
 
-      <Paper sx={{ p: 2, gridColumn: "span 4" }}>
+      <Paper sx={{ p: 2, gridColumn: "span 3" }}>
   <Typography>Ventas por módulo</Typography>
 
   <ResponsiveContainer width="100%" height={300}>
