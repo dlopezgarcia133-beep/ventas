@@ -49,41 +49,55 @@ const Metricas = () => {
 
   const API = process.env.REACT_APP_API_URL;
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchDataWithDates = async (inicio?: string, fin?: string) => {
+  setLoading(true);
 
-    try {
-      let params = "";
+  try {
+    let url = `${process.env.REACT_APP_API_URL}/dashboard/metricas/empleados?`;
 
-      if (fechaInicio && fechaFin) {
-        params = `fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
-      } else if (mes) {
-        params = `mes=${mes}&anio=${anio}`;
-      }
-
-      const res = await fetch(`${API}/dashboard/metricas/empleados?${params}`);
-      const json = await res.json();
-
-      const res2 = await fetch(`${API}/dashboard/ventas-por-dia?${params}`);
-      const json2 = await res2.json();
-
-      const res3 = await fetch(`${API}/dashboard/top-productos?${params}`);
-      const json3 = await res3.json();
-
-      setData(Array.isArray(json.data) ? json.data : []);
-      setVentasDia(Array.isArray(json2) ? json2 : []);
-      setTopProductos(Array.isArray(json3) ? json3 : []);
-
-    } catch (err) {
-      console.error("Error:", err);
-    } finally {
-      setLoading(false);
+    if (inicio && fin) {
+      url += `fecha_inicio=${inicio}&fecha_fin=${fin}`;
     }
-  };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+    const res = await fetch(url);
+    const json = await res.json();
+
+    const res2 = await fetch(
+      `${process.env.REACT_APP_API_URL}/dashboard/ventas-por-dia?fecha_inicio=${inicio}&fecha_fin=${fin}`
+    );
+    const json2 = await res2.json();
+
+    const res3 = await fetch(
+      `${process.env.REACT_APP_API_URL}/dashboard/top-productos?fecha_inicio=${inicio}&fecha_fin=${fin}`
+    );
+    const json3 = await res3.json();
+
+    setData(Array.isArray(json.data) ? json.data : []);
+    setVentasDia(Array.isArray(json2) ? json2 : []);
+    setTopProductos(Array.isArray(json3) ? json3 : []);
+
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+    useEffect(() => {
+        const hoy = new Date();
+        const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+
+        const format = (d: Date) => d.toISOString().split("T")[0];
+
+        setFechaInicio(format(inicioMes));
+        setFechaFin(format(hoy));
+
+        // 👇 importante: manda fechas desde el inicio
+        setTimeout(() => {
+            fetchDataWithDates(format(inicioMes), format(hoy));
+        }, 0);
+
+    }, []);
 
   // 🔥 KPIs
   const totalAccesorios = data.reduce((a, i) => a + (i.total_accesorios || 0), 0);
@@ -180,7 +194,7 @@ const Metricas = () => {
           onChange={(e) => setAnio(Number(e.target.value))}
         />
 
-        <Button variant="contained" onClick={fetchData}>
+        <Button variant="contained" onClick={() => fetchDataWithDates(fechaInicio, fechaFin)}>
           Filtrar
         </Button>
       </Box>
@@ -226,16 +240,18 @@ const Metricas = () => {
 
         <Paper sx={{ p: 2 }}>
           <Typography>Tipo de venta</Typography>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie data={dataPie} dataKey="value" nameKey="name" outerRadius={100}>
-                {dataPie.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+                  {dataPie.some(d => d.value > 0) && (
+                      <ResponsiveContainer width="100%" height={300}>
+                          <PieChart>
+                              <Pie data={dataPie} dataKey="value" nameKey="name" outerRadius={100}>
+                                  {dataPie.map((_, i) => (
+                                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                  ))}
+                              </Pie>
+                              <Tooltip />
+                          </PieChart>
+                      </ResponsiveContainer>
+                  )}
         </Paper>
 
         <Paper sx={{ p: 2 }}>
