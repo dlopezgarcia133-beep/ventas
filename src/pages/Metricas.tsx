@@ -52,11 +52,7 @@ const Metricas = () => {
 
   const API = process.env.REACT_APP_API_URL;
 
-  const fetchDataWithDates = async (
-  inicio?: string,
-  fin?: string,
-  modulo?: string
-) => {
+const fetchDataWithDates = async (inicio?: string, fin?: string) => {
   setLoading(true);
 
   try {
@@ -67,8 +63,8 @@ const Metricas = () => {
       params.append("fecha_fin", fin);
     }
 
-    if (modulo) {
-      params.append("modulo", modulo);
+    if (moduloSeleccionado) {
+      params.append("modulo_id", moduloSeleccionado);
     }
 
     const baseUrl = process.env.REACT_APP_API_URL;
@@ -96,7 +92,6 @@ const Metricas = () => {
     setLoading(false);
   }
 };
-
     useEffect(() => {
         const hoy = new Date();
         const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
@@ -194,13 +189,14 @@ const Metricas = () => {
                   sx={{ minWidth: 150 }}
               >
                   <MenuItem value="">Todos</MenuItem>
-                  {ventasModulo.map((m, i) => (
-                      <MenuItem key={i} value={m.modulo}>
+
+                  {ventasModulo.map((m) => (
+                      <MenuItem key={m.modulo_id} value={m.modulo_id}>
                           {m.modulo}
                       </MenuItem>
                   ))}
               </TextField>
-        <Button variant="contained" onClick={() => fetchDataWithDates(fechaInicio, fechaFin)}>
+        <Button variant="contained" onClick={() => fetchDataWithDates(fechaInicio, fechaFin, moduloSeleccionado)}>
           Filtrar
         </Button>
       </Box>
