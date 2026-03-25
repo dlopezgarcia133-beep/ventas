@@ -141,7 +141,7 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
         (b.total_telefonos + b.total_accesorios) -
         (a.total_telefonos + a.total_accesorios)
     )
-    .slice(0, 5);
+    .slice(0, 8);
 
   // 🔥 Formatear fechas
   const ventasDiaFormateado = ventasDia.map((v) => ({
