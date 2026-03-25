@@ -21,7 +21,7 @@ import {
   Pie,
   LineChart,
   Line,
-  Legend,
+    Legend,
   Cell
 } from "recharts";
 
@@ -251,21 +251,6 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
           <Typography>Tipo de venta</Typography>
                   {dataPie.some(d => d.value > 0) && (
                       <ResponsiveContainer width="100%" height={300}>
-                          <PieChart>
-                              <Pie data={dataPie} dataKey="value" nameKey="name" outerRadius={100}>
-                                  {dataPie.map((_, i) => (
-                                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                                  ))}
-                              </Pie>
-                              <Tooltip />
-                          </PieChart>
-                      </ResponsiveContainer>
-                  )}
-        </Paper>
-
-        <Paper sx={{ p: 2, gridColumn: "span 5" }}>
-                  <Typography>Top Productos</Typography>
-                  <ResponsiveContainer width="100%" height={300}>
                       <PieChart>
                           <Pie
                               data={dataPie}
@@ -289,6 +274,7 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
                           <Legend />
                       </PieChart>
                   </ResponsiveContainer>
+                  )}
 
                   <Box mt={2}>
                       {dataPie.map((item, i) => (
@@ -298,6 +284,19 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
                           </Box>
                       ))}
                   </Box>
+        </Paper>
+
+        <Paper sx={{ p: 2, gridColumn: "span 5" }}>
+          <Typography>Top Productos</Typography>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={topProductos} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" />
+              <YAxis dataKey="producto" type="category" />
+              <Tooltip />
+              <Bar dataKey="total_vendidos" />
+            </BarChart>
+          </ResponsiveContainer>
         </Paper>
 
       </Box>
