@@ -21,6 +21,7 @@ import {
   Pie,
   LineChart,
   Line,
+  Legend,
   Cell
 } from "recharts";
 
@@ -263,16 +264,40 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
         </Paper>
 
         <Paper sx={{ p: 2, gridColumn: "span 5" }}>
-          <Typography>Top Productos</Typography>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={topProductos} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis dataKey="producto" type="category" />
-              <Tooltip />
-              <Bar dataKey="total_vendidos" />
-            </BarChart>
-          </ResponsiveContainer>
+                  <Typography>Top Productos</Typography>
+                  <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                          <Pie
+                              data={dataPie}
+                              dataKey="value"
+                              nameKey="name"
+                              outerRadius={100}
+                              label={({ percent }: { percent: number }) => `${(percent * 100).toFixed(0)}%`}
+                          >
+                              {dataPie.map((_, i) => (
+                                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                              ))}
+                          </Pie>
+
+                          <Tooltip
+                              formatter={(value: any, name: any) => [
+                                  `${value} ventas`,
+                                  name
+                              ]}
+                          />
+
+                          <Legend />
+                      </PieChart>
+                  </ResponsiveContainer>
+
+                  <Box mt={2}>
+                      {dataPie.map((item, i) => (
+                          <Box key={i} display="flex" justifyContent="space-between">
+                              <Typography>{item.name}</Typography>
+                              <Typography>{item.value} ventas</Typography>
+                          </Box>
+                      ))}
+                  </Box>
         </Paper>
 
       </Box>
