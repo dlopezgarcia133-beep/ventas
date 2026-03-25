@@ -196,7 +196,7 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
                       </MenuItem>
                   ))}
               </TextField>
-        <Button variant="contained" onClick={() => fetchDataWithDates(fechaInicio, fechaFin, moduloSeleccionado)}>
+        <Button variant="contained" onClick={() => fetchDataWithDates(fechaInicio, fechaFin)}>
           Filtrar
         </Button>
       </Box>
