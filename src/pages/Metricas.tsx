@@ -48,6 +48,7 @@ const Metricas = () => {
   const [fechaFin, setFechaFin] = useState("");
 
  const [moduloSeleccionado, setModuloSeleccionado] = useState("");
+ const [resumenModulo, setResumenModulo] = useState<any[]>([]);
 
   const [ventasModulo, setVentasModulo] = useState<any[]>([]);
 
@@ -70,18 +71,21 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
 
     const baseUrl = process.env.REACT_APP_API_URL;
 
-    const [res1, res2, res3, res4] = await Promise.all([
+    const [res1, res2, res3, res4, res5] = await Promise.all([
       fetch(`${baseUrl}/dashboard/metricas/empleados?${params}`),
       fetch(`${baseUrl}/dashboard/ventas-por-dia?${params}`),
       fetch(`${baseUrl}/dashboard/top-productos?${params}`),
-      fetch(`${baseUrl}/dashboard/ventas-por-modulo?${params}`)
+      fetch(`${baseUrl}/dashboard/ventas-por-modulo?${params}`),
+      fetch(`${baseUrl}/dashboard/resumen-por-modulo?${params}`)
     ]);
 
     const json1 = await res1.json();
     const json2 = await res2.json();
     const json3 = await res3.json();
     const json4 = await res4.json();
+    const json5 = await res5.json();
 
+    setResumenModulo(Array.isArray(json5) ? json5 : []);
     setData(Array.isArray(json1.data) ? json1.data : []);
     setVentasDia(Array.isArray(json2) ? json2 : []);
     setTopProductos(Array.isArray(json3) ? json3 : []);
@@ -368,6 +372,49 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
             </BarChart>
           </ResponsiveContainer>
         </Paper>
+
+        <Paper sx={{ p: 2, mt: 3 }}>
+  <Typography variant="h6" mb={2}>
+    Resumen por Módulo
+  </Typography>
+
+  <Box overflow="auto">
+    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <thead>
+        <tr style={{ background: "#f5f5f5" }}>
+          <th>Módulo</th>
+          <th>Accesorios</th>
+          <th>Teléfonos</th>
+          <th>Contado</th>
+          <th>Paguitos</th>
+          <th>Pajoy</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {resumenModulo.map((m, i) => (
+          <tr key={i} style={{ textAlign: "center", borderBottom: "1px solid #eee" }}>
+            <td>{m.modulo}</td>
+
+            <td>${(m.total_accesorios || 0).toLocaleString()}</td>
+            <td>${(m.total_telefonos || 0).toLocaleString()}</td>
+
+            <td>{m.contado || 0}</td>
+            <td>{m.paguitos || 0}</td>
+            <td>{m.pajoy || 0}</td>
+
+            <td>
+              <strong>
+                ${(m.total_general || 0).toLocaleString()}
+              </strong>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </Box>
+</Paper>
     </Container>
   );
 };
