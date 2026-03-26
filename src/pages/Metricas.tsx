@@ -235,16 +235,40 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
         {loading ? (
           <CircularProgress />
         ) : (
-          top.map((e, i) => (
-            <Box key={i} display="flex" justifyContent="space-between" py={1}>
-              <Typography>{e.username}</Typography>
-              <Typography>
-                ${(e.total_accesorios + e.total_telefonos).toLocaleString()}
-              </Typography>
-            </Box>
-          ))
-        )}
-      </Paper>
+                      top.map((e, i) => (
+                          <Box
+                              key={i}
+                              sx={{
+                                  py: 1,
+                                  borderBottom: "1px solid #eee"
+                              }}
+                          >
+                              {/* Nombre + total */}
+                              <Box display="flex" justifyContent="space-between">
+                                  <Typography fontWeight={600}>{e.username}</Typography>
+                                  <Typography>
+                                      ${(e.total_accesorios + e.total_telefonos).toLocaleString()}
+                                  </Typography>
+                              </Box>
+
+                              {/* 🔥 DESGLOSE */}
+                              <Box display="flex" gap={2} mt={0.5}>
+                                  <Typography variant="caption">
+                                      💵 Contado: {e.contado || 0}
+                                  </Typography>
+
+                                  <Typography variant="caption">
+                                      📱 Paguitos: {e.paguitos || 0}
+                                  </Typography>
+
+                                  <Typography variant="caption">
+                                      🧾 Pajoy: {e.pajoy || 0}
+                                  </Typography>
+                              </Box>
+                          </Box>
+                      ))
+                  )}
+              </Paper>
          
 
          <Paper sx={{ p: 2, gridColumn: "span 4" }}>
