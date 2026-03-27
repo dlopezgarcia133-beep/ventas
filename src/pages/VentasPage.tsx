@@ -253,6 +253,7 @@ const registrarVentaTelefono = async () => {
       precio_unitario: Number(telefonoPrecio),
       tipo_producto: "telefono", 
       tipo_venta: telefonoTipo_venta,
+      chip_casado: Chip_casado || null,
     },
   ],
   metodo_pago: metodoPago,
