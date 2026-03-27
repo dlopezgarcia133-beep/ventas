@@ -19,6 +19,7 @@ export interface Venta {
   hora: string;
   cancelada: boolean;
   tipo_producto:"accesorio" | "telefono";
+  chip_casado?: string;
   empleado?: {
     username: string;
   };

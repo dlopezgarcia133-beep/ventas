@@ -33,6 +33,7 @@ const FormularioVentaMultiple = () => {
   const [telefonoChecked, setTelefonoChecked] = useState(false);
   const [telefonoTipo_venta, setTelefonoTipo_venta] = useState('');
   const [telefonoPrecio, setTelefonoPrecio] = useState('');
+  const [Chip_casado, setChip_casado] = useState('');
   const [fecha, setFecha] = useState("");
   const [opcionesTelefonos, setOpcionesTelefonos] = useState<any[]>([]);
   const [buscando, setBuscando] = useState(false);
@@ -268,6 +269,7 @@ await axios.post(`${process.env.REACT_APP_API_URL}/ventas/ventas`, ventaPayload,
     setTelefonoTipo_venta("");
     setMetodoPago("");
     setTelefonoPrecio("");
+    setChip_casado("");
     settelefono("");
   } catch (err: any) {
     console.error("Error en registrarVentaTelefono:", err);
@@ -605,6 +607,15 @@ const totalVentasTelefonos = ventasTelefonos
   <MenuItem value="efectivo">💵 Efectivo</MenuItem>
   <MenuItem value="tarjeta">💳 Tarjeta</MenuItem>
 </TextField>
+
+<TextField
+  label="chip casado"
+  type="text"
+  value={Chip_casado}
+  onChange={(e) => setChip_casado(e.target.value)}
+  fullWidth
+  margin="normal"
+/>
 
     <Button
       variant="contained"
