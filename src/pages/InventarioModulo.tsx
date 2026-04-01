@@ -78,6 +78,7 @@ const [existenciaActual, setExistenciaActual] = useState<number>(0);
 
 const [esAdmin, setEsAdmin] = useState(false);
 
+
 const inputBusquedaRef = useRef<HTMLInputElement>(null);
 const inputCantidadRef = useRef<HTMLInputElement>(null);
 
@@ -861,22 +862,37 @@ const confirmarImportacion = async () => {
     option.id === value.id
   }
             renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Buscar producto"
-                fullWidth
-                inputRef={inputBusquedaRef}
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {loadingBusqueda && <CircularProgress size={20} />}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-              />
-            )}
+  <TextField
+    {...params}
+    label="Buscar producto"
+    fullWidth
+    inputRef={inputBusquedaRef}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" && opcionesConteo.length > 0) {
+        e.preventDefault();
+
+        const primero = opcionesConteo[0];
+
+        setProductoConteo(primero);
+        setProductoEncontrado(primero);
+
+        // mover foco a cantidad
+        setTimeout(() => {
+          inputCantidadRef.current?.focus();
+        }, 100);
+      }
+    }}
+    InputProps={{
+      ...params.InputProps,
+      endAdornment: (
+        <>
+          {loadingConteo && <CircularProgress size={20} />}
+          {params.InputProps.endAdornment}
+        </>
+      ),
+    }}
+  />
+)}
 />
 
 
@@ -895,13 +911,20 @@ const confirmarImportacion = async () => {
             : ""}
         </Typography>
 
-        <TextField
-          label="Cantidad contada"
-          type="number"
-          value={cantidadConteo}
-          onChange={(e) => setCantidadConteo(e.target.value)}
-          sx={{ mt: 2, width: 200 }}
-        />
+              <TextField
+                label="Cantidad contada"
+                type="number"
+                value={cantidadConteo}
+                inputRef={inputCantidadRef}
+                onChange={(e) => setCantidadConteo(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    agregarAConteo();
+                  }
+                }}
+                sx={{ mt: 2, width: 200 }}
+              />
 
         <Button
           variant="contained"
