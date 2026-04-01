@@ -242,8 +242,17 @@ const buscarProductosConteo = async (texto: string) => {
   }
 
   setProductoEncontrado(null);
-  setCantidadConteo("");
-  setBusquedaClave("");
+setProductoConteo(null);
+setCantidadConteo("");
+setTextoBusquedaConteo("");
+
+// 🔥 IMPORTANTE: limpiar opciones también
+setOpcionesConteo([]);
+
+// 🔥 regresar foco limpio
+setTimeout(() => {
+  inputBusquedaRef.current?.focus();
+}, 100);
 };
 
 
