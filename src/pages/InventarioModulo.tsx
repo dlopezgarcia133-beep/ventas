@@ -968,7 +968,7 @@ const confirmarImportacion = async () => {
             {conteoLista.map((p, idx) => (
               <TableRow key={idx}>
                 <TableCell>{p.clave}</TableCell>
-                <TableCell>{p.producto ?? p.producto_id}</TableCell>
+                <TableCell>{p.producto}</TableCell>
                 <TableCell align="right">{p.cantidad}</TableCell>
                 <TableCell>
                   <IconButton size="small" onClick={() => editarFila(idx)}>
