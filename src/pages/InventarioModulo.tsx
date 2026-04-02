@@ -20,6 +20,7 @@ interface ConteoItem {
   clave: string;
   cantidad: number;
   existencia_actual?: number;
+  producto_id?: number;
 }
 
 const InventarioPorModulo = () => {
