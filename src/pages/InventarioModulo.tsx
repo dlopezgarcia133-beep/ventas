@@ -16,7 +16,6 @@ import { obtenerRolDesdeToken } from '../components/Token';
 
 
 interface ConteoItem {
-  producto_id: number;
   producto: string;
   clave: string;
   cantidad: number;
@@ -195,73 +194,74 @@ const buscarProductosConteo = async (texto: string) => {
 
 
   const agregarAConteo = () => {
-  if (!productoEncontrado) {
-    alert("Primero busca un producto");
-    return;
-  }
+    if (!productoEncontrado) {
+      alert("Primero busca un producto");
+      return;
+    }
 
-  if (!productoEncontrado.id) {
-    alert("Producto inválido (sin ID)");
-    return;
-  }
+    if (!productoEncontrado.clave) {
+      alert("Producto inválido (sin clave)");
+      return;
+    }
 
-  const cantidad = parseInt(cantidadConteo, 10);
-  if (Number.isNaN(cantidad) || cantidad < 0) {
-    alert("Ingresa una cantidad válida (>= 0)");
-    return;
-  }
+    const cantidad = parseInt(cantidadConteo, 10);
+    if (Number.isNaN(cantidad) || cantidad < 0) {
+      alert("Ingresa una cantidad válida (>= 0)");
+      return;
+    }
 
-  const nuevaFila: ConteoItem = {
-    producto_id: productoEncontrado.id, // ✅ SIEMPRE INT
-    producto: productoEncontrado.producto,
-    clave: productoEncontrado.clave,
-    cantidad
-  };
+    const nuevaFila: ConteoItem = {
+      clave: productoEncontrado.clave, // ✅ CLAVE ES LA BASE
+      producto: productoEncontrado.producto,
+      cantidad
+    };
 
-  if (editarIndex !== null) {
-    setConteoLista(prev => {
-      const copy = [...prev];
-      copy[editarIndex] = nuevaFila;
-      return copy;
-    });
-    setEditarIndex(null);
-  } else {
-    const existingIndex = conteoLista.findIndex(
-      p => p.producto_id === productoEncontrado.id
-    );
-
-    if (existingIndex !== -1) {
+    if (editarIndex !== null) {
       setConteoLista(prev => {
         const copy = [...prev];
-        copy[existingIndex] = nuevaFila;
+        copy[editarIndex] = nuevaFila;
         return copy;
       });
+      setEditarIndex(null);
     } else {
-      setConteoLista(prev => [...prev, nuevaFila]);
+      const existingIndex = conteoLista.findIndex(
+        p => p.clave === productoEncontrado.clave
+      );
+
+      if (existingIndex !== -1) {
+        setConteoLista(prev => {
+          const copy = [...prev];
+          copy[existingIndex] = nuevaFila;
+          return copy;
+        });
+      } else {
+        setConteoLista(prev => [...prev, nuevaFila]);
+      }
     }
-  }
 
-  setProductoEncontrado(null);
-setProductoConteo(null);
-setCantidadConteo("");
-setTextoBusquedaConteo("");
+    setProductoEncontrado(null);
+    setProductoConteo(null);
+    setCantidadConteo("");
+    setTextoBusquedaConteo("");
+    setOpcionesConteo([]);
 
-// 🔥 IMPORTANTE: limpiar opciones también
-setOpcionesConteo([]);
-
-// 🔥 regresar foco limpio
-setTimeout(() => {
-  inputBusquedaRef.current?.focus();
-}, 100);
-};
+    setTimeout(() => {
+      inputBusquedaRef.current?.focus();
+    }, 100);
+  };
 
 
   const editarFila = (idx: number) => {
     const fila = conteoLista[idx];
-    setProductoEncontrado({ id: fila.producto_id, producto: fila.producto, clave: fila.clave });
-    setCantidadConteo(String(fila.cantidad));
-    setEditarIndex(idx);
-  };
+
+    setProductoEncontrado({
+      clave: fila.clave,       // ✅ ya no hay id
+      producto: fila.producto
+    });
+
+  setCantidadConteo(String(fila.cantidad));
+  setEditarIndex(idx);
+};
 
   const eliminarFila = (idx: number) => {
     if (!window.confirm("Eliminar este producto del conteo?")) return;
@@ -278,35 +278,38 @@ setTimeout(() => {
   };
 
   const confirmarGuardar = async () => {
-    setConfirmOpen(false);
-    setGuardando(true);
+  setConfirmOpen(false);
+  setGuardando(true);
 
-    try {
-      const payload = {
-        modulo_id: moduloSeleccionado,
-        productos: conteoLista.map(p => ({ producto_id: p.producto_id, cantidad: p.cantidad }))
-      };
+  try {
+    const payload = {
+      modulo_id: moduloSeleccionado,
+      productos: conteoLista.map(p => ({
+        clave: p.clave,        // ✅ CAMBIO CLAVE
+        cantidad: p.cantidad
+      }))
+    };
 
-      const res = await axios.post(
-        `${process.env.REACT_APP_API_URL}/inventario/guardar_conteo`,
-        payload,
-        config
-      );
+    const res = await axios.post(
+      `${process.env.REACT_APP_API_URL}/inventario/guardar_conteo`,
+      payload,
+      config
+    );
 
-      if (res.data && res.data.ok) {
-        alert("Inventario actualizado con éxito");
-        setConteoLista([]);
-        cargarInventario();
-      } else {
-        alert("Respuesta inesperada del servidor");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Error al guardar conteo");
-    } finally {
-      setGuardando(false);
+    if (res.data && res.data.ok) {
+      alert("Inventario actualizado con éxito");
+      setConteoLista([]);
+      cargarInventario();
+    } else {
+      alert("Respuesta inesperada del servidor");
     }
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Error al guardar conteo");
+  } finally {
+    setGuardando(false);
+  }
+};
 
 
   const manejarPreviewExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
