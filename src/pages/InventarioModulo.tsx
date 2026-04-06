@@ -479,7 +479,7 @@ const agregarEntrada = () => {
       producto: productoEntrada.producto,
       clave: productoEntrada.clave,
       cantidad,
-      existenciaActual
+      existencia_actual: existenciaActual
     };
 
     console.log("Añadiendo entrada:", nuevoItem);
