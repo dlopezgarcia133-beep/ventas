@@ -230,6 +230,48 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
       </Box>
 
       {/* GRÁFICAS */}
+        <Paper sx={{ p: 2, mt: 3 }}>
+  <Typography variant="h6" mb={2}>
+    Resumen por Módulo
+  </Typography>
+
+  <Box overflow="auto">
+    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <thead>
+        <tr style={{ background: "#f5f5f5" }}>
+          <th>Módulo</th>
+          <th>Accesorios</th>
+          <th>Teléfonos</th>
+          <th>Contado</th>
+          <th>Paguitos</th>
+          <th>Pajoy</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {resumenModulo.map((m, i) => (
+          <tr key={i} style={{ textAlign: "center", borderBottom: "1px solid #eee" }}>
+            <td>{m.modulo}</td>
+
+            <td>${(m.total_accesorios || 0).toLocaleString()}</td>
+            <td>${(m.total_telefonos || 0).toLocaleString()}</td>
+
+            <td>{m.contado || 0}</td>
+            <td>{m.paguitos || 0}</td>
+            <td>{m.pajoy || 0}</td>
+
+            <td>
+              <strong>
+                ${(m.total_general || 0).toLocaleString()}
+              </strong>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </Box>
+</Paper>
       <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={2} mb={3}>
         
 
@@ -373,48 +415,7 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
           </ResponsiveContainer>
         </Paper>
 
-        <Paper sx={{ p: 2, mt: 3 }}>
-  <Typography variant="h6" mb={2}>
-    Resumen por Módulo
-  </Typography>
-
-  <Box overflow="auto">
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-      <thead>
-        <tr style={{ background: "#f5f5f5" }}>
-          <th>Módulo</th>
-          <th>Accesorios</th>
-          <th>Teléfonos</th>
-          <th>Contado</th>
-          <th>Paguitos</th>
-          <th>Pajoy</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {resumenModulo.map((m, i) => (
-          <tr key={i} style={{ textAlign: "center", borderBottom: "1px solid #eee" }}>
-            <td>{m.modulo}</td>
-
-            <td>${(m.total_accesorios || 0).toLocaleString()}</td>
-            <td>${(m.total_telefonos || 0).toLocaleString()}</td>
-
-            <td>{m.contado || 0}</td>
-            <td>{m.paguitos || 0}</td>
-            <td>{m.pajoy || 0}</td>
-
-            <td>
-              <strong>
-                ${(m.total_general || 0).toLocaleString()}
-              </strong>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </Box>
-</Paper>
+      
     </Container>
   );
 };
