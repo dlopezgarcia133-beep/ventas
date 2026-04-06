@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Usuario, VentaChip } from "../Types";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Checkbox, Box, IconButton } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, TextField, Checkbox, Box, IconButton } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import { obtenerRolDesdeToken } from "../components/Token";
 
 const ChipsRechazados = () => {
   const [rechazados, setRechazados] = useState<VentaChip[]>([]);
-  const [chips, setChips] = useState<VentaChip[]>([]);
+  
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<number | null>(null);
   const token = localStorage.getItem("token");
@@ -51,17 +51,16 @@ const ChipsRechazados = () => {
     cargarUsuarios();
   }, []);
 
-const validarChip = async (id: number) => {
+const validarChip = async (id: number, comision_manual?: number) => {
   try {
     await axios.put(
       `${process.env.REACT_APP_API_URL}/ventas/validar_chip_incubadora/${id}`,
-      {},
+      { comision_manual }, // 🔥 importante
       {
         headers: { Authorization: `Bearer ${token}` },
       }
     );
 
-    // Lo quitamos de la tabla inmediatamente
     setRechazados(prev => prev.filter(c => c.id !== id));
 
   } catch (error) {
@@ -139,14 +138,47 @@ const eliminarChip = async (id: number) => {
               )}
 
               {rolToken === "admin" && (
-                <TableCell>
-                  <Checkbox
-                    checked={false}
-                    onChange={() => validarChip(chip.id)}
-                    color="success"
-                  />
-                </TableCell>
-              )}
+  <>
+    <TableCell>
+      {chip.tipo_chip === "Activacion" ? (
+        <TextField
+          size="small"
+          type="number"
+          value={chip.comision_manual ?? ""}
+          onChange={(e) =>
+            setRechazados(prev =>
+              prev.map(c =>
+                c.id === chip.id
+                  ? { ...c, comision_manual: Number(e.target.value) }
+                  : c
+              )
+            )
+          }
+          sx={{ width: 80 }}
+        />
+      ) : (
+        "$" + (chip.comision ?? 0)
+      )}
+    </TableCell>
+
+    <TableCell>
+      <Checkbox
+        checked={false}
+        onChange={() => {
+          // 🚨 validación importante
+          if (chip.tipo_chip === "Activacion" && !chip.comision_manual) {
+            alert("Debes capturar la comisión");
+            return;
+          }
+
+          validarChip(chip.id, chip.comision_manual);
+        }}
+        color="success"
+      />
+    </TableCell>
+  </>
+)}
+             
             </TableRow>
           ))}
         </TableBody>
