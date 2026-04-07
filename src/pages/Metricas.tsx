@@ -284,92 +284,129 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
 
       <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={2} mb={3}>
 
-        {/* 🔥 TIPO DE VENTA */}
-        <Paper sx={{ p: 2, gridColumn: "span 4" }}>
-          <Typography>Tipo de venta</Typography>
-          {dataPie.some(d => d.value > 0) && (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={dataPie}
-                  dataKey="value"
-                  nameKey="name"
-                  outerRadius={100}
-                  label={({ percent }: { percent: number }) => `${(percent * 100).toFixed(0)}%`}
-                >
-                  {dataPie.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
+  {/* 🔵 TIPO DE VENTA */}
+  <Paper sx={{ p: 3, gridColumn: "span 4", borderRadius: 3 }}>
+    <Typography variant="h6" fontWeight={600} mb={1}>
+      Tipo de venta
+    </Typography>
 
-                <Tooltip
-                  formatter={(value: any, name: any) => [
-                    `${value} ventas`,
-                    name
-                  ]}
-                />
+    <Typography variant="caption" color="text.secondary">
+      Distribución de ventas
+    </Typography>
 
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-
-          <Box mt={2}>
-            {dataPie.map((item, i) => (
-              <Box key={i} display="flex" justifyContent="space-between">
-                <Typography>{item.name}</Typography>
-                <Typography>{item.value} ventas</Typography>
-              </Box>
+    {dataPie.some(d => d.value > 0) && (
+      <ResponsiveContainer width="100%" height={250}>
+        <PieChart>
+          <Pie
+            data={dataPie}
+            dataKey="value"
+            nameKey="name"
+            outerRadius={90}
+            label={({ percent }: { percent: number }) =>
+              `${(percent * 100).toFixed(0)}%`
+            }
+          >
+            {dataPie.map((_, i) => (
+              <Cell key={i} fill={COLORS[i % COLORS.length]} />
             ))}
-          </Box>
-        </Paper>
-        {/* 🔥 TABLA CHIPS */}
-        <Paper sx={{ p: 2, gridColumn: "span 4" }}>
-          <Typography>Chips</Typography>
+          </Pie>
 
-          <table style={{ width: "100%", fontSize: "13px" }}>
-            <thead>
-              <tr>
-                <th>Tipo</th>
-                <th>Cantidad</th>
-              </tr>
-            </thead>
+          <Tooltip formatter={(value: any, name: any) => [`${value} ventas`, name]} />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    )}
 
-            <tbody>
-              {chipsData.map((c, i) => (
-                <tr key={i}>
-                  <td>{c.tipo}</td>
-                  <td>{c.total}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Paper>
+    <Box mt={2}>
+      {dataPie.map((item, i) => (
+        <Box
+          key={i}
+          display="flex"
+          justifyContent="space-between"
+          sx={{ py: 0.5 }}
+        >
+          <Typography>{item.name}</Typography>
+          <Typography fontWeight={600}>{item.value}</Typography>
+        </Box>
+      ))}
+    </Box>
+  </Paper>
 
-        {/* 🔥 TABLA PLANES */}
-        <Paper sx={{ p: 2, gridColumn: "span 4" }}>
-          <Typography>Planes</Typography>
+  {/* 🟢 CHIPS */}
+  <Paper sx={{ p: 3, gridColumn: "span 4", borderRadius: 3 }}>
+    <Typography variant="h6" fontWeight={600} mb={1}>
+      Chips
+    </Typography>
 
-          <table style={{ width: "100%", fontSize: "13px" }}>
-            <thead>
-              <tr>
-                <th>Plan</th>
-                <th>Registros</th>
-              </tr>
-            </thead>
+    <Typography variant="caption" color="text.secondary">
+      Tipos de chips registrados
+    </Typography>
 
-            <tbody>
-              {planesData.map((p, i) => (
-                <tr key={i}>
-                  <td>{p.nombre}</td>
-                  <td>{p.total}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Paper>
+    <Box mt={2}>
+      {chipsData.map((c, i) => (
+        <Box
+          key={i}
+          display="flex"
+          justifyContent="space-between"
+          sx={{
+            py: 1,
+            px: 1,
+            borderBottom: "1px solid #eee"
+          }}
+        >
+          <Typography>{c.tipo}</Typography>
+          <Typography fontWeight={600}>{c.total}</Typography>
+        </Box>
+      ))}
+    </Box>
 
-      </Box>
+    {/* TOTAL */}
+    <Box mt={2} display="flex" justifyContent="space-between">
+      <Typography fontWeight={600}>Total</Typography>
+      <Typography fontWeight={700}>
+        {chipsData.reduce((a, b) => a + b.total, 0)}
+      </Typography>
+    </Box>
+  </Paper>
+
+  {/* 🟣 PLANES */}
+  <Paper sx={{ p: 3, gridColumn: "span 4", borderRadius: 3 }}>
+    <Typography variant="h6" fontWeight={600} mb={1}>
+      Planes
+    </Typography>
+
+    <Typography variant="caption" color="text.secondary">
+      Registros de planes capturados
+    </Typography>
+
+    <Box mt={2}>
+      {planesData.map((p, i) => (
+        <Box
+          key={i}
+          display="flex"
+          justifyContent="space-between"
+          sx={{
+            py: 1,
+            px: 1,
+            borderBottom: "1px solid #eee"
+          }}
+        >
+          <Typography>{p.nombre}</Typography>
+          <Typography fontWeight={600}>{p.total}</Typography>
+        </Box>
+      ))}
+    </Box>
+
+    {/* TOTAL */}
+    <Box mt={2} display="flex" justifyContent="space-between">
+      <Typography fontWeight={600}>Total</Typography>
+      <Typography fontWeight={700}>
+        {planesData.reduce((a, b) => a + b.total, 0)}
+      </Typography>
+    </Box>
+  </Paper>
+
+</Box>
       <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={2} mb={3}>
 
 
