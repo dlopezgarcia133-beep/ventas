@@ -77,7 +77,7 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
 
     const baseUrl = process.env.REACT_APP_API_URL;
 
-    const [res1, res2, res3, res4, res5] = await Promise.all([
+    const [res1, res2, res3, res4, res5, res6] = await Promise.all([
       fetch(`${baseUrl}/dashboard/metricas/empleados?${params}`),
       fetch(`${baseUrl}/dashboard/ventas-por-dia?${params}`),
       fetch(`${baseUrl}/dashboard/top-productos?${params}`),
@@ -91,12 +91,14 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
     const json3 = await res3.json();
     const json4 = await res4.json();
     const json5 = await res5.json();
+    const json6 = await res6.json();
 
     setResumenModulo(Array.isArray(json5) ? json5 : []);
     setData(Array.isArray(json1.data) ? json1.data : []);
     setVentasDia(Array.isArray(json2) ? json2 : []);
     setTopProductos(Array.isArray(json3) ? json3 : []);
     setVentasModulo(Array.isArray(json4) ? json4 : []);
+    setChipsData(Array.isArray(json6) ? json6 : []);
 
   } catch (err) {
     console.error(err);
