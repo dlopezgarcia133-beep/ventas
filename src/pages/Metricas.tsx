@@ -287,27 +287,42 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
         {/* 🔥 TIPO DE VENTA */}
         <Paper sx={{ p: 2, gridColumn: "span 4" }}>
           <Typography>Tipo de venta</Typography>
-
           {dataPie.some(d => d.value > 0) && (
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
                   data={dataPie}
                   dataKey="value"
                   nameKey="name"
-                  outerRadius={90}
+                  outerRadius={100}
+                  label={({ percent }: { percent: number }) => `${(percent * 100).toFixed(0)}%`}
                 >
                   {dataPie.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+
+                <Tooltip
+                  formatter={(value: any, name: any) => [
+                    `${value} ventas`,
+                    name
+                  ]}
+                />
+
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
           )}
-        </Paper>
 
+          <Box mt={2}>
+            {dataPie.map((item, i) => (
+              <Box key={i} display="flex" justifyContent="space-between">
+                <Typography>{item.name}</Typography>
+                <Typography>{item.value} ventas</Typography>
+              </Box>
+            ))}
+          </Box>
+        </Paper>
         {/* 🔥 TABLA CHIPS */}
         <Paper sx={{ p: 2, gridColumn: "span 4" }}>
           <Typography>Chips</Typography>
@@ -400,44 +415,7 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
         </Paper>
 
 
-        <Paper sx={{ p: 2, gridColumn: "span 4" }}>
-          <Typography>Tipo de venta</Typography>
-          {dataPie.some(d => d.value > 0) && (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={dataPie}
-                  dataKey="value"
-                  nameKey="name"
-                  outerRadius={100}
-                  label={({ percent }: { percent: number }) => `${(percent * 100).toFixed(0)}%`}
-                >
-                  {dataPie.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-
-                <Tooltip
-                  formatter={(value: any, name: any) => [
-                    `${value} ventas`,
-                    name
-                  ]}
-                />
-
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-
-          <Box mt={2}>
-            {dataPie.map((item, i) => (
-              <Box key={i} display="flex" justifyContent="space-between">
-                <Typography>{item.name}</Typography>
-                <Typography>{item.value} ventas</Typography>
-              </Box>
-            ))}
-          </Box>
-        </Paper>
+        
 
         <Paper sx={{ p: 2, gridColumn: "span 5" }}>
           <Typography>Top Productos</Typography>
