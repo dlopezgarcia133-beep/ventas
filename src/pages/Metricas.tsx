@@ -290,9 +290,6 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
       Tipo de venta
     </Typography>
 
-    <Typography variant="caption" color="text.secondary">
-      Distribución de ventas
-    </Typography>
 
     {dataPie.some(d => d.value > 0) && (
       <ResponsiveContainer width="100%" height={250}>
