@@ -44,6 +44,9 @@ const Metricas = () => {
   const [loading, setLoading] = useState(false);
   const [mes, setMes] = useState<string>("");
 
+  const [chipsData, setChipsData] = useState<any[]>([]);
+  const [planesData, setPlanesData] = useState<any[]>([]);
+
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
 
@@ -53,6 +56,9 @@ const Metricas = () => {
   const [ventasModulo, setVentasModulo] = useState<any[]>([]);
 
   const API = process.env.REACT_APP_API_URL;
+
+
+  
 
 const fetchDataWithDates = async (inicio?: string, fin?: string) => {
   setLoading(true);
@@ -76,7 +82,8 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
       fetch(`${baseUrl}/dashboard/ventas-por-dia?${params}`),
       fetch(`${baseUrl}/dashboard/top-productos?${params}`),
       fetch(`${baseUrl}/dashboard/ventas-por-modulo?${params}`),
-      fetch(`${baseUrl}/dashboard/resumen-por-modulo?${params}`)
+      fetch(`${baseUrl}/dashboard/resumen-por-modulo?${params}`),
+      fetch(`${baseUrl}/dashboard/chips?${params}`),
     ]);
 
     const json1 = await res1.json();
@@ -272,88 +279,162 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
     </table>
   </Box>
 </Paper>
+
       <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={2} mb={3}>
-        
+
+        {/* 🔥 TIPO DE VENTA */}
+        <Paper sx={{ p: 2, gridColumn: "span 4" }}>
+          <Typography>Tipo de venta</Typography>
+
+          {dataPie.some(d => d.value > 0) && (
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={dataPie}
+                  dataKey="value"
+                  nameKey="name"
+                  outerRadius={90}
+                >
+                  {dataPie.map((_, i) => (
+                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </Paper>
+
+        {/* 🔥 TABLA CHIPS */}
+        <Paper sx={{ p: 2, gridColumn: "span 4" }}>
+          <Typography>Chips</Typography>
+
+          <table style={{ width: "100%", fontSize: "13px" }}>
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Cantidad</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {chipsData.map((c, i) => (
+                <tr key={i}>
+                  <td>{c.tipo}</td>
+                  <td>{c.total}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Paper>
+
+        {/* 🔥 TABLA PLANES */}
+        <Paper sx={{ p: 2, gridColumn: "span 4" }}>
+          <Typography>Planes</Typography>
+
+          <table style={{ width: "100%", fontSize: "13px" }}>
+            <thead>
+              <tr>
+                <th>Plan</th>
+                <th>Registros</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {planesData.map((p, i) => (
+                <tr key={i}>
+                  <td>{p.nombre}</td>
+                  <td>{p.total}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Paper>
+
+      </Box>
+      <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={2} mb={3}>
+
 
         <Paper sx={{ p: 2, gridColumn: "span 3" }}>
-        <Typography variant="h6">Top Empleados</Typography>
+          <Typography variant="h6">Top Empleados</Typography>
 
-        {loading ? (
-          <CircularProgress />
-        ) : (
-                      top.map((e, i) => (
-                          <Box
-                              key={i}
-                              sx={{
-                                  py: 1,
-                                  borderBottom: "1px solid #eee"
-                              }}
-                          >
-                              {/* Nombre + total */}
-                              <Box display="flex" justifyContent="space-between">
-                                  <Typography fontWeight={600}>{e.username}</Typography>
-                                  <Typography>
-                                      ${(e.total_accesorios + e.total_telefonos).toLocaleString()}
-                                  </Typography>
-                              </Box>
+          {loading ? (
+            <CircularProgress />
+          ) : (
+            top.map((e, i) => (
+              <Box
+                key={i}
+                sx={{
+                  py: 1,
+                  borderBottom: "1px solid #eee"
+                }}
+              >
+                {/* Nombre + total */}
+                <Box display="flex" justifyContent="space-between">
+                  <Typography fontWeight={600}>{e.username}</Typography>
+                  <Typography>
+                    ${(e.total_accesorios + e.total_telefonos).toLocaleString()}
+                  </Typography>
+                </Box>
 
-                              {/* 🔥 DESGLOSE */}
-                              <Box display="flex" gap={2} mt={0.5}>
-                                  <Typography variant="caption">
-                                      💵 Contado: {e.contado || 0}
-                                  </Typography>
+                {/* 🔥 DESGLOSE */}
+                <Box display="flex" gap={2} mt={0.5}>
+                  <Typography variant="caption">
+                    💵 Contado: {e.contado || 0}
+                  </Typography>
 
-                                  <Typography variant="caption">
-                                      📱 Paguitos: {e.paguitos || 0}
-                                  </Typography>
+                  <Typography variant="caption">
+                    📱 Paguitos: {e.paguitos || 0}
+                  </Typography>
 
-                                  <Typography variant="caption">
-                                      🧾 Pajoy: {e.pajoy || 0}
-                                  </Typography>
-                              </Box>
-                          </Box>
-                      ))
-                  )}
-              </Paper>
-         
+                  <Typography variant="caption">
+                    🧾 Pajoy: {e.pajoy || 0}
+                  </Typography>
+                </Box>
+              </Box>
+            ))
+          )}
+        </Paper>
 
-         <Paper sx={{ p: 2, gridColumn: "span 4" }}>
+
+        <Paper sx={{ p: 2, gridColumn: "span 4" }}>
           <Typography>Tipo de venta</Typography>
-                  {dataPie.some(d => d.value > 0) && (
-                      <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                          <Pie
-                              data={dataPie}
-                              dataKey="value"
-                              nameKey="name"
-                              outerRadius={100}
-                              label={({ percent }: { percent: number }) => `${(percent * 100).toFixed(0)}%`}
-                          >
-                              {dataPie.map((_, i) => (
-                                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                              ))}
-                          </Pie>
+          {dataPie.some(d => d.value > 0) && (
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={dataPie}
+                  dataKey="value"
+                  nameKey="name"
+                  outerRadius={100}
+                  label={({ percent }: { percent: number }) => `${(percent * 100).toFixed(0)}%`}
+                >
+                  {dataPie.map((_, i) => (
+                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Pie>
 
-                          <Tooltip
-                              formatter={(value: any, name: any) => [
-                                  `${value} ventas`,
-                                  name
-                              ]}
-                          />
+                <Tooltip
+                  formatter={(value: any, name: any) => [
+                    `${value} ventas`,
+                    name
+                  ]}
+                />
 
-                          <Legend />
-                      </PieChart>
-                  </ResponsiveContainer>
-                  )}
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
 
-                  <Box mt={2}>
-                      {dataPie.map((item, i) => (
-                          <Box key={i} display="flex" justifyContent="space-between">
-                              <Typography>{item.name}</Typography>
-                              <Typography>{item.value} ventas</Typography>
-                          </Box>
-                      ))}
-                  </Box>
+          <Box mt={2}>
+            {dataPie.map((item, i) => (
+              <Box key={i} display="flex" justifyContent="space-between">
+                <Typography>{item.name}</Typography>
+                <Typography>{item.value} ventas</Typography>
+              </Box>
+            ))}
+          </Box>
         </Paper>
 
         <Paper sx={{ p: 2, gridColumn: "span 5" }}>
