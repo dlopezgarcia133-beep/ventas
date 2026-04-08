@@ -405,10 +405,6 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
       Chips
     </Typography>
 
-    <Typography variant="caption" color="text.secondary">
-      Tipos de chips registrados
-    </Typography>
-
     <Box mt={2}>
       {chipsData.map((c, i) => (
         <Box
