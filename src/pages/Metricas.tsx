@@ -437,17 +437,22 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
   </Paper>
 
   {/* 🟣 PLANES */}
-  <Paper sx={{ p: 3, gridColumn: "span 4", borderRadius: 3 }}>
-    <Typography variant="h6" fontWeight={600} mb={1}>
-      Planes
-    </Typography>
+<Paper sx={{ p: 3, gridColumn: "span 4", borderRadius: 3 }}>
+  <Typography variant="h6" fontWeight={600} mb={1}>
+    Planes
+  </Typography>
 
-    <Typography variant="caption" color="text.secondary">
-      Registros de planes capturados
-    </Typography>
+  <Typography variant="caption" color="text.secondary">
+    Registros de planes capturados
+  </Typography>
 
-    <Box mt={2}>
-      {planesData.map((p, i) => (
+  <Box mt={2}>
+    {planesData.length === 0 ? (
+      <Typography variant="body2" color="text.secondary">
+        No hay registros
+      </Typography>
+    ) : (
+      planesData.map((p, i) => (
         <Box
           key={i}
           display="flex"
@@ -458,20 +463,28 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
             borderBottom: "1px solid #eee"
           }}
         >
-          <Typography>{p.nombre}</Typography>
-          <Typography fontWeight={600}>{p.total}</Typography>
-        </Box>
-      ))}
-    </Box>
+          {/* 🔥 CONCATENADO */}
+          <Typography>
+            {p.tipo_tramite} - {p.tipo_plan}
+          </Typography>
 
-    {/* TOTAL */}
-    <Box mt={2} display="flex" justifyContent="space-between">
-      <Typography fontWeight={600}>Total</Typography>
-      <Typography fontWeight={700}>
-        {planesData.reduce((a, b) => a + b.total, 0)}
-      </Typography>
-    </Box>
-  </Paper>
+          {/* 🔥 INFO EXTRA */}
+          <Typography variant="caption" color="text.secondary">
+            {p.empleado} / {p.modulo}
+          </Typography>
+        </Box>
+      ))
+    )}
+  </Box>
+
+  {/* TOTAL */}
+  <Box mt={2} display="flex" justifyContent="space-between">
+    <Typography fontWeight={600}>Total</Typography>
+    <Typography fontWeight={700}>
+      {planesData.length}
+    </Typography>
+  </Box>
+</Paper>
 
 </Box>
       <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={2} mb={3}>
