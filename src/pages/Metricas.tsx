@@ -530,12 +530,12 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
           </ResponsiveContainer>
         </Paper>
 
-        <Paper sx={{ p: 3, borderRadius: 3 }}>
+        <Paper sx={{ p: 2, gridColumn: "span 5" }}>
   <Typography variant="h6" mb={2}>
     Registro de Plan
   </Typography>
 
-  <Box display="grid" gridTemplateColumns="repeat(2,1fr)" gap={2}>
+  <Box display="grid" gridTemplateColumns="repeat(2,1fr)" gap={3}>
 
     {/* TIPO TRÁMITE */}
     <TextField
