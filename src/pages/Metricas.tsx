@@ -86,7 +86,7 @@ const config = {
 
   const guardarPlan = async () => {
   try {
-    await axios.post(`${API}/planes`, {
+    await axios.post(`${API}/dashboard/planes`, {
       ...plan,
       empleado_id: Number(plan.empleado_id),
       modulo_id: Number(plan.modulo_id),
@@ -125,13 +125,15 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
 
     const baseUrl = process.env.REACT_APP_API_URL;
 
-    const [res1, res2, res3, res4, res5, res6] = await Promise.all([
+    const [res1, res2, res3, res4, res5, res6, res7] = await Promise.all([
       fetch(`${baseUrl}/dashboard/metricas/empleados?${params}`),
       fetch(`${baseUrl}/dashboard/ventas-por-dia?${params}`),
       fetch(`${baseUrl}/dashboard/top-productos?${params}`),
       fetch(`${baseUrl}/dashboard/ventas-por-modulo?${params}`),
       fetch(`${baseUrl}/dashboard/resumen-por-modulo?${params}`),
       fetch(`${baseUrl}/dashboard/chips?${params}`),
+      fetch(`${baseUrl}/dashboard/planes?${params}`),
+
     ]);
 
     const json1 = await res1.json();
@@ -140,6 +142,7 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
     const json4 = await res4.json();
     const json5 = await res5.json();
     const json6 = await res6.json();
+    const json7 = await res7.json();
 
     setResumenModulo(Array.isArray(json5) ? json5 : []);
     setData(Array.isArray(json1.data) ? json1.data : []);
@@ -147,6 +150,7 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
     setTopProductos(Array.isArray(json3) ? json3 : []);
     setVentasModulo(Array.isArray(json4) ? json4 : []);
     setChipsData(Array.isArray(json6) ? json6 : []);
+    setPlanesData(Array.isArray(json7) ? json7 : []);
 
   } catch (err) {
     console.error(err);
