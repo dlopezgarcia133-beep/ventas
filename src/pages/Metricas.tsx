@@ -63,6 +63,8 @@ const Metricas = () => {
 
   const token = localStorage.getItem("token");
 
+  const [ventasDetalle, setVentasDetalle] = useState<any[]>([]);
+
 const config = {
   headers: {
     Authorization: `Bearer ${token}`
@@ -125,7 +127,7 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
 
     const baseUrl = process.env.REACT_APP_API_URL;
 
-    const [res1, res2, res3, res4, res5, res6, res7] = await Promise.all([
+    const [res1, res2, res3, res4, res5, res6, res7, res8] = await Promise.all([
       fetch(`${baseUrl}/dashboard/metricas/empleados?${params}`),
       fetch(`${baseUrl}/dashboard/ventas-por-dia?${params}`),
       fetch(`${baseUrl}/dashboard/top-productos?${params}`),
@@ -133,6 +135,7 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
       fetch(`${baseUrl}/dashboard/resumen-por-modulo?${params}`),
       fetch(`${baseUrl}/dashboard/chips?${params}`),
       fetch(`${baseUrl}/dashboard/planes?${params}`),
+      fetch(`${baseUrl}/dashboard/ventas-por-dia-detalle?${params}`)
 
     ]);
 
@@ -143,6 +146,7 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
     const json5 = await res5.json();
     const json6 = await res6.json();
     const json7 = await res7.json();
+    const json8 = await res8.json();
 
     setResumenModulo(Array.isArray(json5) ? json5 : []);
     setData(Array.isArray(json1.data) ? json1.data : []);
@@ -151,6 +155,7 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
     setVentasModulo(Array.isArray(json4) ? json4 : []);
     setChipsData(Array.isArray(json6) ? json6 : []);
     setPlanesData(Array.isArray(json7) ? json7 : []);
+    setVentasDetalle(Array.isArray(json8) ? json8 : []);
 
   } catch (err) {
     console.error(err);
@@ -210,6 +215,11 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
 
   // 🔥 Formatear fechas
   const ventasDiaFormateado = ventasDia.map((v) => ({
+    ...v,
+    fecha: new Date(v.fecha).toLocaleDateString()
+  }));
+
+  const ventasDetalleFormateado = ventasDetalle.map((v) => ({
     ...v,
     fecha: new Date(v.fecha).toLocaleDateString()
   }));
@@ -528,122 +538,39 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
         </Paper>
 
 
+        <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={3} mb={3}>
+
+          {/* 🟢 ACCESORIOS */}
+          <Paper sx={{ p: 2, gridColumn: "span 6" }}>
+            <Typography>Accesorios por día</Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={ventasDetalleFormateado}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="fecha" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="accesorios" stroke="#2e7d32" />
+              </LineChart>
+            </ResponsiveContainer>
+          </Paper>
+
+          {/* 🔵 TELEFONOS */}
+          <Paper sx={{ p: 2, gridColumn: "span 6" }}>
+            <Typography>Teléfonos por día</Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={ventasDetalleFormateado}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="fecha" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="telefonos" stroke="#1976d2" />
+              </LineChart>
+            </ResponsiveContainer>
+          </Paper>
+
+        </Box>
+
         
-
-        <Paper sx={{ p: 2, gridColumn: "span 5" }}>
-          <Typography>Top Productos</Typography>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={topProductos} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis dataKey="producto" type="category" />
-              <Tooltip />
-              <Bar dataKey="total_vendidos" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Paper>
-
-        <Paper sx={{ p: 2, gridColumn: "span 4" }}>
-  <Typography variant="h6" mb={2}>
-    Registro de Plan
-  </Typography>
-
-  <Box display="grid" gridTemplateColumns="repeat(2,1fr)" gap={2}>
-
-    {/* TIPO TRÁMITE */}
-    <TextField
-      label="Tipo de trámite"
-      value={plan.tipo_tramite}
-      inputRef={inputRefs.tramite}
-      onChange={(e) =>
-        setPlan({ ...plan, tipo_tramite: e.target.value })
-      }
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          inputRefs.plan.current?.focus();
-        }
-      }}
-      fullWidth
-    />
-
-    {/* TIPO PLAN */}
-    <TextField
-      label="Tipo de plan"
-      value={plan.tipo_plan}
-      inputRef={inputRefs.plan}
-      onChange={(e) =>
-        setPlan({ ...plan, tipo_plan: e.target.value })
-      }
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          inputRefs.empleado.current?.focus();
-        }
-      }}
-      fullWidth
-    />
-
-    {/* EMPLEADO */}
-    <TextField
-      select
-      label="Empleado"
-      value={plan.empleado_id}
-      inputRef={inputRefs.empleado}
-      onChange={(e) =>
-        setPlan({ ...plan, empleado_id: e.target.value })
-      }
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          inputRefs.modulo.current?.focus();
-        }
-      }}
-      fullWidth
-    >
-      {empleados.map((emp) => (
-        <MenuItem key={emp.id} value={emp.id}>
-          {emp.username}
-        </MenuItem>
-      ))}
-    </TextField>
-
-    {/* MODULO */}
-    <TextField
-      select
-      label="Módulo"
-      value={plan.modulo_id}
-      inputRef={inputRefs.modulo}
-      onChange={(e) =>
-        setPlan({ ...plan, modulo_id: e.target.value })
-      }
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          guardarPlan();
-        }
-      }}
-      fullWidth
-    >
-      {modulos.map((m) => (
-        <MenuItem key={m.id} value={m.id}>
-          {m.nombre}
-        </MenuItem>
-      ))}
-    </TextField>
-
-  </Box>
-
-  <Button
-    variant="contained"
-    sx={{ mt: 3 }}
-    fullWidth
-    onClick={guardarPlan}
-  >
-    Guardar registro
-  </Button>
-</Paper>
-
       </Box>
 
         <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={3} mb={3}>
@@ -688,6 +615,19 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
               <Bar dataKey="total" />
             </BarChart>
           </ResponsiveContainer>
+          <Paper sx={{ p: 2, gridColumn: "span 5" }}>
+          <Typography>Top Productos</Typography>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={topProductos} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" />
+              <YAxis dataKey="producto" type="category" />
+              <Tooltip />
+              <Bar dataKey="total_vendidos" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Paper>
+
         </Paper>
 
       
