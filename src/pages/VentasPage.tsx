@@ -744,7 +744,7 @@ const totalVentasTelefonos = ventasTelefonos
         <thead>
           <tr>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Nombre</th>
-            <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Producto</th>
+            <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Telefono</th>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Chip casado</th>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Tipo</th>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Precio</th>

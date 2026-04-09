@@ -228,6 +228,25 @@ const eliminarItem = async (item: any) => {
 };
 
 
+  useEffect(() => {
+  const fetchExtras = async () => {
+    try {
+      const [resEmp, resMod] = await Promise.all([
+        axios.get(`${process.env.REACT_APP_API_URL}/registro/usuarios`, config),
+        axios.get(`${process.env.REACT_APP_API_URL}/registro/modulos`, config),
+      ]);
+
+      setEmpleados(resEmp.data);
+      setModulos(resMod.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchExtras();
+}, []);
+
+
 const confirmarImportacion = async () => {
   if (!archivoExcel) {
     alert("Falta archivo");
