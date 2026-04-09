@@ -214,10 +214,10 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
     .slice(0, 5);
 
   // 🔥 Formatear fechas
-  const ventasDiaFormateado = ventasDia.map((v) => ({
-    ...v,
-    fecha: new Date(v.fecha).toLocaleDateString()
-  }));
+const ventasDiaFormateado = ventasDia.map((v) => ({
+  ...v,
+  fecha: new Date(v.fecha).toLocaleDateString()
+}));
 
   const ventasDetalleFormateado = ventasDetalle.map((v) => ({
     ...v,
