@@ -539,7 +539,7 @@ const ventasDiaFormateado = ventasDia.map((v) => ({
 
 
           {/* 🟢 ACCESORIOS */}
-          <Paper sx={{ p: 2, gridColumn: "span 3" }}>
+          <Paper sx={{ p: 2, gridColumn: "span 4" }}>
             <Typography>Accesorios por día</Typography>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={ventasDetalleFormateado}>
@@ -553,7 +553,7 @@ const ventasDiaFormateado = ventasDia.map((v) => ({
           </Paper>
 
           {/* 🔵 TELEFONOS */}
-          <Paper sx={{ p: 2, gridColumn: "span 3" }}>
+          <Paper sx={{ p: 2, gridColumn: "span 5" }}>
             <Typography>Teléfonos por día</Typography>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={ventasDetalleFormateado}>
