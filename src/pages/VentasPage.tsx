@@ -745,6 +745,7 @@ const totalVentasTelefonos = ventasTelefonos
           <tr>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Nombre</th>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Producto</th>
+            <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Chip casado</th>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Tipo</th>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Precio</th>
             <th style={{ padding: 8, borderBottom: "1px solid #ccc" }}>Fecha</th>
@@ -757,6 +758,7 @@ const totalVentasTelefonos = ventasTelefonos
             <tr key={v.id}>
               <td style={{ padding: 8 }}>{v.empleado?.username}</td>
               <td style={{ padding: 8 }}>{v.producto}</td>
+              <td style={{ padding: 8 }}>{v.chip_casado}</td>
               <td style={{ padding: 8 }}>{v.tipo_venta}</td>
               <td style={{ padding: 8 }}>
                 ${typeof v.precio_unitario === "number" ? v.precio_unitario.toFixed(2) : "0.00"}

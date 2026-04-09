@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Container, Typography, TextField, Button, Table, TableHead, TableRow,
   TableCell, TableBody, Paper, IconButton, Box, TableContainer, Select, MenuItem
@@ -33,6 +33,8 @@ const [mostrandoPreview, setMostrandoPreview] = useState(false);
   const [resultadosModulo, setResultadosModulo] = useState<ProductoModulo[]>([])
 
 
+  const [empleados, setEmpleados] = useState<any[]>([]);
+  const [modulos, setModulos] = useState<any[]>([]);
 
 
   const buscarEnModulos = async () => {
@@ -43,6 +45,46 @@ const [mostrandoPreview, setMostrandoPreview] = useState(false);
 
   setResultadosModulo(res.data)
 }
+
+
+  const inputRefs = {
+    tramite: useRef<HTMLInputElement>(null),
+    plan: useRef<HTMLInputElement>(null),
+    empleado: useRef<HTMLInputElement>(null),
+    modulo: useRef<HTMLInputElement>(null),
+  };
+
+  const [plan, setPlan] = useState({
+  tipo_tramite: "",
+  tipo_plan: "",
+  empleado_id: "",
+  modulo_id: ""
+});
+
+const guardarPlan = async () => {
+  try {
+    await axios.post(`${process.env.REACT_APP_API_URL}/dashboard/planes`, {
+      ...plan,
+      empleado_id: Number(plan.empleado_id),
+      modulo_id: Number(plan.modulo_id),
+    }, config);
+
+    // 🔥 reset limpio
+    setPlan({
+      tipo_tramite: "",
+      tipo_plan: "",
+      empleado_id: "",
+      modulo_id: ""
+    });
+
+    // 🔥 volver al inicio (flujo rápido)
+    inputRefs.tramite.current?.focus();
+
+  } catch (err) {
+    alert("Error al guardar");
+  }
+};
+
 
   const cargarInventario = async () => {
     const resProd = await axios.get(`${process.env.REACT_APP_API_URL}/inventario/inventario/general`, config);
@@ -435,6 +477,107 @@ const confirmarImportacion = async () => {
         Reporte de inventarios
       </Button>
     </Box>
+
+    <Paper sx={{ p: 2, gridColumn: "span 4" }}>
+      <Typography variant="h6" mb={2}>
+        Registro de Plan
+      </Typography>
+    
+      <Box display="grid" gridTemplateColumns="repeat(2,1fr)" gap={2}>
+    
+        {/* TIPO TRÁMITE */}
+        <TextField
+          label="Tipo de trámite"
+          value={plan.tipo_tramite}
+          inputRef={inputRefs.tramite}
+          onChange={(e) =>
+            setPlan({ ...plan, tipo_tramite: e.target.value })
+          }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              inputRefs.plan.current?.focus();
+            }
+          }}
+          fullWidth
+        />
+    
+        {/* TIPO PLAN */}
+        <TextField
+          label="Tipo de plan"
+          value={plan.tipo_plan}
+          inputRef={inputRefs.plan}
+          onChange={(e) =>
+            setPlan({ ...plan, tipo_plan: e.target.value })
+          }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              inputRefs.empleado.current?.focus();
+            }
+          }}
+          fullWidth
+        />
+    
+        {/* EMPLEADO */}
+        <TextField
+          select
+          label="Empleado"
+          value={plan.empleado_id}
+          inputRef={inputRefs.empleado}
+          onChange={(e) =>
+            setPlan({ ...plan, empleado_id: e.target.value })
+          }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              inputRefs.modulo.current?.focus();
+            }
+          }}
+          fullWidth
+        >
+          {empleados.map((emp) => (
+            <MenuItem key={emp.id} value={emp.id}>
+              {emp.username}
+            </MenuItem>
+          ))}
+        </TextField>
+    
+        {/* MODULO */}
+        <TextField
+          select
+          label="Módulo"
+          value={plan.modulo_id}
+          inputRef={inputRefs.modulo}
+          onChange={(e) =>
+            setPlan({ ...plan, modulo_id: e.target.value })
+          }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              guardarPlan();
+            }
+          }}
+          fullWidth
+        >
+          {modulos.map((m) => (
+            <MenuItem key={m.id} value={m.id}>
+              {m.nombre}
+            </MenuItem>
+          ))}
+        </TextField>
+    
+      </Box>
+    
+      <Button
+        variant="contained"
+        sx={{ mt: 3 }}
+        fullWidth
+        onClick={guardarPlan}
+      >
+        Guardar registro
+      </Button>
+    </Paper>
 
   </Container>
 )
