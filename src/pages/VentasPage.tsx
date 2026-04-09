@@ -13,7 +13,7 @@ import UsuariosAdmin from './Usuarios';
 
 
 const FormularioVentaMultiple = () => {
-  const [productos, setProductos] = useState<string[]>([]);
+  const [productos, setProductos] = useState<any[]>([]);
   const [ventas, setVentas] = useState<Venta[]>([]);
   const ventasAccesorios = ventas.filter((v) => v.tipo_producto === "accesorio");
   const ventasTelefonos = ventas.filter((v) => v.tipo_producto === "telefono");
@@ -368,15 +368,26 @@ const totalVentasTelefonos = ventasTelefonos
         )}
 
           <Autocomplete
-            options={productos.filter(
-              (p) => !p.toLowerCase().includes('telefono')
-            )}
-            value={producto}
-            onChange={(e, newValue) => setProducto(newValue || '')}
-            renderInput={(params) => (
-              <TextField {...params} label="Producto" fullWidth margin="normal" />
-            )}
-          />
+  options={productos.filter(
+    (p) => !p.producto.toLowerCase().includes('telefono')
+  )}
+  getOptionLabel={(option) => option.producto || ""}
+  value={productos.find((p) => p.producto === producto) || null}
+  onChange={(e, newValue) => {
+    if (newValue) {
+      setProducto(newValue.producto);   // ✅ nombre
+      setPrecio(newValue.precio);       // ✅ precio automático
+      setCantidad(1);                  // ✅ cantidad default en 1
+    } else {
+      setProducto('');
+      setPrecio(null);
+      setCantidad(1);
+    }
+  }}
+  renderInput={(params) => (
+    <TextField {...params} label="Producto" fullWidth margin="normal" />
+  )}
+/>
 
 
    <TextField
