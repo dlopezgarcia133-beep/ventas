@@ -242,7 +242,16 @@ const ventasDiaFormateado = ventasDia.map((v) => ({
   fetchExtras();
 }, []);
 
-    
+  
+useEffect(() => {
+  const interval = setInterval(() => {
+    if (document.visibilityState === "visible") {
+      fetchDataWithDates(fechaInicio, fechaFin);
+    }
+  }, 500000);
+
+  return () => clearInterval(interval);
+}, [fechaInicio, fechaFin, moduloSeleccionado]);
 
 
   return (
