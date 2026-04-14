@@ -50,7 +50,7 @@ const FormularioVentaMultiple = () => {
   const [totalAccesorios, setTotalAccesorios] = useState(0);
   const [totalTelefonos, setTotalTelefonos] = useState(0);
   
-  const [CVIP, setCVIP] = useState<boolean>(false);
+  const [cvip, setcvip] = useState<boolean>(false);
 
   const token = localStorage.getItem("token");
   const config = {
@@ -214,7 +214,7 @@ useEffect(() => {
         numero_telefono: numero,
         monto_recarga: parseFloat(recarga),
         telefono_cliente: telefono || null,
-        cliente_vip: CVIP
+        cliente_vip: cvip
       }, {
         headers: {
           "Content-Type": "application/json",
@@ -529,8 +529,8 @@ const totalVentasTelefonos = ventasTelefonos
                 <FormLabel>Cliente VIP</FormLabel>
                 <RadioGroup
                   row
-                  value={CVIP}
-                  onChange={(e) => setCVIP(e.target.value === "true")}
+                  value={cvip}
+                  onChange={(e) => setcvip(e.target.value === "true")}
                 >
                   <FormControlLabel value="true" control={<Radio />} label="Sí" />
                   <FormControlLabel value="false" control={<Radio />} label="No" />
