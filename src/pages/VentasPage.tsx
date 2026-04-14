@@ -214,7 +214,7 @@ useEffect(() => {
         numero_telefono: numero,
         monto_recarga: parseFloat(recarga),
         telefono_cliente: telefono || null,
-        cliente_vip: cvip
+        cvip: cvip
       }, {
         headers: {
           "Content-Type": "application/json",
