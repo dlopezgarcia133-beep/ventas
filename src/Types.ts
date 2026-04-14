@@ -135,7 +135,7 @@ export interface VentaChip {
   validado: boolean;
   comision: number;
   comision_manual: number;
-  clave_b63: string;
+  CVIP: boolean;
   descripcion_rechazo: string;
   es_incubadora: boolean;
   empleado?: {

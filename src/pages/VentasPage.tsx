@@ -3,7 +3,11 @@ import {
   Box, TextField, Button, Typography, Autocomplete, Alert, Paper,
   TableContainer, Container, Table, TableHead, TableRow, TableCell, TableBody, MenuItem,
   FormControlLabel, Switch, Slide,
-  Menu
+  Menu,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  Radio
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
@@ -45,7 +49,8 @@ const FormularioVentaMultiple = () => {
   const navigate = useNavigate();
   const [totalAccesorios, setTotalAccesorios] = useState(0);
   const [totalTelefonos, setTotalTelefonos] = useState(0);
-  const [clave, setClave] = useState('');
+  
+  const [CVIP, setCVIP] = useState<boolean>(false);
 
   const token = localStorage.getItem("token");
   const config = {
@@ -520,14 +525,17 @@ const totalVentasTelefonos = ventasTelefonos
               margin="normal"
             />
 
-            <TextField
-              label="Clave Chip"
-              type="text"
-              value={clave}
-              onChange={(e) => setClave(e.target.value)}
-              fullWidth
-              margin="normal"
-            />
+              <FormControl>
+                <FormLabel>Cliente VIP</FormLabel>
+                <RadioGroup
+                  row
+                  value={CVIP}
+                  onChange={(e) => setCVIP(e.target.value === "true")}
+                >
+                  <FormControlLabel value="true" control={<Radio />} label="Sí" />
+                  <FormControlLabel value="false" control={<Radio />} label="No" />
+                </RadioGroup>
+              </FormControl>
 
             <Button
               variant="contained"
