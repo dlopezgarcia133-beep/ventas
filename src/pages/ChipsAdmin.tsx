@@ -165,7 +165,6 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
   <TableCell>{chip.tipo_chip}</TableCell>
   <TableCell>{chip.numero_telefono}</TableCell>
   <TableCell>${chip.monto_recarga.toFixed(2)}</TableCell>
-  <TableCell>{chip.clave_b63 || 'N/A'}</TableCell>
   <TableCell>{chip.fecha}</TableCell>
   <TableCell>{chip.hora}</TableCell>
   

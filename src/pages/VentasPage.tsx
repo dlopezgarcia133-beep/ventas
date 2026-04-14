@@ -19,7 +19,7 @@ import UsuariosAdmin from './Usuarios';
 const FormularioVentaMultiple = () => {
   const [productos, setProductos] = useState<string[]>([]);
   const [ventas, setVentas] = useState<Venta[]>([]);
-  const ventasAccesorios = ventas.filter((v) => v.tipo_producto === "accesorio");
+  const ventasAccesorios = ventas.filter((v) => v.tipo_producto === "accesorios");
   const ventasTelefonos = ventas.filter((v) => v.tipo_producto === "telefono");
   const [producto, setProducto] = useState('');
   const [precio, setPrecio] = useState<number |null>(null);
@@ -76,7 +76,7 @@ const FormularioVentaMultiple = () => {
 useEffect(() => {
   if (ventas.length > 0) {
     // Filtrar y sumar accesorios
-    const accesorios = ventas.filter(v => v.tipo_producto === "accesorio" && !v.cancelada);
+    const accesorios = ventas.filter(v => v.tipo_producto === "accesorios" && !v.cancelada);
     const totalAcc = accesorios.reduce(
       (acc, v) => acc + v.precio_unitario * v.cantidad,
       0
@@ -135,7 +135,7 @@ useEffect(() => {
     console.log("Ventas cargadas:", todas);
 
     // Aquí sí filtras de la respuesta, no del state
-    const ventasAccesorios = todas.filter((v: any) => v.tipo_producto === "accesorio");
+    const ventasAccesorios = todas.filter((v: any) => v.tipo_producto === "accesorios");
     const ventasTelefonos = todas.filter((v: any) => v.tipo_producto === "telefono");
 
     // Guardas todas las ventas en el state principal
@@ -160,7 +160,7 @@ useEffect(() => {
       precio_unitario: precio,
       id: 0,
       nombre: '',
-      tipo_producto: "accesorio"
+      tipo_producto: "accesorios"
     };
 
     setCarrito([...carrito, nuevo]);
@@ -701,7 +701,7 @@ const totalVentasTelefonos = ventasTelefonos
                 </tr>
               </thead>
               <tbody>
-                {ventas.filter((venta) => venta.tipo_producto === "accesorio").map((v)  => (
+                {ventas.filter((venta) => venta.tipo_producto === "accesorios").map((v)  => (
                   <tr key={v.id}>
                     <td style={{ padding: 8 }}>{v.empleado?.username}</td>
                     <td style={{ padding: 8 }}>{v.producto}</td>
