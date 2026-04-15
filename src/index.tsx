@@ -7,7 +7,7 @@ import Navbar from './components/Navbar';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { Analytics } from "@vercel/analytics/react";
-
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
@@ -19,6 +19,7 @@ root.render(
       <App />
     </BrowserRouter>
     <Analytics />
+    <SpeedInsights />
   </React.StrictMode>
 );
 
