@@ -17,6 +17,7 @@ root.render(
       <Navbar/>
       <App />
     </BrowserRouter>
+    <Analytics />
   </React.StrictMode>
 );
 
