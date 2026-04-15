@@ -27,7 +27,7 @@ const totalTarjeta =
 
   // Calcular el total de ventas de accesorios
   const totalAccesorios = ventas
-    .filter((v) => v.tipo_producto === "accesorio")
+    .filter((v) => v.tipo_producto === "accesorios")
     .reduce((acc, v) => acc + (v.total || 0), 0);
 
   return (
@@ -105,7 +105,7 @@ const totalTarjeta =
             </tr>
           </thead>
           <tbody>
-            {ventas.filter((v) => v.tipo_producto === "accesorio").map((v) => (
+            {ventas.filter((v) => v.tipo_producto === "accesorios").map((v) => (
               <tr key={v.id}>
                 <td style={{ padding: 8 }}>{v.empleado?.username}</td>
                 <td style={{ padding: 8 }}>{v.producto}</td>
@@ -116,7 +116,7 @@ const totalTarjeta =
 
               </tr>
             ))}
-            {ventas.filter((v) => v.tipo_producto === "accesorio").length === 0 && (
+            {ventas.filter((v) => v.tipo_producto === "accesorios").length === 0 && (
               <tr>
                 <td colSpan={8} style={{ padding: 8, textAlign: "center" }}>No hay ventas de accesorios</td>
               </tr>
