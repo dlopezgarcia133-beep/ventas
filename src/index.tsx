@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { Analytics } from "@vercel/analytics/react";
 
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
