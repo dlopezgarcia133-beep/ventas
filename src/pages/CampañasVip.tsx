@@ -7,7 +7,7 @@ interface Cliente {
   telefono: string;
 }
 
-export default function CampañasVIP() {
+const CampañasVIP() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [mensaje, setMensaje] = useState(
     "Hola {nombre}, 🎉 tienes una promoción especial"
@@ -73,3 +73,6 @@ export default function CampañasVIP() {
     </Box>
   );
 }
+
+
+export default CampañasVip()
