@@ -19,6 +19,7 @@ import Nomina from './pages/Nomina';
 import NominaEmpleado from './pages/NominaEmpleado';
 import Kardex from './pages/Kardex';
 import Metricas from './pages/Metricas';
+import CampañasVIP from "./pages/CampañasVIP";
 
 const App: React.FC = () => {
   const routes = useRoutes([
