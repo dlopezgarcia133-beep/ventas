@@ -41,6 +41,7 @@ const App: React.FC = () => {
     { path: '/nominaEmpleado', element: <NominaEmpleado /> },
     { path: '/kardex', element: <Kardex /> },
     { path: '/metricas', element: <Metricas /> },
+    { path: '/promos', element: <ChipsPromo/>}
   ]);
 
   return routes;
