@@ -1,16 +1,14 @@
-
 import React, { useEffect, useState } from "react";
 import { Box, TextField, Button, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 
 interface Cliente {
-  
   telefono: string;
 }
 
 const CampañasVIP = () => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [mensaje, setMensaje] = useState(
-    "Hola {nombre}, 🎉 tienes una promoción especial"
+    "Hola, 🎉 tienes una promoción especial"
   );
 
   useEffect(() => {
@@ -20,8 +18,7 @@ const CampañasVIP = () => {
   }, []);
 
   const generarLink = (telefono: string) => {
-   
-    const mensajeCodificado = encodeURIComponent(mensajePersonalizado);
+    const mensajeCodificado = encodeURIComponent(mensaje);
 
     return `https://wa.me/${telefono}?text=${mensajeCodificado}`;
   };
@@ -42,7 +39,6 @@ const CampañasVIP = () => {
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Nombre</TableCell>
             <TableCell>Teléfono</TableCell>
             <TableCell>Acción</TableCell>
           </TableRow>
@@ -51,13 +47,12 @@ const CampañasVIP = () => {
         <TableBody>
           {clientes.map((cliente, index) => (
             <TableRow key={index}>
-              <TableCell>{cliente.nombre}</TableCell>
               <TableCell>{cliente.telefono}</TableCell>
               <TableCell>
                 <Button
                   onClick={() =>
                     window.open(
-                      generarLink(cliente.telefono, cliente.nombre),
+                      generarLink(cliente.telefono),
                       "_blank"
                     )
                   }
@@ -72,6 +67,5 @@ const CampañasVIP = () => {
     </Box>
   );
 }
-
 
 export default CampañasVIP;
