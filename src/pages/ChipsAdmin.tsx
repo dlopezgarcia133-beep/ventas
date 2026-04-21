@@ -141,6 +141,8 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
             </Box>
             <Box sx={{ mb: 2 }}>
             <Button href="/chips_invalidos">Incubadora</Button>
+
+            <Button href = "/promos">Promociones Clientes</Button>
             </Box>
             <TableContainer component={Paper}>
               <Table>
