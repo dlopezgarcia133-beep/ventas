@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Box, TextField, Button, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 
 interface Cliente {
-  nombre: string;
+  
   telefono: string;
 }
 
@@ -14,14 +14,13 @@ const CampañasVIP = () => {
   );
 
   useEffect(() => {
-    fetch("/api/clientes_vip")
+    fetch(`${process.env.REACT_APP_API_URL}/ventas/`)
       .then(res => res.json())
       .then(data => setClientes(data));
   }, []);
 
-  const generarLink = (telefono: string, nombre: string) => {
-    const mensajePersonalizado = mensaje.replace("{nombre}", nombre);
-
+  const generarLink = (telefono: string) => {
+   
     const mensajeCodificado = encodeURIComponent(mensajePersonalizado);
 
     return `https://wa.me/${telefono}?text=${mensajeCodificado}`;
