@@ -14,7 +14,7 @@ const CampañasVIP = () => {
   );
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/ventas/`)
+    fetch(`${process.env.REACT_APP_API_URL}/ventas/clientes_vip`)
       .then(res => res.json())
       .then(data => setClientes(data));
   }, []);
