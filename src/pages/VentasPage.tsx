@@ -44,7 +44,7 @@ const FormularioVentaMultiple = () => {
   const [rol, setRol] = useState<Usuario["rol"] | null>(null);
   const [modulos, setModulos] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
-  const Container = useRef<HTMLElement>(null);
+  const slideContainerRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
   const [totalAccesorios, setTotalAccesorios] = useState(0);
   const [totalTelefonos, setTotalTelefonos] = useState(0);
@@ -330,15 +330,6 @@ useEffect(() => {
 
 
 
-  const totalVentas = ventas
-  .filter(v => !v.cancelada)
-  .reduce((acc, v) => acc + (typeof v.total === 'number' ? v.total : 0), 0);
-
-// Calcular total para ventasTelefonos (solo activas)
-const totalVentasTelefonos = ventasTelefonos
-  .filter(v => !v.cancelada)
-  .reduce((acc, v) => acc + (typeof v.precio_unitario === 'number' ? v.precio_unitario : 0), 0);
- 
 
   return (
     <Grid container spacing={ 2 } sx={{ mt: 2 }}>
@@ -452,13 +443,13 @@ const totalVentasTelefonos = ventasTelefonos
 
 
       <Grid item xs={12} md={3}>
-      <Box sx={{ p: 2, height: '100%', overflow: 'hidden' }} ref={Container}>
+      <Box sx={{ p: 2, height: '100%', overflow: 'hidden' }} ref={slideContainerRef}>
           <FormControlLabel
             control={<Switch checked={checked} onChange={() => setChecked(!checked)} />}
             label="CHIPS"
           />
 
-        <Slide in={checked} container={Container.current}>
+        <Slide in={checked} container={slideContainerRef.current}>
           <Paper sx={{ borderRadius: 2, boxShadow: 3, p: 3, backgroundColor: '#fdfdfd' }}>
             {mensaje && (
               <Alert severity={mensaje.tipo} sx={{ mb: 2 }}>
@@ -532,13 +523,13 @@ const totalVentasTelefonos = ventasTelefonos
     </Grid>
     
    <Grid item xs={12} md={3}>
-      <Box sx={{ p: 2, height: '100%', overflow: 'hidden' }} ref={Container}>
+      <Box sx={{ p: 2, height: '100%', overflow: 'hidden' }} ref={slideContainerRef}>
                 <FormControlLabel
             control={<Switch checked={telefonoChecked} onChange={() => setTelefonoChecked(!telefonoChecked)} />}
             label="TELÉFONOS"
           />
 
-          <Slide in={telefonoChecked} container={Container.current}>
+          <Slide in={telefonoChecked} container={slideContainerRef.current}>
   <Paper sx={{ borderRadius: 2, boxShadow: 3, p: 3, mt: 2, backgroundColor: '#fdfdfd' }}>
     <Typography variant="h6" gutterBottom>Venta de Teléfono</Typography>
 

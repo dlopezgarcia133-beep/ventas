@@ -41,11 +41,11 @@ const Nomina = () => {
 
 
 
-  const [inicioA, setInicioA] = useState<String | null>(null);
-  const [finA, setFinA] = useState<String | null>(null);
+  const [inicioA, setInicioA] = useState<string | null>(null);
+  const [finA, setFinA] = useState<string | null>(null);
 
-  const [inicioC, setInicioC] = useState<String | null>(null);
-  const [finC, setFinC] = useState<String | null>(null);
+  const [inicioC, setInicioC] = useState<string | null>(null);
+  const [finC, setFinC] = useState<string | null>(null);
 
 
 

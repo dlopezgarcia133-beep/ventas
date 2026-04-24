@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Typography,
@@ -25,16 +25,8 @@ import {
   Cell
 } from "recharts";
 import axios from "axios";
-
-interface MetricaEmpleado {
-  empleado_id: number;
-  username: string;
-  total_accesorios: number;
-  total_telefonos: number;
-  contado: number;
-  paguitos: number;
-  pajoy: number;
-}
+import { MetricaEmpleado } from "../Types";
+import RegistroPlan from "../components/RegistroPlan";
 
 const COLORS = ["#1976d2", "#ed6c02", "#2e7d32"];
 
@@ -71,45 +63,6 @@ const config = {
   }
 };
 
-  const inputRefs = {
-    tramite: useRef<HTMLInputElement>(null),
-    plan: useRef<HTMLInputElement>(null),
-    empleado: useRef<HTMLInputElement>(null),
-    modulo: useRef<HTMLInputElement>(null),
-  };
-
-  const [plan, setPlan] = useState({
-  tipo_tramite: "",
-  tipo_plan: "",
-  empleado_id: "",
-  modulo_id: ""
-});
-  
-
-  const guardarPlan = async () => {
-  try {
-    await axios.post(`${API}/dashboard/planes`, {
-      ...plan,
-      empleado_id: Number(plan.empleado_id),
-      modulo_id: Number(plan.modulo_id),
-    }, config);
-
-    // 🔥 reset limpio
-    setPlan({
-      tipo_tramite: "",
-      tipo_plan: "",
-      empleado_id: "",
-      modulo_id: ""
-    });
-
-    // 🔥 volver al inicio (flujo rápido)
-    inputRefs.tramite.current?.focus();
-
-  } catch (err) {
-    alert("Error al guardar");
-  }
-};
-
 const fetchDataWithDates = async (inicio?: string, fin?: string) => {
   setLoading(true);
 
@@ -125,18 +78,17 @@ const fetchDataWithDates = async (inicio?: string, fin?: string) => {
       params.append("modulo_id", moduloSeleccionado);
     }
 
-    const baseUrl = process.env.REACT_APP_API_URL;
+    const authHeaders = { Authorization: `Bearer ${token}` };
 
     const [res1, res2, res3, res4, res5, res6, res7, res8] = await Promise.all([
-      fetch(`${baseUrl}/dashboard/metricas/empleados?${params}`),
-      fetch(`${baseUrl}/dashboard/ventas-por-dia?${params}`),
-      fetch(`${baseUrl}/dashboard/top-productos?${params}`),
-      fetch(`${baseUrl}/dashboard/ventas-por-modulo?${params}`),
-      fetch(`${baseUrl}/dashboard/resumen-por-modulo?${params}`),
-      fetch(`${baseUrl}/dashboard/chips?${params}`),
-      fetch(`${baseUrl}/dashboard/planes?${params}`),
-      fetch(`${baseUrl}/dashboard/ventas-por-dia-detalle?${params}`)
-
+      fetch(`${API}/dashboard/metricas/empleados?${params}`, { headers: authHeaders }),
+      fetch(`${API}/dashboard/ventas-por-dia?${params}`, { headers: authHeaders }),
+      fetch(`${API}/dashboard/top-productos?${params}`, { headers: authHeaders }),
+      fetch(`${API}/dashboard/ventas-por-modulo?${params}`, { headers: authHeaders }),
+      fetch(`${API}/dashboard/resumen-por-modulo?${params}`, { headers: authHeaders }),
+      fetch(`${API}/dashboard/chips?${params}`, { headers: authHeaders }),
+      fetch(`${API}/dashboard/planes?${params}`, { headers: authHeaders }),
+      fetch(`${API}/dashboard/ventas-por-dia-detalle?${params}`, { headers: authHeaders }),
     ]);
 
     const json1 = await res1.json();
@@ -636,7 +588,9 @@ useEffect(() => {
 
         </Paper>
 
-      
+      <Box mt={3}>
+        <RegistroPlan empleados={empleados} modulos={modulos} />
+      </Box>
     </Container>
   );
 };
