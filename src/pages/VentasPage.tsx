@@ -7,14 +7,13 @@ import {
   FormControl,
   FormLabel,
   RadioGroup,
-  Radio
+  Radio,
+  TablePagination,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { Modulo, ProductoEnVenta, Usuario, Venta, VentaTelefono } from '../Types';
 import { useNavigate } from 'react-router-dom';
-import UsuariosAdmin from './Usuarios';
-
 
 const FormularioVentaMultiple = () => {
   const [productos, setProductos] = useState<string[]>([]);
@@ -51,6 +50,9 @@ const FormularioVentaMultiple = () => {
   const [totalTelefonos, setTotalTelefonos] = useState(0);
   
   const [cvip, setcvip] = useState<boolean>(false);
+  const [paginaAcc, setPaginaAcc] = useState(0);
+  const [paginaTel, setPaginaTel] = useState(0);
+  const filasPorPagina = 10;
 
   const token = localStorage.getItem("token");
   const config = {
@@ -124,32 +126,8 @@ useEffect(() => {
   
 
 
-  const cargarVentas = async () => {
-  try {
-    const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/ventas/ventas`,
-      config
-    );
-
-    const todas = res.data;
-    console.log("Ventas cargadas:", todas);
-
-    // Aquí sí filtras de la respuesta, no del state
-    const ventasAccesorios = todas.filter((v: any) => v.tipo_producto === "accesorios");
-    const ventasTelefonos = todas.filter((v: any) => v.tipo_producto === "telefono");
-
-    // Guardas todas las ventas en el state principal
-    setVentas(todas);
 
 
-  } catch (err: any) {
-    console.error(err);
-    const msg = err?.response?.data?.detail || "Error al cargar las ventas";
-    setMensaje({ tipo: "error", texto: msg });
-  }
-};
-
-  
 
   const agregarAlCarrito = () => {
     if (!producto || precio === null || cantidad <= 0) return;
@@ -193,7 +171,7 @@ useEffect(() => {
   try {
     await axios.put(`${process.env.REACT_APP_API_URL}/ventas/ventas/${id}/cancelar`, {}, config);
     alert("Venta cancelada");
-    cargarVentas(); 
+    fetchVentas();
   } catch (err: any) {
     alert(err.response?.data?.detail || "Error al cancelar la venta");
   }
@@ -701,7 +679,9 @@ const totalVentasTelefonos = ventasTelefonos
                 </tr>
               </thead>
               <tbody>
-                {ventas.filter((venta) => venta.tipo_producto === "accesorios").map((v)  => (
+                {ventas.filter((venta) => venta.tipo_producto === "accesorios")
+                  .slice(paginaAcc * filasPorPagina, paginaAcc * filasPorPagina + filasPorPagina)
+                  .map((v) => (
                   <tr key={v.id}>
                     <td style={{ padding: 8 }}>{v.empleado?.username}</td>
                     <td style={{ padding: 8 }}>{v.producto}</td>
@@ -735,6 +715,14 @@ const totalVentasTelefonos = ventasTelefonos
                 </tbody>
                 </Box>
           </Paper>
+          <TablePagination
+            component="div"
+            count={ventas.filter(v => v.tipo_producto === "accesorios").length}
+            page={paginaAcc}
+            onPageChange={(_, p) => setPaginaAcc(p)}
+            rowsPerPage={filasPorPagina}
+            rowsPerPageOptions={[filasPorPagina]}
+          />
           <Box mt={2} textAlign="right">
             <Typography variant="subtitle1" fontWeight="bold">
               Total Ventas Accesorios: ${totalAccesorios.toFixed(2)}
@@ -762,7 +750,9 @@ const totalVentasTelefonos = ventasTelefonos
           </tr>
         </thead>
         <tbody>
-          {ventasTelefonos.filter((venta) => venta.tipo_producto === "telefono").map((v) => (
+          {ventasTelefonos.filter((venta) => venta.tipo_producto === "telefono")
+            .slice(paginaTel * filasPorPagina, paginaTel * filasPorPagina + filasPorPagina)
+            .map((v) => (
             <tr key={v.id}>
               <td style={{ padding: 8 }}>{v.empleado?.username}</td>
               <td style={{ padding: 8 }}>{v.producto}</td>
@@ -803,6 +793,14 @@ const totalVentasTelefonos = ventasTelefonos
         </tbody>
       </Box>
     </Paper>
+    <TablePagination
+      component="div"
+      count={ventasTelefonos.length}
+      page={paginaTel}
+      onPageChange={(_, p) => setPaginaTel(p)}
+      rowsPerPage={filasPorPagina}
+      rowsPerPageOptions={[filasPorPagina]}
+    />
     <Box mt={2} textAlign="right">
   <Typography variant="subtitle1" fontWeight="bold">
     Total Ventas Teléfonos: ${totalTelefonos.toFixed(2)}
@@ -825,7 +823,4 @@ const totalVentasTelefonos = ventasTelefonos
 export default FormularioVentaMultiple;
 
 
-function jwt_decode(token: string): any {
-  throw new Error('Function not implemented.');
-}
 
