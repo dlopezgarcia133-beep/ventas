@@ -258,6 +258,7 @@ const FormularioVentaMultiple = () => {
 
   // ── Estado asesor ────────────────────────────────────────────────────────
   const [chipsDelDia, setChipsDelDia] = useState<VentaChip[]>([]);
+  const [misActivacionesData, setMisActivacionesData] = useState<VentaChip[]>([]);
   const [comisionesHoy, setComisionesHoy] = useState<any>(null);
   const [sinCiclo, setSinCiclo] = useState(false);
   const [tabAsesor, setTabAsesor] = useState(0);
@@ -329,6 +330,21 @@ const FormularioVentaMultiple = () => {
       );
     } catch (err) {
       console.error('Error al cargar chips del día:', err);
+    }
+  };
+
+  const fetchMisActivaciones = async (fecha: string) => {
+    try {
+      const res = await axios.get<VentaChip[]>(
+        `${process.env.REACT_APP_API_URL}/ventas/venta_chips`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      const usuario = localStorage.getItem('usuario') || '';
+      setMisActivacionesData(
+        res.data.filter((c) => c.fecha === fecha && c.empleado?.username === usuario),
+      );
+    } catch (err) {
+      console.error('Error al cargar mis activaciones:', err);
     }
   };
 
@@ -430,8 +446,12 @@ const FormularioVentaMultiple = () => {
 
   useEffect(() => {
     if (rol === 'asesor' && tabAsesor === 1) {
-      fetchMisVentas(misVentasFecha);
-      fetchComisionesPorFecha(misVentasFecha);
+      if (esCadenas) {
+        fetchMisActivaciones(misVentasFecha);
+      } else {
+        fetchMisVentas(misVentasFecha);
+        fetchComisionesPorFecha(misVentasFecha);
+      }
     }
   }, [tabAsesor, misVentasFecha, rol]);
 
@@ -705,15 +725,17 @@ const FormularioVentaMultiple = () => {
             sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
           />
           <Tab
-            label="MIS VENTAS"
+            label={esCadenas ? 'MIS ACTIVACIONES' : 'MIS VENTAS'}
             sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
           />
-          <Tab
-            icon={<MonetizationOnIcon fontSize="small" />}
-            iconPosition="start"
-            label="COMISIONES"
-            sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
-          />
+          {!esCadenas && (
+            <Tab
+              icon={<MonetizationOnIcon fontSize="small" />}
+              iconPosition="start"
+              label="COMISIONES"
+              sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
+            />
+          )}
         </Tabs>
 
         {/* ── Tab TICKET ── */}
@@ -870,83 +892,124 @@ const FormularioVentaMultiple = () => {
           </Grid>
         )}
 
-        {/* ── Tab MIS VENTAS ── */}
+        {/* ── Tab MIS VENTAS / MIS ACTIVACIONES ── */}
         {tabAsesor === 1 && (
           <Box>
             <Box sx={{ mb: 2 }}>
               <TextField
-                type="date"
-                size="small"
-                label="Fecha"
+                type="date" size="small" label="Fecha"
                 value={misVentasFecha}
                 onChange={(e) => setMisVentasFecha(e.target.value)}
                 InputLabelProps={{ shrink: true }}
               />
             </Box>
-            <Paper sx={{ p: 2 }}>
-              <Box sx={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr>
-                      <th style={thStyle}>Tipo</th>
-                      <th style={thStyle}>Descripción</th>
-                      <th style={thStyle}>Precio</th>
-                      <th style={thStyle}>Comisión</th>
-                      <th style={thStyle}>Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {misVentasAcc.map((v) => (
-                      <tr key={`mv-acc-${v.id}`}>
-                        <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
-                        <td style={tdStyle}>{v.producto}</td>
-                        <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
-                        <td style={tdStyle}>${fmt(calcComision(v))}</td>
-                        <td style={tdStyle}>
-                          <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
-                            {v.cancelada ? 'Cancelada' : 'Activa'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                    {misVentasTel.map((v) => (
-                      <tr key={`mv-tel-${v.id}`}>
-                        <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
-                        <td style={tdStyle}>{v.producto}</td>
-                        <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
-                        <td style={tdStyle}>${fmt(calcComision(v))}</td>
-                        <td style={tdStyle}>
-                          <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
-                            {v.cancelada ? 'Cancelada' : 'Activa'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                    {misVentasAcc.length === 0 && misVentasTel.length === 0 && (
+
+            {esCadenas ? (
+              /* ── Mis Activaciones (Cadenas C.) ── */
+              <Paper sx={{ p: 2 }}>
+                <Box sx={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
                       <tr>
-                        <td colSpan={5} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
-                          Sin ventas para esta fecha
-                        </td>
+                        <th style={thStyle}>Tipo de Chip</th>
+                        <th style={thStyle}>Número</th>
+                        <th style={thStyle}>Recarga</th>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
-              </Box>
-              <Box display="flex" justifyContent="flex-start" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
-                <Typography variant="body2" color="text.secondary">
-                  Accesorios: <strong>{misVentasAcc.filter((v) => !v.cancelada).length}</strong>
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Teléfonos: <strong>{misVentasTel.filter((v) => !v.cancelada).length}</strong>
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Total vendido: <strong>${fmt(totalMisVentasPesos)}</strong>
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Comisión: <strong>${fmt(totalMisVentasComision)}</strong>
-                </Typography>
-              </Box>
-            </Paper>
+                    </thead>
+                    <tbody>
+                      {misActivacionesData.length === 0 ? (
+                        <tr>
+                          <td colSpan={3} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
+                            Sin activaciones para esta fecha
+                          </td>
+                        </tr>
+                      ) : (
+                        misActivacionesData.map((c) => (
+                          <tr key={c.id}>
+                            <td style={tdStyle}>{c.tipo_chip}</td>
+                            <td style={tdStyle}>{c.numero_telefono}</td>
+                            <td style={tdStyle}>${c.monto_recarga.toFixed(2)}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </Box>
+                {misActivacionesData.length > 0 && (
+                  <Box mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Total: <strong>{misActivacionesData.length}</strong> activación{misActivacionesData.length !== 1 ? 'es' : ''}
+                    </Typography>
+                  </Box>
+                )}
+              </Paper>
+            ) : (
+              /* ── Mis Ventas (otros asesores) ── */
+              <Paper sx={{ p: 2 }}>
+                <Box sx={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        <th style={thStyle}>Tipo</th>
+                        <th style={thStyle}>Descripción</th>
+                        <th style={thStyle}>Precio</th>
+                        <th style={thStyle}>Comisión</th>
+                        <th style={thStyle}>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {misVentasAcc.map((v) => (
+                        <tr key={`mv-acc-${v.id}`}>
+                          <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
+                          <td style={tdStyle}>{v.producto}</td>
+                          <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                          <td style={tdStyle}>${fmt(calcComision(v))}</td>
+                          <td style={tdStyle}>
+                            <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
+                              {v.cancelada ? 'Cancelada' : 'Activa'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                      {misVentasTel.map((v) => (
+                        <tr key={`mv-tel-${v.id}`}>
+                          <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
+                          <td style={tdStyle}>{v.producto}</td>
+                          <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                          <td style={tdStyle}>${fmt(calcComision(v))}</td>
+                          <td style={tdStyle}>
+                            <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
+                              {v.cancelada ? 'Cancelada' : 'Activa'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                      {misVentasAcc.length === 0 && misVentasTel.length === 0 && (
+                        <tr>
+                          <td colSpan={5} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
+                            Sin ventas para esta fecha
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </Box>
+                <Box display="flex" justifyContent="flex-start" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Accesorios: <strong>{misVentasAcc.filter((v) => !v.cancelada).length}</strong>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Teléfonos: <strong>{misVentasTel.filter((v) => !v.cancelada).length}</strong>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Total vendido: <strong>${fmt(totalMisVentasPesos)}</strong>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Comisión: <strong>${fmt(totalMisVentasComision)}</strong>
+                  </Typography>
+                </Box>
+              </Paper>
+            )}
           </Box>
         )}
 
