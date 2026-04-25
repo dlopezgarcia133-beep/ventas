@@ -197,9 +197,20 @@ const CHIP_OPCIONES_COPPEL = [
   { value: 'Portabilidad Coppel', label: 'Portabilidad Coppel' },
 ];
 
+const CHIP_OPCIONES_OTRAS_CADENAS = [
+  { value: 'Activacion',          label: 'Telefono Activado de Cadenas' },
+  { value: 'Chip Preactivado',    label: 'Chip Preactivado / Otras Cadenas' },
+  { value: 'Porta Otras cadenas', label: 'Portabilidad / EKT / Otras Cadenas' },
+];
+
 const CHIP_OPCIONES_POR_CADENA: Record<string, typeof CHIP_OPCIONES_TODAS> = {
-  EKT:    CHIP_OPCIONES_EKT,
-  COPPEL: CHIP_OPCIONES_COPPEL,
+  EKT:      CHIP_OPCIONES_EKT,
+  COPPEL:   CHIP_OPCIONES_COPPEL,
+  CHEDRAUI: CHIP_OPCIONES_OTRAS_CADENAS,
+  SUBURBIA: CHIP_OPCIONES_OTRAS_CADENAS,
+  AURRERA:  CHIP_OPCIONES_OTRAS_CADENAS,
+  SAMS:     CHIP_OPCIONES_OTRAS_CADENAS,
+  WALMART:  CHIP_OPCIONES_OTRAS_CADENAS,
 };
 
 const FormularioVentaMultiple = () => {
