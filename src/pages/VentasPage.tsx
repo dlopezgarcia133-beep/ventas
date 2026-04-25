@@ -8,6 +8,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { InventarioGeneral, ProductoEnVenta, Usuario, Venta, VentaChip } from '../Types';
@@ -244,6 +245,47 @@ const COMISIONES_POR_CADENA: Record<string, ComisionChip[]> = {
   WALMART:  COMISIONES_OTRAS_CADENAS,
 };
 
+// ─── Helpers de ciclos de nómina ─────────────────────────────────────────────
+
+const NOMINA_SYSTEM_START = new Date(2025, 0, 4); // 4 Ene 2025 (sábado)
+const MESES_CORTOS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+interface Ciclo { inicio: Date; fin: Date; pago: Date; }
+
+function getCiclos(): Ciclo[] {
+  const ciclos: Ciclo[] = [];
+  const current = new Date(NOMINA_SYSTEM_START);
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
+  while (true) {
+    const inicio = new Date(current);
+    const fin = new Date(current);
+    fin.setDate(fin.getDate() + 6); // sábado + 6 = viernes
+    if (fin >= hoy) break;          // ciclo aún no cerrado
+    const pago = new Date(fin);
+    pago.setDate(pago.getDate() + 12); // viernes + 12 = miércoles
+    ciclos.push({ inicio, fin, pago });
+    current.setDate(current.getDate() + 7);
+  }
+  return ciclos.reverse(); // más reciente primero
+}
+
+function fmtDiaMes(d: Date): string {
+  return `${d.getDate()} ${MESES_CORTOS[d.getMonth()]}`;
+}
+
+function labelCiclo(c: Ciclo): string {
+  return `${fmtDiaMes(c.inicio)} - ${fmtDiaMes(c.fin)} ${c.fin.getFullYear()} · Pago: ${fmtDiaMes(c.pago)}`;
+}
+
+function getEstadoChip(c: VentaChip): { label: string; color: string } {
+  if (c.es_incubadora)      return { label: 'En incubadora',        color: '#f97316' };
+  if (c.descripcion_rechazo) return { label: 'Rechazado',            color: '#ef4444' };
+  if (c.validado)            return { label: 'Validado',             color: '#16a34a' };
+  return                            { label: 'Esperando validación', color: '#64748b' };
+}
+
 const FormularioVentaMultiple = () => {
   const moduloLocal = localStorage.getItem('modulo') || '';
   const esCadenas = moduloLocal.toLowerCase().includes('cadena');
@@ -298,6 +340,8 @@ const FormularioVentaMultiple = () => {
   const [misVentasData, setMisVentasData] = useState<Venta[]>([]);
   const [comisionesMisVentas, setComisionesMisVentas] = useState<any>(null);
   const [catalogoComisiones, setCatalogoComisiones] = useState<{ producto: string; cantidad: number }[]>([]);
+  const [nominaCicloIdx, setNominaCicloIdx] = useState(0);
+  const [nominaChips, setNominaChips] = useState<VentaChip[]>([]);
 
   const token = localStorage.getItem('token');
   const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -377,6 +421,21 @@ const FormularioVentaMultiple = () => {
       );
     } catch (err) {
       console.error('Error al cargar mis activaciones:', err);
+    }
+  };
+
+  const fetchNominaChips = async (inicio: string, fin: string) => {
+    try {
+      const res = await axios.get<VentaChip[]>(
+        `${process.env.REACT_APP_API_URL}/ventas/venta_chips`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      const usr = localStorage.getItem('usuario') || '';
+      setNominaChips(
+        res.data.filter((c) => c.fecha >= inicio && c.fecha <= fin && c.empleado?.username === usr),
+      );
+    } catch (err) {
+      console.error('Error al cargar chips de nómina:', err);
     }
   };
 
@@ -490,6 +549,19 @@ const FormularioVentaMultiple = () => {
   useEffect(() => {
     if (rol === 'asesor' && tabAsesor === 2) fetchCatalogoComisiones();
   }, [tabAsesor, rol]);
+
+  useEffect(() => {
+    if (rol === 'asesor' && esCadenas && tabAsesor === 3) {
+      const ciclos = getCiclos();
+      if (ciclos.length > 0) {
+        const c = ciclos[nominaCicloIdx] ?? ciclos[0];
+        fetchNominaChips(
+          c.inicio.toLocaleDateString('en-CA'),
+          c.fin.toLocaleDateString('en-CA'),
+        );
+      }
+    }
+  }, [tabAsesor, nominaCicloIdx, rol]);
 
   // ── Acciones ─────────────────────────────────────────────────────────────
   const agregarAlCarrito = () => {
@@ -768,6 +840,14 @@ const FormularioVentaMultiple = () => {
             label="COMISIONES"
             sx={{ fontWeight: 700, minHeight: 44, fontSize: { xs: 11, sm: 13 }, px: { xs: 1, sm: 2 }, '&.Mui-selected': { color: '#f97316' } }}
           />
+          {esCadenas && (
+            <Tab
+              icon={<AccountBalanceWalletIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />}
+              iconPosition="start"
+              label="NÓMINA"
+              sx={{ fontWeight: 700, minHeight: 44, fontSize: { xs: 11, sm: 13 }, px: { xs: 1, sm: 2 }, '&.Mui-selected': { color: '#f97316' } }}
+            />
+          )}
         </Tabs>
 
         {/* ── Tab TICKET ── */}
@@ -1173,6 +1253,178 @@ const FormularioVentaMultiple = () => {
             )}
           </Box>
         )}
+
+        {/* ── Tab NÓMINA (solo Cadenas C.) ── */}
+        {tabAsesor === 3 && esCadenas && (() => {
+          const ciclos = getCiclos();
+          if (ciclos.length === 0) {
+            return (
+              <Box sx={{ py: 4, textAlign: 'center' }}>
+                <Typography color="text.secondary">No hay ciclos cerrados disponibles aún.</Typography>
+              </Box>
+            );
+          }
+          const cicloActual = ciclos[nominaCicloIdx] ?? ciclos[0];
+          const incubadora = nominaChips.filter((c) => c.es_incubadora);
+          const totalCobrar = nominaChips
+            .filter((c) => c.validado && !c.es_incubadora)
+            .reduce((s, c) => s + c.comision, 0);
+
+          return (
+            <Box>
+              {/* Selector de ciclo */}
+              <TextField
+                select
+                size="small"
+                label="Ciclo"
+                value={nominaCicloIdx}
+                onChange={(e) => setNominaCicloIdx(Number(e.target.value))}
+                sx={{ mb: 3, minWidth: { xs: '100%', sm: 360 } }}
+              >
+                {ciclos.map((c, i) => (
+                  <MenuItem key={i} value={i}>{labelCiclo(c)}</MenuItem>
+                ))}
+              </TextField>
+
+              {/* Cuadro 1: Activaciones del ciclo */}
+              <Paper sx={{ mb: 3, overflow: 'hidden' }}>
+                <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid #e2e8f0' }}>
+                  <Typography variant="subtitle1" fontWeight={700}>
+                    Activaciones del ciclo {fmtDiaMes(cicloActual.inicio)} al {fmtDiaMes(cicloActual.fin)} {cicloActual.fin.getFullYear()}
+                  </Typography>
+                </Box>
+
+                {nominaChips.length === 0 ? (
+                  <Box sx={{ px: 2.5, py: 2.5 }}>
+                    <Typography color="text.secondary" variant="body2">Sin activaciones en este ciclo.</Typography>
+                  </Box>
+                ) : isMobile ? (
+                  <Box sx={{ p: 1.5 }}>
+                    {nominaChips.map((c) => {
+                      const est = getEstadoChip(c);
+                      return (
+                        <Box key={c.id} sx={{ p: 1.5, mb: 1, border: '1px solid #e2e8f0', borderRadius: 1.5, bgcolor: '#f8fafc' }}>
+                          <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                            <Typography variant="body2" fontWeight={700} sx={{ fontSize: 13, color: '#1e293b' }}>
+                              {c.tipo_chip}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: est.color, fontWeight: 700, fontSize: 11 }}>
+                              {est.label}
+                            </Typography>
+                          </Box>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12, mb: 0.5 }}>
+                            {c.numero_telefono}
+                          </Typography>
+                          <Box display="flex" justifyContent="space-between">
+                            <Typography variant="body2" sx={{ fontSize: 12, color: '#475569' }}>
+                              Recarga: ${c.monto_recarga.toFixed(2)}
+                            </Typography>
+                            <Typography variant="body2" fontWeight={700} sx={{ fontSize: 12, color: '#16a34a' }}>
+                              Comisión: ${c.comision.toFixed(2)}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                ) : (
+                  <Box sx={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr>
+                          <th style={thStyle}>Tipo de Chip</th>
+                          <th style={thStyle}>Número</th>
+                          <th style={thStyle}>Recarga</th>
+                          <th style={thStyle}>Comisión</th>
+                          <th style={thStyle}>Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {nominaChips.map((c) => {
+                          const est = getEstadoChip(c);
+                          return (
+                            <tr key={c.id}>
+                              <td style={tdStyle}>{c.tipo_chip}</td>
+                              <td style={tdStyle}>{c.numero_telefono}</td>
+                              <td style={tdStyle}>${c.monto_recarga.toFixed(2)}</td>
+                              <td style={{ ...tdStyle, fontWeight: 700, color: '#16a34a' }}>${c.comision.toFixed(2)}</td>
+                              <td style={{ ...tdStyle, color: est.color, fontWeight: 600 }}>{est.label}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </Box>
+                )}
+
+                <Box sx={{ px: 2.5, py: 1.5, borderTop: '1px solid #e2e8f0', bgcolor: '#f0fdf4' }}>
+                  <Typography variant="body2" fontWeight={700} sx={{ color: '#16a34a' }}>
+                    Total a cobrar el {fmtDiaMes(cicloActual.pago)}: ${totalCobrar.toFixed(2)}
+                  </Typography>
+                </Box>
+              </Paper>
+
+              {/* Cuadro 2: Líneas en incubadora */}
+              <Paper sx={{ overflow: 'hidden', mb: 2 }}>
+                <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid #e2e8f0' }}>
+                  <Typography variant="subtitle1" fontWeight={700}>Líneas en incubadora</Typography>
+                </Box>
+
+                {incubadora.length === 0 ? (
+                  <Box sx={{ px: 2.5, py: 2.5 }}>
+                    <Typography color="text.secondary" variant="body2">Sin líneas en incubadora este ciclo.</Typography>
+                  </Box>
+                ) : isMobile ? (
+                  <Box sx={{ p: 1.5 }}>
+                    {incubadora.map((c) => (
+                      <Box key={c.id} sx={{ p: 1.5, mb: 1, border: '1px solid #fed7aa', borderRadius: 1.5, bgcolor: '#fff7ed' }}>
+                        <Typography variant="body2" fontWeight={700} sx={{ fontSize: 13, color: '#1e293b', mb: 0.5 }}>
+                          {c.tipo_chip}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12, mb: 0.5 }}>
+                          {c.numero_telefono}
+                        </Typography>
+                        <Box display="flex" justifyContent="space-between">
+                          <Typography variant="body2" sx={{ fontSize: 12, color: '#475569' }}>
+                            Recarga: ${c.monto_recarga.toFixed(2)}
+                          </Typography>
+                          <Typography variant="body2" fontWeight={700} sx={{ fontSize: 12, color: '#f97316' }}>
+                            Comisión: ${c.comision.toFixed(2)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    ))}
+                  </Box>
+                ) : (
+                  <Box sx={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr>
+                          <th style={thStyle}>Tipo de Chip</th>
+                          <th style={thStyle}>Número</th>
+                          <th style={thStyle}>Recarga</th>
+                          <th style={thStyle}>Comisión</th>
+                          <th style={thStyle}>Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {incubadora.map((c) => (
+                          <tr key={c.id}>
+                            <td style={tdStyle}>{c.tipo_chip}</td>
+                            <td style={tdStyle}>{c.numero_telefono}</td>
+                            <td style={tdStyle}>${c.monto_recarga.toFixed(2)}</td>
+                            <td style={{ ...tdStyle, fontWeight: 700, color: '#f97316' }}>${c.comision.toFixed(2)}</td>
+                            <td style={{ ...tdStyle, color: '#f97316', fontWeight: 600 }}>En incubadora</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </Box>
+                )}
+              </Paper>
+            </Box>
+          );
+        })()}
       </Box>
     );
   }
