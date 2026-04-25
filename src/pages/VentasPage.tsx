@@ -173,6 +173,9 @@ const calcComision = (v: Venta): number => {
 // ────────────────────────────────────────────────────────────────────────────
 
 const FormularioVentaMultiple = () => {
+  const moduloLocal = localStorage.getItem('modulo') || '';
+  const esCadenas = moduloLocal.toLowerCase().includes('cadena');
+
   // ── Estado general ───────────────────────────────────────────────────────
   const [productos, setProductos] = useState<InventarioGeneral[]>([]);
   const [ventas, setVentas] = useState<Venta[]>([]);
@@ -186,7 +189,7 @@ const FormularioVentaMultiple = () => {
   const [carrito, setCarrito] = useState<ProductoEnVenta[]>([]);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
 
-  const [tipoVenta, setTipoVenta] = useState<'accesorio' | 'chip' | 'telefono'>('accesorio');
+  const [tipoVenta, setTipoVenta] = useState<'accesorio' | 'chip' | 'telefono'>(esCadenas ? 'chip' : 'accesorio');
   const [tipoChip, setTipoChip] = useState('');
   const [numero, setNumero] = useState('');
   const [recarga, setRecarga] = useState('');
@@ -496,22 +499,26 @@ const FormularioVentaMultiple = () => {
   // ── Formulario (compartido) ───────────────────────────────────────────────
   const formulario = (
     <Paper sx={{ borderRadius: 2, p: 2.5 }}>
-      <Typography variant="h5" gutterBottom fontWeight={700}>Registrar Venta</Typography>
+      <Typography variant="h5" gutterBottom fontWeight={700}>
+        {esCadenas ? 'Activaciones' : 'Registrar Venta'}
+      </Typography>
 
       {mensaje && <Alert severity={mensaje.tipo} sx={{ mb: 2 }}>{mensaje.texto}</Alert>}
 
-      <TextField
-        select label="Tipo de venta" value={tipoVenta}
-        onChange={(e) => { setTipoVenta(e.target.value as any); setMensaje(null); }}
-        fullWidth margin="normal"
-      >
-        <MenuItem value="accesorio">Accesorio</MenuItem>
-        <MenuItem value="chip">Chip</MenuItem>
-        <MenuItem value="telefono">Teléfono</MenuItem>
-      </TextField>
+      {!esCadenas && (
+        <TextField
+          select label="Tipo de venta" value={tipoVenta}
+          onChange={(e) => { setTipoVenta(e.target.value as any); setMensaje(null); }}
+          fullWidth margin="normal"
+        >
+          <MenuItem value="accesorio">Accesorio</MenuItem>
+          <MenuItem value="chip">Chip</MenuItem>
+          <MenuItem value="telefono">Teléfono</MenuItem>
+        </TextField>
+      )}
 
       {/* ── Accesorio ── */}
-      {tipoVenta === 'accesorio' && (
+      {!esCadenas && tipoVenta === 'accesorio' && (
         <>
           <Autocomplete
             options={productos
@@ -542,7 +549,7 @@ const FormularioVentaMultiple = () => {
       )}
 
       {/* ── Chip ── */}
-      {tipoVenta === 'chip' && (
+      {(esCadenas || tipoVenta === 'chip') && (
         <>
           <TextField select label="Chip" value={tipoChip} onChange={(e) => setTipoChip(e.target.value)} fullWidth margin="normal">
             <MenuItem value="Chip Equipo">Chip Equipo / Promo / ATO</MenuItem>
@@ -569,7 +576,7 @@ const FormularioVentaMultiple = () => {
       )}
 
       {/* ── Teléfono ── */}
-      {tipoVenta === 'telefono' && (
+      {!esCadenas && tipoVenta === 'telefono' && (
         <>
           <Autocomplete
             freeSolo loading={buscando} options={opcionesTelefonos}
@@ -748,21 +755,36 @@ const FormularioVentaMultiple = () => {
             )}
 
             <Box display="flex" flexDirection="column" gap={1}>
-              <Box display="flex" justifyContent="space-between">
-                <Typography variant="body2" sx={{ opacity: 0.85 }}>Accesorios</Typography>
-                <Typography variant="body2" fontWeight={600}>${comisionAccHoy.toFixed(2)}</Typography>
-              </Box>
-              <Box display="flex" justifyContent="space-between">
-                <Typography variant="body2" sx={{ opacity: 0.85 }}>Teléfonos</Typography>
-                <Typography variant="body2" fontWeight={600}>${comisionTelHoy.toFixed(2)}</Typography>
-              </Box>
+              {esCadenas ? (
+                <Box display="flex" justifyContent="space-between">
+                  <Typography variant="body2" sx={{ opacity: 0.85 }}>Chips</Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    ${((comisionesHoy?.total_chips) ?? 0).toFixed(2)}
+                  </Typography>
+                </Box>
+              ) : (
+                <>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="body2" sx={{ opacity: 0.85 }}>Accesorios</Typography>
+                    <Typography variant="body2" fontWeight={600}>${comisionAccHoy.toFixed(2)}</Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="body2" sx={{ opacity: 0.85 }}>Teléfonos</Typography>
+                    <Typography variant="body2" fontWeight={600}>${comisionTelHoy.toFixed(2)}</Typography>
+                  </Box>
+                </>
+              )}
             </Box>
 
             <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.35)' }} />
 
             <Box display="flex" justifyContent="space-between" alignItems="center">
               <Typography variant="body1" fontWeight={700}>Total comisionado</Typography>
-              <Typography variant="h5" fontWeight={800}>${totalComisionHoy.toFixed(2)}</Typography>
+              <Typography variant="h5" fontWeight={800}>
+                ${esCadenas
+                  ? ((comisionesHoy?.total_chips) ?? 0).toFixed(2)
+                  : totalComisionHoy.toFixed(2)}
+              </Typography>
             </Box>
           </Paper>
 
