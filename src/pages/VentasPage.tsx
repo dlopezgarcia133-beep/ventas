@@ -614,6 +614,17 @@ const FormularioVentaMultiple = () => {
     const totalMisVentasComision =
       [...misVentasAcc, ...misVentasTel].filter((v) => !v.cancelada).reduce((s, v) => s + calcComision(v), 0);
 
+    const tablaComisionesItems = [
+      ...catalogoComisiones.map((c) => ({
+        nombre: c.producto,
+        comision: c.cantidad,
+        esTelefono: c.producto.toUpperCase().startsWith('TELEFONO'),
+      })),
+      { nombre: 'Contado',  comision: 10,  esTelefono: true },
+      { nombre: 'Paguitos', comision: 110, esTelefono: true },
+      { nombre: 'Pajoy',    comision: 100, esTelefono: true },
+    ].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
     return (
       <Box sx={{ mt: 2, px: 2 }}>
         <Tabs
@@ -857,32 +868,22 @@ const FormularioVentaMultiple = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {catalogoComisiones.map((c) => (
-                    <tr key={c.producto}>
-                      <td style={tdStyle}>{c.producto}</td>
-                      <td style={{ ...tdStyle, fontWeight: 600, color: '#16a34a' }}>${fmt(c.cantidad)}</td>
+                  {tablaComisionesItems.map((item) => (
+                    <tr key={item.nombre}>
+                      <td style={tdStyle}>{item.nombre}</td>
+                      <td style={{ ...tdStyle, fontWeight: 600, color: '#16a34a' }}>${fmt(item.comision)}</td>
                       <td style={tdStyle}>
-                        <Chip label="Accesorio" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
+                        {item.esTelefono
+                          ? <Chip label="Teléfono" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
+                          : <Chip label="Accesorio" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
+                        }
                       </td>
                     </tr>
                   ))}
-                  {[
-                    { tipo: 'Contado', bono: 10 },
-                    { tipo: 'Paguitos', bono: 110 },
-                    { tipo: 'Pajoy', bono: 100 },
-                  ].map((t) => (
-                    <tr key={t.tipo}>
-                      <td style={tdStyle}>{t.tipo}</td>
-                      <td style={{ ...tdStyle, fontWeight: 600, color: '#16a34a' }}>${fmt(t.bono)}</td>
-                      <td style={tdStyle}>
-                        <Chip label="Teléfono" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
-                      </td>
-                    </tr>
-                  ))}
-                  {catalogoComisiones.length === 0 && (
+                  {tablaComisionesItems.length === 0 && (
                     <tr>
                       <td colSpan={3} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 24 }}>
-                        Sin comisiones configuradas para accesorios
+                        Sin comisiones configuradas
                       </td>
                     </tr>
                   )}
@@ -890,7 +891,7 @@ const FormularioVentaMultiple = () => {
               </table>
               <Box sx={{ px: 2.5, py: 1.5, borderTop: '1px solid #e2e8f0', bgcolor: '#f8fafc' }}>
                 <Typography variant="body2" color="text.secondary">
-                  {catalogoComisiones.length} accesorio{catalogoComisiones.length !== 1 ? 's' : ''} · 3 tipos de teléfono
+                  {tablaComisionesItems.filter((i) => !i.esTelefono).length} accesorios · {tablaComisionesItems.filter((i) => i.esTelefono).length} teléfonos
                 </Typography>
               </Box>
             </Paper>
