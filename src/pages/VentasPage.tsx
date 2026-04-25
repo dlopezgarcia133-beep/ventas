@@ -1061,15 +1061,14 @@ const FormularioVentaMultiple = () => {
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr>
-                        <th style={{ ...thStyle, width: '50%' }}>Tipo de Chip</th>
+                        <th style={{ ...thStyle, width: '70%' }}>Tipo de Chip</th>
                         <th style={{ ...thStyle, width: '30%' }}>Comisión</th>
-                        <th style={{ ...thStyle, width: '20%' }}>Nota</th>
                       </tr>
                     </thead>
                     <tbody>
                       {!items ? (
                         <tr>
-                          <td colSpan={3} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 24 }}>
+                          <td colSpan={2} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 24 }}>
                             Sin comisiones configuradas para {cadenaActual}
                           </td>
                         </tr>
@@ -1079,7 +1078,6 @@ const FormularioVentaMultiple = () => {
                           <td style={{ ...tdStyle, fontWeight: 700, color: '#16a34a' }}>
                             {item.comision.startsWith('$') ? item.comision : `$${item.comision}`}
                           </td>
-                          <td style={{ ...tdStyle, fontSize: 12, color: '#94a3b8' }}>{item.nota ?? ''}</td>
                         </tr>
                       ))}
                     </tbody>
