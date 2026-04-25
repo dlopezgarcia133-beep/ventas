@@ -216,20 +216,20 @@ const CHIP_OPCIONES_POR_CADENA: Record<string, typeof CHIP_OPCIONES_TODAS> = {
 interface ComisionChip { tipo: string; comision: string; nota?: string; }
 
 const COMISIONES_EKT: ComisionChip[] = [
-  { tipo: 'Teléfono Activado de Cadenas',       comision: 'Manual',           nota: 'Asignada al validar' },
-  { tipo: 'Chip Cero / Libre / EKT',            comision: '$25 / $30 / $35',  nota: 'Recarga $0-50 / $51-100 / $101-150' },
+  { tipo: 'Teléfono Activado de Cadenas',       comision: '$40' },
+  { tipo: 'Chip Cero / Libre / EKT',            comision: '$25' },
   { tipo: 'Chip Preactivado / Otras Cadenas',   comision: '$35' },
   { tipo: 'Portabilidad / EKT / Otras Cadenas', comision: '$50' },
 ];
 
 const COMISIONES_COPPEL: ComisionChip[] = [
-  { tipo: 'Teléfono Activado de Cadenas', comision: 'Manual',         nota: 'Asignada al validar' },
-  { tipo: 'Chip Express Coppel',          comision: '$10 / $15',      nota: 'Recarga $0-50 / $51-100' },
+  { tipo: 'Teléfono Activado de Cadenas', comision: '$40' },
+  { tipo: 'Chip Express Coppel',          comision: '$10 / $15', nota: 'Recarga $0-50 / $51-100' },
   { tipo: 'Portabilidad Coppel',          comision: '$25' },
 ];
 
 const COMISIONES_OTRAS_CADENAS: ComisionChip[] = [
-  { tipo: 'Teléfono Activado de Cadenas',       comision: 'Manual', nota: 'Asignada al validar' },
+  { tipo: 'Teléfono Activado de Cadenas',       comision: '$40' },
   { tipo: 'Chip Preactivado / Otras Cadenas',   comision: '$35' },
   { tipo: 'Portabilidad / EKT / Otras Cadenas', comision: '$50' },
 ];
@@ -1076,8 +1076,8 @@ const FormularioVentaMultiple = () => {
                       ) : items.map((item) => (
                         <tr key={item.tipo}>
                           <td style={tdStyle}>{item.tipo}</td>
-                          <td style={{ ...tdStyle, fontWeight: 700, color: item.comision === 'Manual' ? '#64748b' : '#16a34a' }}>
-                            {item.comision === 'Manual' ? item.comision : `$${item.comision.replace(/\$/g, '')}`}
+                          <td style={{ ...tdStyle, fontWeight: 700, color: '#16a34a' }}>
+                            {item.comision.startsWith('$') ? item.comision : `$${item.comision}`}
                           </td>
                           <td style={{ ...tdStyle, fontSize: 12, color: '#94a3b8' }}>{item.nota ?? ''}</td>
                         </tr>
