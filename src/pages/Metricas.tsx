@@ -28,10 +28,10 @@ import axios from "axios";
 import { MetricaEmpleado } from "../Types";
 import RegistroPlan from "../components/RegistroPlan";
 
-const COLORS = ["#f97316", "#60a5fa", "#34d399"];
-const CHART_AXIS = { fill: "#94a3b8", fontSize: 11 };
-const CHART_GRID = "rgba(255,255,255,0.07)";
-const TOOLTIP_STYLE = { backgroundColor: "#0d1e3a", border: "1px solid rgba(249,115,22,0.3)", color: "#f1f5f9" };
+const COLORS = ["#f97316", "#0d1e3a", "#22c55e"];
+const CHART_AXIS = { fill: "#64748b", fontSize: 11 };
+const CHART_GRID = "rgba(0,0,0,0.07)";
+const TOOLTIP_STYLE = { backgroundColor: "#ffffff", border: "1px solid rgba(249,115,22,0.3)", color: "#1e293b", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" };
 
 const Metricas = () => {
   const [data, setData] = useState<MetricaEmpleado[]>([]);
@@ -291,7 +291,7 @@ useEffect(() => {
   <Box overflow="auto">
     <table style={{ width: "100%", borderCollapse: "collapse" }}>
       <thead>
-        <tr style={{ background: "#0a1628" }}>
+        <tr style={{ background: "#f8fafc" }}>
           <th style={{ color: "#f97316", padding: "8px", fontWeight: 700 }}>Módulo</th>
           <th style={{ color: "#f97316", padding: "8px", fontWeight: 700 }}>Accesorios</th>
           <th style={{ color: "#f97316", padding: "8px", fontWeight: 700 }}>Teléfonos</th>
@@ -304,7 +304,7 @@ useEffect(() => {
 
       <tbody>
         {resumenModulo.map((m, i) => (
-          <tr key={i} style={{ textAlign: "center", borderBottom: "1px solid rgba(249,115,22,0.08)", color: "#f1f5f9" }}>
+          <tr key={i} style={{ textAlign: "center", borderBottom: "1px solid #e2e8f0", color: "#1e293b" }}>
             <td>{m.modulo}</td>
 
             <td>${(m.total_accesorios || 0).toLocaleString()}</td>
@@ -353,7 +353,7 @@ useEffect(() => {
           </Pie>
 
           <Tooltip formatter={(value: any, name: any) => [`${value} ventas`, name]} contentStyle={TOOLTIP_STYLE} />
-          <Legend wrapperStyle={{ color: "#94a3b8" }} />
+          <Legend wrapperStyle={{ color: "#64748b" }} />
         </PieChart>
       </ResponsiveContainer>
     )}

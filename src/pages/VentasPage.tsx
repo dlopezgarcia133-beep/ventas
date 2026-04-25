@@ -2,7 +2,7 @@ import React, { ChangeEvent, useEffect, useState, useRef } from 'react';
 import {
   Box, TextField, Button, Typography, Autocomplete, Alert, Paper,
   TableContainer, Container, Table, TableHead, TableRow, TableCell, TableBody, MenuItem,
-  FormControlLabel, Switch, Slide,
+  FormControlLabel,
   Menu,
   FormControl,
   FormLabel,
@@ -27,13 +27,12 @@ const FormularioVentaMultiple = () => {
   const [telefono, settelefono] = useState('');
   const [carrito, setCarrito] = useState<ProductoEnVenta[]>([]);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
-  const [checked, setChecked] = useState(false);
+  const [tipoVenta, setTipoVenta] = useState<'accesorio' | 'chip' | 'telefono'>('accesorio');
   const [tipoChip, setTipoChip] = useState('');
   const [numero, setNumero] = useState('');
   const [recarga, setRecarga] = useState('');
   const [telefonoMarca, setTelefonoMarca] = useState('');
   const [telefonoModelo, setTelefonoModelo] = useState('');
-  const [telefonoChecked, setTelefonoChecked] = useState(false);
   const [telefonoTipo_venta, setTelefonoTipo_venta] = useState('');
   const [telefonoPrecio, setTelefonoPrecio] = useState('');
   const [Chip_casado, setChip_casado] = useState('');
@@ -44,11 +43,10 @@ const FormularioVentaMultiple = () => {
   const [rol, setRol] = useState<Usuario["rol"] | null>(null);
   const [modulos, setModulos] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
-  const slideContainerRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
   const [totalAccesorios, setTotalAccesorios] = useState(0);
   const [totalTelefonos, setTotalTelefonos] = useState(0);
-  
+
   const [cvip, setcvip] = useState<boolean>(false);
   const [paginaAcc, setPaginaAcc] = useState(0);
   const [paginaTel, setPaginaTel] = useState(0);
@@ -77,7 +75,6 @@ const FormularioVentaMultiple = () => {
 
 useEffect(() => {
   if (ventas.length > 0) {
-    // Filtrar y sumar accesorios
     const accesorios = ventas.filter(v => v.tipo_producto === "accesorios" && !v.cancelada);
     const totalAcc = accesorios.reduce(
       (acc, v) => acc + v.precio_unitario * v.cantidad,
@@ -85,7 +82,6 @@ useEffect(() => {
     );
     setTotalAccesorios(totalAcc);
 
-    // Filtrar y sumar teléfonos
     const telefonos = ventas.filter(v => v.tipo_producto === "telefono" && !v.cancelada);
     const totalTel = telefonos.reduce(
       (acc, v) => acc + v.precio_unitario * v.cantidad,
@@ -123,10 +119,6 @@ useEffect(() => {
 
     fetchPrecio();
   }, [producto]);
-  
-
-
-
 
 
   const agregarAlCarrito = () => {
@@ -158,7 +150,7 @@ useEffect(() => {
       setMensaje({ tipo: 'success', texto: 'Venta registrada con éxito.' });
       setCarrito([]);
       settelefono('');
-      
+
     } catch (err: any) {
       console.error(err);
     const msg = err?.response?.data?.detail || 'Error al registrar la venta ';
@@ -176,13 +168,6 @@ useEffect(() => {
     alert(err.response?.data?.detail || "Error al cancelar la venta");
   }
 };
-
-
-
-
-  const handleChange = () => {
-    setChecked(!checked);
-  };
 
   const handleSubmit = async () => {
     try {
@@ -212,8 +197,6 @@ useEffect(() => {
     }
   };
 
-  
-
 
 const registrarVentaTelefono = async () => {
   if (!telefonoMarca || !telefonoModelo || !telefonoPrecio || !telefonoTipo_venta) {
@@ -234,7 +217,7 @@ const registrarVentaTelefono = async () => {
       producto: `${telefonoMarca} ${telefonoModelo}`,
       cantidad: 1,
       precio_unitario: Number(telefonoPrecio),
-      tipo_producto: "telefono", 
+      tipo_producto: "telefono",
       tipo_venta: telefonoTipo_venta,
       chip_casado: Chip_casado || null,
     },
@@ -247,7 +230,6 @@ await axios.post(`${process.env.REACT_APP_API_URL}/ventas/ventas`, ventaPayload,
 
     setMensaje({ tipo: "success", texto: "Venta de teléfono registrada correctamente" });
 
-    // limpiar
     setTelefonoMarca("");
     setTelefonoModelo("");
     setTelefonoTipo_venta("");
@@ -273,9 +255,8 @@ await axios.post(`${process.env.REACT_APP_API_URL}/ventas/ventas`, ventaPayload,
 };
 
 
-
 const buscarTelefonos = async (texto: string) => {
-  if (!texto || texto.length < 2) { // solo busca si tiene 2+ caracteres
+  if (!texto || texto.length < 2) {
     setOpcionesTelefonos([]);
     return;
   }
@@ -305,8 +286,6 @@ useEffect(() => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setUser(resUser.data);
-
-        // Aquí guardamos el rol del usuario directamente
         setRol(resUser.data.rol);
 
         const resModulos = await axios.get(
@@ -329,172 +308,176 @@ useEffect(() => {
   }, [fecha, moduloId, user]);
 
 
-
-
   return (
-    <Grid container spacing={ 2 } sx={{ mt: 2 }}>
+    <Grid container spacing={2} sx={{ mt: 2 }}>
+
+      {/* ── FORMULARIO UNIFICADO ── */}
       <Grid item xs={12} md={6}>
-      <Paper sx={{borderRadius: 2, boxShadow: 3, p: 2, maxWidth: 600, mx: 'auto' }}>
-        <Typography variant="h5" gutterBottom>Registrar Venta</Typography>
+        <Paper sx={{ borderRadius: 2, boxShadow: 3, p: 2, maxWidth: 600, mx: 'auto' }}>
+          <Typography variant="h5" gutterBottom>Registrar Venta</Typography>
 
-        {mensaje && (
-          <Alert severity={mensaje.tipo} sx={{ mb: 2 }}>{mensaje.texto}</Alert>
-        )}
+          {mensaje && (
+            <Alert severity={mensaje.tipo} sx={{ mb: 2 }}>{mensaje.texto}</Alert>
+          )}
 
-          <Autocomplete
-            options={productos.filter(
-              (p) => !p.toLowerCase().includes('telefono')
-            )}
-            value={producto}
-            onChange={(e, newValue) => setProducto(newValue || '')}
-            renderInput={(params) => (
-              <TextField {...params} label="Producto" fullWidth margin="normal" />
-            )}
-          />
-
-
-   <TextField
-  label="Precio Unitario"
-  type="number"
-  value={precio ?? ''}  // muestra vacío si es null o undefined
-  onChange={(e) => {
-    const value = e.target.value;
-    setPrecio(value === '' ? null : Number(value)); // null si está vacío, número si hay algo
-  }}
-  fullWidth
-  margin="normal"
-/>
-
-        <TextField
-          label="Cantidad"
-          type="number"
-          value={cantidad}
-          onChange={(e) => setCantidad(parseInt(e.target.value))}
-          fullWidth
-          margin="normal"
-        />
+          {/* Selector de tipo */}
           <TextField
             select
-            label="Método de pago"
-            value={metodoPago}
-            onChange={(e) => setMetodoPago(e.target.value)}
+            label="Tipo de venta"
+            value={tipoVenta}
+            onChange={(e) => {
+              setTipoVenta(e.target.value as 'accesorio' | 'chip' | 'telefono');
+              setMensaje(null);
+            }}
             fullWidth
             margin="normal"
-            required
-            error={!metodoPago} 
-            helperText={!metodoPago ? "Este campo es obligatorio" : ""}
           >
-            <MenuItem value="efectivo">Efectivo 💵</MenuItem>
-            <MenuItem value="tarjeta">Tarjeta 💳</MenuItem>
+            <MenuItem value="accesorio">Accesorio</MenuItem>
+            <MenuItem value="chip">Chip</MenuItem>
+            <MenuItem value="telefono">Teléfono</MenuItem>
           </TextField>
 
-        <Button
-          variant="outlined"
-          fullWidth
-          onClick={agregarAlCarrito}
-          sx={{ mt: 1 }}
-          disabled={!producto || cantidad <= 0}
-        >
-          Agregar al Carrito
-        </Button>
+          {/* ── FORMULARIO ACCESORIO ── */}
+          {tipoVenta === 'accesorio' && (
+            <>
+              <Autocomplete
+                options={productos.filter(
+                  (p) => !p.toLowerCase().includes('telefono')
+                )}
+                value={producto}
+                onChange={(e, newValue) => setProducto(newValue || '')}
+                renderInput={(params) => (
+                  <TextField {...params} label="Producto" fullWidth margin="normal" />
+                )}
+              />
 
-        <TextField
-          label="telefono del cliente"
-          type="text"
-          value={telefono}
-          onChange={(e) => settelefono(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
+              <TextField
+                label="Precio Unitario"
+                type="number"
+                value={precio ?? ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setPrecio(value === '' ? null : Number(value));
+                }}
+                fullWidth
+                margin="normal"
+              />
 
-        <Box mt={2}>
-          <Typography variant="h6">Carrito</Typography>
-          {carrito.length === 0 ? (
-            <Typography>No hay productos agregados</Typography>
-          ) : (
-            <ul>
-              {carrito.map((p, i) => (
-                <li key={i}>{p.producto} - {p.cantidad} x ${p.precio_unitario}</li>
-              ))}
-            </ul>
+              <TextField
+                label="Cantidad"
+                type="number"
+                value={cantidad}
+                onChange={(e) => setCantidad(parseInt(e.target.value))}
+                fullWidth
+                margin="normal"
+              />
+
+              <TextField
+                select
+                label="Método de pago"
+                value={metodoPago}
+                onChange={(e) => setMetodoPago(e.target.value)}
+                fullWidth
+                margin="normal"
+                required
+                error={!metodoPago}
+                helperText={!metodoPago ? "Este campo es obligatorio" : ""}
+              >
+                <MenuItem value="efectivo">Efectivo 💵</MenuItem>
+                <MenuItem value="tarjeta">Tarjeta 💳</MenuItem>
+              </TextField>
+
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={agregarAlCarrito}
+                sx={{ mt: 1 }}
+                disabled={!producto || cantidad <= 0}
+              >
+                Agregar al Carrito
+              </Button>
+
+              <TextField
+                label="Teléfono del cliente"
+                type="text"
+                value={telefono}
+                onChange={(e) => settelefono(e.target.value)}
+                fullWidth
+                margin="normal"
+              />
+
+              <Box mt={2}>
+                <Typography variant="h6">Carrito</Typography>
+                {carrito.length === 0 ? (
+                  <Typography>No hay productos agregados</Typography>
+                ) : (
+                  <ul>
+                    {carrito.map((p, i) => (
+                      <li key={i}>{p.producto} - {p.cantidad} x ${p.precio_unitario}</li>
+                    ))}
+                  </ul>
+                )}
+              </Box>
+              <Box mt={2}>
+                <Typography variant="h6">
+                  Total: ${carrito.reduce((acc, p) => acc + p.precio_unitario * p.cantidad, 0).toFixed(2)}
+                </Typography>
+              </Box>
+
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                onClick={enviarCarrito}
+                sx={{ mt: 2 }}
+                disabled={carrito.length === 0}
+              >
+                Registrar Venta
+              </Button>
+            </>
           )}
-        </Box>
-        <Box mt={2}>
-          <Typography variant="h6">Total: ${carrito.reduce((acc, p) => acc + p.precio_unitario * p.cantidad, 0).toFixed(2)}</Typography>
-        </Box>
 
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          onClick={enviarCarrito}
-          sx={{ mt: 2 }}
-          disabled={carrito.length === 0}
-        >
-          Registrar Venta
-        </Button>
+          {/* ── FORMULARIO CHIP ── */}
+          {tipoVenta === 'chip' && (
+            <>
+              <TextField
+                select
+                label="Chip"
+                value={tipoChip}
+                onChange={(e) => setTipoChip(e.target.value)}
+                fullWidth
+                margin="normal"
+              >
+                <MenuItem value="Chip Equipo">Chip Equipo / Promo / ATO</MenuItem>
+                <MenuItem value="Chip Express">Chip Express / ATO</MenuItem>
+                <MenuItem value="Portabilidad">Portabilidad / ATO</MenuItem>
+                <MenuItem value="Chip Cero/Libre">Chip Cero / Libre / EKT</MenuItem>
+                <MenuItem value="Chip Preactivado">Chip Preactivado / Otras Cadenas</MenuItem>
+                <MenuItem value="Chip Coppel">Chip Express Coppel</MenuItem>
+                <MenuItem value="Portabilidad Coppel">Portabilidad Coppel</MenuItem>
+                <MenuItem value="Porta Otras cadenas">Portabilidad / EKT / Otras Cadenas</MenuItem>
+                <MenuItem value="Activacion">Telefono Activado de Cadenas</MenuItem>
+              </TextField>
 
-      </Paper>
-         
+              <TextField
+                label="Número"
+                type="tel"
+                value={numero}
+                onChange={(e) => setNumero(e.target.value)}
+                fullWidth
+                margin="normal"
+              />
 
+              <TextField
+                label="Recarga"
+                type="number"
+                value={recarga}
+                onChange={(e) => setRecarga(e.target.value)}
+                fullWidth
+                margin="normal"
+              />
 
-      
-      </Grid>
-
-
-      <Grid item xs={12} md={3}>
-      <Box sx={{ p: 2, height: '100%', overflow: 'hidden' }} ref={slideContainerRef}>
-          <FormControlLabel
-            control={<Switch checked={checked} onChange={() => setChecked(!checked)} />}
-            label="CHIPS"
-          />
-
-        <Slide in={checked} container={slideContainerRef.current}>
-          <Paper sx={{ borderRadius: 2, boxShadow: 3, p: 3, backgroundColor: '#0d1e3a' }}>
-            {mensaje && (
-              <Alert severity={mensaje.tipo} sx={{ mb: 2 }}>
-                {mensaje.texto}
-              </Alert>
-            )}
-
-            <TextField
-              select
-              label="Chip"
-              value={tipoChip}
-              onChange={(e) => setTipoChip(e.target.value)}
-              fullWidth
-              margin="normal"
-            >
-              <MenuItem value="Chip Equipo">Chip Equipo / Promo / ATO</MenuItem>
-              <MenuItem value="Chip Express">Chip Express / ATO</MenuItem>
-              <MenuItem value="Portabilidad">Portabilidad / ATO</MenuItem>
-              <MenuItem value="Chip Cero/Libre">Chip Cero / Libre / EKT</MenuItem>
-              <MenuItem value="Chip Preactivado">Chip Preactivado / Otras Cadenas</MenuItem>
-              <MenuItem value="Chip Coppel">Chip Express Coppel</MenuItem>
-              <MenuItem value="Portabilidad Coppel">Portabilidad Coppel</MenuItem>
-              <MenuItem value="Porta Otras cadenas">Portabilidad / EKT / Otras Cadenas</MenuItem>
-              <MenuItem value="Activacion">Telefono Activado de Cadenas</MenuItem>
-            </TextField>
-
-            <TextField
-              label="Número"
-              type="tel"
-              value={numero}
-              onChange={(e) => setNumero(e.target.value)}
-              fullWidth
-              margin="normal"
-            />
-
-            <TextField
-              label="Recarga"
-              type="number"
-              value={recarga}
-              onChange={(e) => setRecarga(e.target.value)}
-              fullWidth
-              margin="normal"
-            />
-
-              <FormControl>
+              <FormControl sx={{ mt: 1 }}>
                 <FormLabel>Cliente VIP</FormLabel>
                 <RadioGroup
                   row
@@ -506,33 +489,22 @@ useEffect(() => {
                 </RadioGroup>
               </FormControl>
 
-            <Button
-              variant="contained"
-              fullWidth
-              color="primary"
-              onClick={handleSubmit}
-              disabled={!tipoChip || !numero || !recarga}
-              sx={{ mt: 2 }}
-            >
-              Registrar Venta de Chip
-            </Button>
-          </Paper>
-        </Slide>
-        
-      </Box>
-    </Grid>
-    
-   <Grid item xs={12} md={3}>
-      <Box sx={{ p: 2, height: '100%', overflow: 'hidden' }} ref={slideContainerRef}>
-                <FormControlLabel
-            control={<Switch checked={telefonoChecked} onChange={() => setTelefonoChecked(!telefonoChecked)} />}
-            label="TELÉFONOS"
-          />
+              <Button
+                variant="contained"
+                fullWidth
+                color="primary"
+                onClick={handleSubmit}
+                disabled={!tipoChip || !numero || !recarga}
+                sx={{ mt: 2 }}
+              >
+                Registrar Venta de Chip
+              </Button>
+            </>
+          )}
 
-          <Slide in={telefonoChecked} container={slideContainerRef.current}>
-  <Paper sx={{ borderRadius: 2, boxShadow: 3, p: 3, mt: 2, backgroundColor: '#0d1e3a' }}>
-    <Typography variant="h6" gutterBottom>Venta de Teléfono</Typography>
-
+          {/* ── FORMULARIO TELÉFONO ── */}
+          {tipoVenta === 'telefono' && (
+            <>
               <Autocomplete
                 freeSolo
                 loading={buscando}
@@ -543,7 +515,6 @@ useEffect(() => {
                 }}
                 onChange={(e, newValue) => {
                   if (typeof newValue === "string") {
-                    // separa en marca y modelo solo aquí
                     const partes = newValue.split(" ");
                     setTelefonoMarca(partes[0] || "");
                     setTelefonoModelo(partes.slice(1).join(" ") || "");
@@ -553,70 +524,73 @@ useEffect(() => {
                   <TextField {...params} label="Teléfono (marca + modelo)" fullWidth margin="normal" />
                 )}
               />
-    <TextField
-              select
-              label="Tipo"
-              value={telefonoTipo_venta}
-              onChange={(e) => setTelefonoTipo_venta(e.target.value)}
-              fullWidth
-              margin="normal"
-            >
-              <MenuItem value="Contado">Contado</MenuItem>
-              <MenuItem value="Pajoy">Pajoy</MenuItem>
-              <MenuItem value="Paguitos">Paguitos</MenuItem>
-            </TextField>
-    <TextField
-      label="Precio"
-      type="number"
-      value={telefonoPrecio}
-      onChange={(e) => setTelefonoPrecio(e.target.value)}
-      fullWidth
-      margin="normal"
-    />
-    <TextField
-  select
-  label="Método de pago"
-  value={metodoPago}
-  onChange={(e) => setMetodoPago(e.target.value)}
-  fullWidth
-  margin="normal"
-  required
->
-  <MenuItem value="efectivo">💵 Efectivo</MenuItem>
-  <MenuItem value="tarjeta">💳 Tarjeta</MenuItem>
-</TextField>
 
-<TextField
-  label="chip casado"
-  type="text"
-  value={Chip_casado}
-  onChange={(e) => setChip_casado(e.target.value)}
-  fullWidth
-  margin="normal"
-/>
+              <TextField
+                select
+                label="Tipo"
+                value={telefonoTipo_venta}
+                onChange={(e) => setTelefonoTipo_venta(e.target.value)}
+                fullWidth
+                margin="normal"
+              >
+                <MenuItem value="Contado">Contado</MenuItem>
+                <MenuItem value="Pajoy">Pajoy</MenuItem>
+                <MenuItem value="Paguitos">Paguitos</MenuItem>
+              </TextField>
 
-    <Button
-      variant="contained"
-      color="secondary"
-      fullWidth
-      onClick={registrarVentaTelefono}
-      disabled={!telefonoMarca || !telefonoModelo || !telefonoTipo_venta || !telefonoPrecio}
-      sx={{ mt: 2 }}
-    >
-      Registrar Venta Teléfono
-    </Button>
-  </Paper>
-</Slide>
+              <TextField
+                label="Precio"
+                type="number"
+                value={telefonoPrecio}
+                onChange={(e) => setTelefonoPrecio(e.target.value)}
+                fullWidth
+                margin="normal"
+              />
 
-        </Box>
-        
-    </Grid>
-          
-          <TableContainer>
+              <TextField
+                select
+                label="Método de pago"
+                value={metodoPago}
+                onChange={(e) => setMetodoPago(e.target.value)}
+                fullWidth
+                margin="normal"
+                required
+              >
+                <MenuItem value="efectivo">💵 Efectivo</MenuItem>
+                <MenuItem value="tarjeta">💳 Tarjeta</MenuItem>
+              </TextField>
+
+              <TextField
+                label="Chip casado"
+                type="text"
+                value={Chip_casado}
+                onChange={(e) => setChip_casado(e.target.value)}
+                fullWidth
+                margin="normal"
+              />
+
+              <Button
+                variant="contained"
+                color="secondary"
+                fullWidth
+                onClick={registrarVentaTelefono}
+                disabled={!telefonoMarca || !telefonoModelo || !telefonoTipo_venta || !telefonoPrecio}
+                sx={{ mt: 2 }}
+              >
+                Registrar Venta Teléfono
+              </Button>
+            </>
+          )}
+
+        </Paper>
+      </Grid>
+
+      {/* ── TABLAS (sin cambios) ── */}
+      <TableContainer>
         <Box mt={5}>
           <Typography variant="h6" gutterBottom>Ventas Realizadas</Typography>
            <div style={{ marginBottom: "1rem" }}>
-        
+
 {user?.is_admin && modulos.length > 0 && (
   <>
     <label htmlFor="modulo" className="block font-medium mb-1">
@@ -653,8 +627,8 @@ useEffect(() => {
         </Button>
 
       </div>
-      
-      
+
+
           <Paper>
             <Box p={2} component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
@@ -800,18 +774,15 @@ useEffect(() => {
   </Box>
 </TableContainer>
 
-    
+
       <Button
       variant="contained"
        onClick={() => navigate("/corte")}>
         Corte
       </Button>
     </Grid>
-    
+
   );
 };
 
 export default FormularioVentaMultiple;
-
-
-
