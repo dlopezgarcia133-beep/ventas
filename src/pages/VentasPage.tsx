@@ -2,7 +2,7 @@ import React, { ChangeEvent, useEffect, useState, useRef } from 'react';
 import {
   Box, TextField, Button, Typography, Autocomplete, Alert, Paper,
   TableContainer, Container, Table, TableHead, TableRow, TableCell, TableBody, MenuItem,
-  FormControlLabel, Switch, Slide,
+  FormControlLabel, Switch, Slide, Divider,
   Menu,
   FormControl,
   FormLabel,
@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
-import { Modulo, ProductoEnVenta, Usuario, Venta, VentaTelefono } from '../Types';
+import { Modulo, ProductoEnVenta, Usuario, Venta, VentaTelefono, ComisionData } from '../Types';
 import { useNavigate } from 'react-router-dom';
 import UsuariosAdmin from './Usuarios';
 
@@ -49,7 +49,8 @@ const FormularioVentaMultiple = () => {
   const navigate = useNavigate();
   const [totalAccesorios, setTotalAccesorios] = useState(0);
   const [totalTelefonos, setTotalTelefonos] = useState(0);
-  
+  const [comisionesHoy, setComisionesHoy] = useState<ComisionData | null>(null);
+
   const [cvip, setcvip] = useState<boolean>(false);
 
   const token = localStorage.getItem("token");
@@ -69,6 +70,25 @@ const FormularioVentaMultiple = () => {
     setVentas(res.data);
   } catch (err) {
     console.error(err);
+  }
+};
+
+const fetchComisionesHoy = async () => {
+  const hoy = new Date().toISOString().split('T')[0];
+  try {
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/comisiones/ciclo_por_fechas`, {
+      params: { inicio: hoy, fin: hoy },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setComisionesHoy(res.data);
+  } catch (err: any) {
+    if (err.response?.status === 404) {
+      setComisionesHoy({
+        inicio_ciclo: hoy, fin_ciclo: hoy, fecha_pago: '-',
+        total_accesorios: 0, total_telefonos: 0, total_chips: 0, total_general: 0,
+        ventas_accesorios: [], ventas_telefonos: [], ventas_chips: [],
+      });
+    }
   }
 };
 
@@ -348,6 +368,7 @@ useEffect(() => {
 
 useEffect(() => {
     fetchVentas();
+    fetchComisionesHoy();
   }, [fecha, moduloId, user]);
 
 
@@ -643,6 +664,19 @@ const totalVentasTelefonos = ventasTelefonos
         
     </Grid>
           
+      <Grid item xs={12} md={4}>
+        <Paper sx={{ borderRadius: 2, boxShadow: 3, p: 2 }}>
+          <Typography variant="h6" gutterBottom>Comisiones del día</Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Typography>Accesorios: ${(comisionesHoy?.total_accesorios ?? 0).toFixed(2)}</Typography>
+          <Typography sx={{ mt: 1 }}>Teléfonos: ${(comisionesHoy?.total_telefonos ?? 0).toFixed(2)}</Typography>
+          <Divider sx={{ my: 1.5 }} />
+          <Typography fontWeight="bold">
+            Total: ${((comisionesHoy?.total_accesorios ?? 0) + (comisionesHoy?.total_telefonos ?? 0)).toFixed(2)}
+          </Typography>
+        </Paper>
+      </Grid>
+
           <TableContainer>
         <Box mt={5}>
           <Typography variant="h6" gutterBottom>Ventas Realizadas</Typography>
@@ -696,7 +730,6 @@ const totalVentasTelefonos = ventasTelefonos
                   <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Precio</th>
                   <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Total</th>
                   <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Fecha</th>
-                  <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Estado</th>
                   <th style={{ padding: 8, borderBottom: '1px solid #ccc' }}>Acciones</th>
                 </tr>
               </thead>
@@ -713,7 +746,6 @@ const totalVentasTelefonos = ventasTelefonos
                       ${typeof v.total === "number" ? v.total.toFixed(2) : "0.00"}
                     </td>
                     <td style={{ padding: 8 }}>{`${v.fecha} ${v.hora}`}</td>
-                    <td style={{ padding: 8 }}>{v.cancelada ? 'Cancelada' : 'Activa'}</td>
                     <td style={{ padding: 8 }}>
                       <Button
                         variant="outlined"
@@ -729,7 +761,7 @@ const totalVentasTelefonos = ventasTelefonos
                 ))}
                 {ventas.length === 0 && (
                   <tr>
-                    <td colSpan={8} style={{ padding: 8, textAlign: 'center' }}>No hay ventas registradas</td>
+                    <td colSpan={7} style={{ padding: 8, textAlign: 'center' }}>No hay ventas registradas</td>
                   </tr>
                 )}
                 </tbody>
