@@ -278,7 +278,6 @@ const FormularioVentaMultiple = () => {
           modulo_id: user?.is_admin ? moduloId || undefined : undefined,
         },
       });
-      console.log('[fetchVentas] todas las ventas del API:', res.data);
       setVentas(res.data);
     } catch (err) {
       console.error(err);
@@ -323,14 +322,11 @@ const FormularioVentaMultiple = () => {
         `${process.env.REACT_APP_API_URL}/comisiones/ciclo_por_fechas`,
         { ...config, params: { inicio: hoy, fin: hoy } },
       );
-      console.log('[fetchComisionesHoy] respuesta completa del API:', res.data);
-      console.log('[fetchComisionesHoy] ventas_chips:', res.data?.ventas_chips);
       setComisionesHoy(res.data);
     } catch (err: any) {
       if (err.response?.status === 404) {
         setSinCiclo(true);
         setComisionesHoy({ total_accesorios: 0, total_telefonos: 0, total_chips: 0, total_general: 0, ventas_chips: [], ventas_accesorios: [], ventas_telefonos: [] });
-        console.log('[fetchComisionesHoy] 404 - sin ciclo activo para hoy');
       } else {
         console.error('Error fetching comisiones del día:', err);
       }
@@ -530,10 +526,10 @@ const FormularioVentaMultiple = () => {
   // ── Cálculos asesor del día ──────────────────────────────────────────────
   const ventasHoyAcc = ventas.filter((v) => v.tipo_producto === 'accesorios' && v.fecha?.startsWith(HOY)).sort((a, b) => a.producto.localeCompare(b.producto, 'es'));
   const ventasHoyTel = ventas.filter((v) => v.tipo_producto === 'telefono' && v.fecha?.startsWith(HOY)).sort((a, b) => a.producto.localeCompare(b.producto, 'es'));
-  // Chips: el endpoint ya filtra por HOY, no se necesita filtro adicional
-  const chipsHoy: any[] = comisionesHoy?.ventas_chips || [];
-  console.log('[chipsHoy] comisionesHoy completo:', comisionesHoy);
-  console.log('[chipsHoy] valor de chipsHoy:', chipsHoy);
+  const usuarioActual = localStorage.getItem('usuario') || '';
+  const chipsHoy = ventas.filter(
+    (v: any) => v.tipo_producto === 'chip' && v.fecha?.startsWith(HOY) && v.empleado?.username === usuarioActual,
+  );
 
   const comisionAccHoy  = ventasHoyAcc.filter((v) => !v.cancelada).reduce((s, v) => s + calcComision(v), 0);
   const comisionTelHoy  = ventasHoyTel.filter((v) => !v.cancelada).reduce((s, v) => s + calcComision(v), 0);
@@ -741,9 +737,9 @@ const FormularioVentaMultiple = () => {
                     ) : (
                       chipsHoy.map((c: any, i: number) => (
                         <tr key={i}>
-                          <td style={tdStyle}>{c.tipo_chip}</td>
+                          <td style={tdStyle}>{c.producto ?? c.tipo_chip}</td>
                           <td style={tdStyle}>{c.numero_telefono}</td>
-                          <td style={tdStyle}>${typeof c.monto_recarga === 'number' ? c.monto_recarga.toFixed(2) : c.monto_recarga}</td>
+                          <td style={tdStyle}>${typeof c.monto_recarga === 'number' ? c.monto_recarga.toFixed(2) : (typeof c.precio_unitario === 'number' ? c.precio_unitario.toFixed(2) : '0.00')}</td>
                         </tr>
                       ))
                     )}
