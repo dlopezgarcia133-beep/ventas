@@ -198,7 +198,7 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
       disabled={!chip.comision}
       style={{
         padding: "4px 8px",
-        backgroundColor: "#1976d2",
+        backgroundColor: "#1e3a5f",
         color: "white",
         border: "none",
         borderRadius: "4px",

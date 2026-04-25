@@ -28,7 +28,10 @@ import axios from "axios";
 import { MetricaEmpleado } from "../Types";
 import RegistroPlan from "../components/RegistroPlan";
 
-const COLORS = ["#1976d2", "#ed6c02", "#2e7d32"];
+const COLORS = ["#f97316", "#60a5fa", "#34d399"];
+const CHART_AXIS = { fill: "#94a3b8", fontSize: 11 };
+const CHART_GRID = "rgba(255,255,255,0.07)";
+const TOOLTIP_STYLE = { backgroundColor: "#0d1e3a", border: "1px solid rgba(249,115,22,0.3)", color: "#f1f5f9" };
 
 const Metricas = () => {
   const [data, setData] = useState<MetricaEmpleado[]>([]);
@@ -288,20 +291,20 @@ useEffect(() => {
   <Box overflow="auto">
     <table style={{ width: "100%", borderCollapse: "collapse" }}>
       <thead>
-        <tr style={{ background: "#f5f5f5" }}>
-          <th>Módulo</th>
-          <th>Accesorios</th>
-          <th>Teléfonos</th>
-          <th>Contado</th>
-          <th>Paguitos</th>
-          <th>Pajoy</th>
-          <th>Total</th>
+        <tr style={{ background: "#0a1628" }}>
+          <th style={{ color: "#f97316", padding: "8px", fontWeight: 700 }}>Módulo</th>
+          <th style={{ color: "#f97316", padding: "8px", fontWeight: 700 }}>Accesorios</th>
+          <th style={{ color: "#f97316", padding: "8px", fontWeight: 700 }}>Teléfonos</th>
+          <th style={{ color: "#f97316", padding: "8px", fontWeight: 700 }}>Contado</th>
+          <th style={{ color: "#f97316", padding: "8px", fontWeight: 700 }}>Paguitos</th>
+          <th style={{ color: "#f97316", padding: "8px", fontWeight: 700 }}>Pajoy</th>
+          <th style={{ color: "#f97316", padding: "8px", fontWeight: 700 }}>Total</th>
         </tr>
       </thead>
 
       <tbody>
         {resumenModulo.map((m, i) => (
-          <tr key={i} style={{ textAlign: "center", borderBottom: "1px solid #eee" }}>
+          <tr key={i} style={{ textAlign: "center", borderBottom: "1px solid rgba(249,115,22,0.08)", color: "#f1f5f9" }}>
             <td>{m.modulo}</td>
 
             <td>${(m.total_accesorios || 0).toLocaleString()}</td>
@@ -349,8 +352,8 @@ useEffect(() => {
             ))}
           </Pie>
 
-          <Tooltip formatter={(value: any, name: any) => [`${value} ventas`, name]} />
-          <Legend />
+          <Tooltip formatter={(value: any, name: any) => [`${value} ventas`, name]} contentStyle={TOOLTIP_STYLE} />
+          <Legend wrapperStyle={{ color: "#94a3b8" }} />
         </PieChart>
       </ResponsiveContainer>
     )}
@@ -385,7 +388,7 @@ useEffect(() => {
           sx={{
             py: 1,
             px: 1,
-            borderBottom: "1px solid #eee"
+            borderBottom: "1px solid rgba(249,115,22,0.08)"
           }}
         >
           <Typography>{c.tipo}</Typography>
@@ -427,7 +430,7 @@ useEffect(() => {
           sx={{
             py: 1,
             px: 1,
-            borderBottom: "1px solid #eee"
+            borderBottom: "1px solid rgba(249,115,22,0.08)"
           }}
         >
           {/* 🔥 CONCATENADO */}
@@ -468,7 +471,7 @@ useEffect(() => {
                 key={i}
                 sx={{
                   py: 1,
-                  borderBottom: "1px solid #eee"
+                  borderBottom: "1px solid rgba(249,115,22,0.08)"
                 }}
               >
                 {/* Nombre + total */}
@@ -504,11 +507,11 @@ useEffect(() => {
             <Typography>Accesorios por día</Typography>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={ventasDetalleFormateado}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="fecha" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="accesorios" stroke="#2e7d32" />
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
+                <XAxis dataKey="fecha" tick={CHART_AXIS} stroke="transparent" />
+                <YAxis tick={CHART_AXIS} stroke="transparent" />
+                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Line type="monotone" dataKey="accesorios" stroke="#34d399" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </Paper>
@@ -518,11 +521,11 @@ useEffect(() => {
             <Typography>Teléfonos por día</Typography>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={ventasDetalleFormateado}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="fecha" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="telefonos" stroke="#1976d2" />
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
+                <XAxis dataKey="fecha" tick={CHART_AXIS} stroke="transparent" />
+                <YAxis tick={CHART_AXIS} stroke="transparent" />
+                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Line type="monotone" dataKey="telefonos" stroke="#60a5fa" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </Paper>
@@ -537,11 +540,11 @@ useEffect(() => {
         <Typography>Ventas por día</Typography>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={ventasDiaFormateado}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="fecha" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="total" />
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
+            <XAxis dataKey="fecha" tick={CHART_AXIS} stroke="transparent" />
+            <YAxis tick={CHART_AXIS} stroke="transparent" />
+            <Tooltip contentStyle={TOOLTIP_STYLE} />
+            <Line type="monotone" dataKey="total" stroke="#f97316" dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </Paper>
@@ -551,11 +554,11 @@ useEffect(() => {
 
   <ResponsiveContainer width="100%" height={300}>
     <BarChart data={ventasModulo}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="modulo" />
-      <YAxis />
-      <Tooltip />
-      <Bar dataKey="total" />
+      <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
+      <XAxis dataKey="modulo" tick={CHART_AXIS} stroke="transparent" />
+      <YAxis tick={CHART_AXIS} stroke="transparent" />
+      <Tooltip contentStyle={TOOLTIP_STYLE} />
+      <Bar dataKey="total" fill="#f97316" radius={[4, 4, 0, 0]} />
     </BarChart>
   </ResponsiveContainer>
 </Paper>
@@ -566,22 +569,22 @@ useEffect(() => {
           <Typography>Ventas por empleado</Typography>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={dataGrafica}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="empleado" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="total" />
+              <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
+              <XAxis dataKey="empleado" tick={CHART_AXIS} stroke="transparent" />
+              <YAxis tick={CHART_AXIS} stroke="transparent" />
+              <Tooltip contentStyle={TOOLTIP_STYLE} />
+              <Bar dataKey="total" fill="#f97316" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
           <Paper sx={{ p: 2, gridColumn: "span 5" }}>
           <Typography>Top Productos</Typography>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={topProductos} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis dataKey="producto" type="category" />
-              <Tooltip />
-              <Bar dataKey="total_vendidos" />
+              <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
+              <XAxis type="number" tick={CHART_AXIS} stroke="transparent" />
+              <YAxis dataKey="producto" type="category" tick={CHART_AXIS} stroke="transparent" width={120} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} />
+              <Bar dataKey="total_vendidos" fill="#60a5fa" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Paper>

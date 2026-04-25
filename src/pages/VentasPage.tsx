@@ -450,7 +450,7 @@ useEffect(() => {
           />
 
         <Slide in={checked} container={slideContainerRef.current}>
-          <Paper sx={{ borderRadius: 2, boxShadow: 3, p: 3, backgroundColor: '#fdfdfd' }}>
+          <Paper sx={{ borderRadius: 2, boxShadow: 3, p: 3, backgroundColor: '#0d1e3a' }}>
             {mensaje && (
               <Alert severity={mensaje.tipo} sx={{ mb: 2 }}>
                 {mensaje.texto}
@@ -530,7 +530,7 @@ useEffect(() => {
           />
 
           <Slide in={telefonoChecked} container={slideContainerRef.current}>
-  <Paper sx={{ borderRadius: 2, boxShadow: 3, p: 3, mt: 2, backgroundColor: '#fdfdfd' }}>
+  <Paper sx={{ borderRadius: 2, boxShadow: 3, p: 3, mt: 2, backgroundColor: '#0d1e3a' }}>
     <Typography variant="h6" gutterBottom>Venta de Teléfono</Typography>
 
               <Autocomplete

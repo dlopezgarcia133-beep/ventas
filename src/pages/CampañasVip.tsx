@@ -12,7 +12,10 @@ const CampañasVIP = () => {
   );
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/ventas/clientes_vip`)
+    const token = localStorage.getItem("token");
+    fetch(`${process.env.REACT_APP_API_URL}/ventas/clientes_vip`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then(res => res.json())
       .then(data => setClientes(data));
   }, []);

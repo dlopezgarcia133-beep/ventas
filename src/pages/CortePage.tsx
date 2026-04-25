@@ -457,13 +457,13 @@ const totalTarjeta =
             <button
               onClick={guardarCorte}
               style={{
-                backgroundColor: '#1976d2',
+                backgroundColor: '#1e3a5f',
                 color: 'white',
                 padding: '10px 20px',
                 border: 'none',
                 borderRadius: '5px',
                 fontWeight: 'bold',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
             >
               💾 Guardar Corte del Día

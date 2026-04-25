@@ -299,7 +299,7 @@ const confirmarImportacion = async () => {
           alignItems="center"
           mt={3}
           p={2}
-          bgcolor="#f5f5f5"
+          bgcolor="rgba(249,115,22,0.06)"
           borderRadius={2}
         >
           <Typography color="text.secondary">

@@ -110,13 +110,13 @@ export default function NominaEmpleado() {
       </Paper>
 
       {/* TOTAL */}
-      <Paper sx={{ p: 2.5, mb: 2.5, borderRadius: 3, bgcolor: "#0f172a", color: "white", textAlign: "center" }}>
+      <Paper sx={{ p: 2.5, mb: 2.5, borderRadius: 3, bgcolor: "#0a1628", border: "1px solid rgba(249,115,22,0.35)", textAlign: "center" }}>
         <Typography variant="h6">Total a pagar</Typography>
         <Typography variant="h4" fontWeight="bold">${total_pagar}</Typography>
       </Paper>
 
       {/* FECHA PAGO */}
-      <Paper sx={{ p: 2, borderRadius: 3, bgcolor: "#e8f3ff", textAlign: "center" }}>
+      <Paper sx={{ p: 2, borderRadius: 3, bgcolor: "#0d1e3a", border: "1px solid rgba(249,115,22,0.2)", textAlign: "center" }}>
         <Typography>
           📅 <strong>Fecha de pago</strong>
           <br />
