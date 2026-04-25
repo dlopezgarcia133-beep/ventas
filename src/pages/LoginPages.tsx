@@ -30,10 +30,27 @@ const LoginPage: React.FC = () => {
 
       const modulo = response.data.modulo || "";
       const rol = (response.data.rol || "").toLowerCase();
+      const cadenaGuardada = sessionStorage.getItem("cadena_seleccionada");
+
+      console.log("=== DEBUG LOGIN ===");
+      console.log("response.data completo:", response.data);
+      console.log("modulo (raw):", response.data.modulo);
+      console.log("modulo (usado):", modulo);
+      console.log("rol (raw):", response.data.rol);
+      console.log("rol (toLowerCase):", rol);
+      console.log("cadena_seleccionada en sessionStorage:", cadenaGuardada);
+      console.log("¿modulo === 'Cadenas C.'?", modulo === "Cadenas C.");
+      console.log("¿rol === 'asesor'?", rol === "asesor");
+      console.log("¿sin cadena guardada?", !cadenaGuardada);
+      console.log("===================");
+
       const necesitaElegirCadena =
         modulo === "Cadenas C." &&
         rol === "asesor" &&
-        !sessionStorage.getItem("cadena_seleccionada");
+        !cadenaGuardada;
+
+      console.log("necesitaElegirCadena:", necesitaElegirCadena);
+      console.log("Redirigiendo a:", necesitaElegirCadena ? '/seleccionar-cadena' : '/ventas');
 
       navegacion(necesitaElegirCadena ? '/seleccionar-cadena' : '/ventas');
     } catch (err) {
