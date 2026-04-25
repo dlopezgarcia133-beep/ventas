@@ -26,6 +26,150 @@ const thStyle: React.CSSProperties = {
 };
 const tdStyle: React.CSSProperties = { padding: '6px 8px', borderBottom: '1px solid #e2e8f0' };
 
+// ─── Mapas de comisiones ─────────────────────────────────────────────────────
+
+// Accesorios: orden de más específico a más general dentro de cada familia
+const ACC_KEYWORDS: [string, number][] = [
+  ['BOCINA', 20], ['CARGADOR', 20],
+  ['EX. SMART WATCH', 20], ['SMART WATCH', 20],
+  ['FUNDA DE BRAZO', 20], ['FUNDA DE IPAD', 20],
+  ['TABLET $2499', 200], ['TABLET', 100],
+  ['MANOS LIBRES $749', 20], ['MANOS LIBRES $799', 20], ['MANOS LIBRES $849', 20],
+  ['MANOS LIBRES $899', 20], ['MANOS LIBRES $949', 20], ['MANOS LIBRES $999', 20],
+  ['MANOS LIBRES $1099', 20], ['MANOS LIBRES $1199', 20], ['MANOS LIBRES $1249', 20],
+  ['MANOS LIBRES $1299', 20], ['MANOS LIBRES $1399', 20], ['MANOS LIBRES $1449', 20],
+  ['MANOS LIBRES $1499', 20], ['MANOS LIBRES', 10],
+  ['FUNDA $160', 10], ['FUNDA', 20],
+  ['MICA DE HIDROGEL $399', 20], ['MICA DE HIDROGEL', 10],
+  ['MICA $40', 5], ['MICA $99', 5], ['MICA $120', 5], ['MICA', 10],
+  ['PROTECTOR $79', 5], ['PROTECTOR $99', 5], ['PROTECTOR $120', 5],
+  ['PROTECTOR $130', 5], ['PROTECTOR $149', 5], ['PROTECTOR $169', 5],
+  ['PROTECTOR $180', 5], ['PROTECTOR $199', 5],
+  ['PROTECTOR $249', 10], ['PROTECTOR $299', 10], ['PROTECTOR $349', 10],
+  ['PROTECTOR $399', 15], ['PROTECTOR', 20],
+  ['BASE PARA COCHE', 10], ['CABLE USB', 10],
+  ['CÁMARA', 10], ['CAMARA', 10],
+  ['GAMEBOY', 10], ['GAME BOY', 10],
+  ['POWER BANK', 10], ['WEBCAM', 10],
+];
+
+// Teléfonos: nombre exacto (uppercase) → comisión base
+const TEL_EXACT_MAP: Record<string, number> = {
+  'TELEFONO LIBRE HONOR 200 LITE 256GB': 250,
+  'TELEFONO LIBRE HONOR MAGIC 5 LITE 128GB': 200,
+  'TELEFONO LIBRE HONOR MAGIC 5 LITE 256GB': 200,
+  'TELEFONO LIBRE HONOR X5': 200,
+  'TELEFONO LIBRE HONOR X6A 128GB': 200,
+  'TELEFONO LIBRE HONOR X6B PLUS 256GB': 200,
+  'TELEFONO LIBRE HONOR X7A': 250,
+  'TELEFONO LIBRE HONOR X7B 128GB': 100,
+  'TELEFONO LIBRE HONOR X7B 256GB': 100,
+  'TELEFONO LIBRE HONOR X7C 256GB': 100,
+  'TELEFONO LIBRE HONOR X8A 128GB': 200,
+  'TELEFONO LIBRE HONOR X9C 256GB': 200,
+  'TELEFONO LIBRE IPHONE 12 128GB': 100,
+  'TELEFONO LIBRE IPHONE 13 128GB': 100,
+  'TELEFONO LIBRE IPHONE 14 128GB': 100,
+  'TELEFONO LIBRE IPHONE 15 128GB': 100,
+  'TELEFONO LIBRE IPHONE 16 128GB': 100,
+  'TELEFONO LIBRE IPHONE 16 PLUS 128GB': 100,
+  'TELEFONO LIBRE IPHONE 16 PRO 128GB': 100,
+  'TELEFONO LIBRE IPHONE 16E 128GB': 100,
+  'TELEFONO LIBRE KODAK KD50': 100,
+  'TELEFONO LIBRE MOTOROLA G31 128GB': 100,
+  'TELEFONO LIBRE MOTOROLA G85 256GB': 100,
+  'TELEFONO LIBRE OPPO A18 128GB': 100,
+  'TELEFONO LIBRE OPPO A40 128GB': 100,
+  'TELEFONO LIBRE OPPO A78 128GB': 100,
+  'TELEFONO LIBRE REALME C11': 200,
+  'TELEFONO LIBRE REALME C51': 200,
+  'TELEFONO LIBRE RF IPHONE 11 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 11 64GB': 100,
+  'TELEFONO LIBRE RF IPHONE 12 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 12 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 12 PRO MAX 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 13 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 13 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 13 PRO MAX 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 13 PRO MAX 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 14 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 14 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 14 PRO 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 14 PRO MAX 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 15 PRO MAX 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 15 PROMAX 256GB': 100,
+  'TELEFONO LIBRE SAMSUNG A05S 128GB': 100,
+  'TELEFONO LIBRE SAMSUNG A06 128GB': 50,
+  'TELEFONO LIBRE SAMSUNG A06 64GB': 50,
+  'TELEFONO LIBRE SAMSUNG A16 128GB': 50,
+  'TELEFONO LIBRE SAMSUNG A16 256GB': 50,
+  'TELEFONO LIBRE SAMSUNG A23 128GB': 200,
+  'TELEFONO LIBRE SAMSUNG A25 5G 128GB': 200,
+  'TELEFONO LIBRE SAMSUNG A25 5G 256GB': 200,
+  'TELEFONO LIBRE SAMSUNG A26 128GB': 50,
+  'TELEFONO LIBRE SAMSUNG A35 128GB': 200,
+  'TELEFONO LIBRE SAMSUNG A35 256GB': 200,
+  'TELEFONO LIBRE SAMSUNG A55 256GB': 200,
+  'TELEFONO LIBRE VIVO Y01': 200,
+  'TELEFONO LIBRE WIKO T10': 200,
+  'TELEFONO LIBRE XIAOMI REDMI 10A 64GB': 100,
+  'TELEFONO LIBRE XIAOMI REDMI 13 128GB': 100,
+  'TELEFONO LIBRE XIAOMI REDMI 13C 128GB': 100,
+  'TELEFONO LIBRE XIAOMI REDMI NOTE 10 PRO 128GB': 200,
+  'TELEFONO LIBRE XIAOMI REDMI NOTE 12 PRO 128GB': 200,
+  'TELEFONO LIBRE XIAOMI REDMI NOTE 13 128GB': 100,
+  'TELEFONO LIBRE ZTE A31': 200,
+  'TELEFONO LIBRE ZTE A55': 100,
+  'TELEFONO LIBRE ZTE V60 SMART': 100,
+  'TELEFONO TELCEL ACER A62 ULTRA': 200,
+  'TELEFONO TELCEL HONOR X8A': 100,
+  'TELEFONO TELCEL IPHONE 11 64GB': 100,
+  'TELEFONO TELCEL IPHONE 12 128GB': 100,
+  'TELEFONO TELCEL IPHONE 13 128GB': 100,
+  'TELEFONO TELCEL IPHONE 14 128GB': 100,
+  'TELEFONO TELCEL IPHONE 15 128GB': 100,
+  'TELEFONO TELCEL MOTOROLA EDGE 30 128GB': 100,
+  'TELEFONO TELCEL MOTOROLA G24 256GB': 50,
+  'TELEFONO TELCEL MOTOROLA G32 128GB': 200,
+  'TELEFONO TELCEL MOTOROLA G53': 100,
+  'TELEFONO TELCEL NUBIA Z353': 100,
+  'TELEFONO TELCEL OPPO A5 256GB': 100,
+  'TELEFONO TELCEL OPPO A79 256GB': 100,
+  'TELEFONO TELCEL REALME NOTE 60 128GB': 200,
+  'TELEFONO TELCEL SAMSUNG A05S 64GB': 100,
+  'TELEFONO TELCEL SAMSUNG A06 64GB': 50,
+  'TELEFONO TELCEL SAMSUNG A16 128GB': 50,
+  'TELEFONO TELCEL SAMSUNG A25': 200,
+  'TELEFONO TELCEL SAMSUNG A25 128GB': 50,
+  'TELEFONO TELCEL SAMSUNG A35': 100,
+  'TELEFONO TELCEL SAMSUNG A35 128GB': 200,
+  'TELEFONO TELCEL ZTE A51': 200,
+  'TELEFONO TELCEL ZTE A55': 100,
+  'TELEFONO TELCEL ZTE V40 PRO': 100,
+  'TELEFONO TELCEL ZTE V40 VITA': 100,
+  'TELEFONO TELCEL ZTE V60 SMART': 100,
+};
+
+const calcComision = (v: Venta): number => {
+  const nombre = (v.producto || '').toUpperCase();
+  if (v.tipo_producto === 'telefono') {
+    const tipo = (v.tipo_venta || '').toLowerCase();
+    const base = TEL_EXACT_MAP[nombre];
+    const inMap = base !== undefined;
+    if (tipo === 'contado')  return inMap ? base : 10;
+    if (tipo === 'pajoy')    return inMap ? 100 + base : 100;
+    if (tipo === 'paguitos') return inMap ? 110 + base : 110;
+    return 0;
+  }
+  if (v.tipo_producto === 'accesorios') {
+    for (const [keyword, comision] of ACC_KEYWORDS) {
+      if (nombre.includes(keyword)) return comision;
+    }
+    return 0;
+  }
+  return 0;
+};
+
 // ────────────────────────────────────────────────────────────────────────────
 
 const FormularioVentaMultiple = () => {
@@ -341,35 +485,13 @@ const FormularioVentaMultiple = () => {
   // Chips: el endpoint ya filtra por HOY, no se necesita filtro adicional
   const chipsHoy: any[] = comisionesHoy?.ventas_chips || [];
 
-  // Accesorios: total calculado por el backend (requiere comision_id configurado en BD)
-  const comisionAccHoy: number = comisionesHoy?.total_accesorios ?? 0;
-
-  // Teléfonos: tasas hardcodeadas en el backend (contado=10, paguitos=110, pajoy=100)
-  // Se calcula desde las ventas locales para garantizar el valor real sin depender de comision_id
-  const BONO_TEL: Record<string, number> = { contado: 10, paguitos: 110, pajoy: 100 };
-  const comisionTelDirecta = ventasHoyTel
-    .filter((v) => !v.cancelada)
-    .reduce((s, v) => s + (BONO_TEL[(v.tipo_venta || '').toLowerCase()] || 0), 0);
-  const comisionTelHoy: number = (comisionesHoy?.total_telefonos ?? 0) || comisionTelDirecta;
-
+  const comisionAccHoy  = ventasHoyAcc.filter((v) => !v.cancelada).reduce((s, v) => s + calcComision(v), 0);
+  const comisionTelHoy  = ventasHoyTel.filter((v) => !v.cancelada).reduce((s, v) => s + calcComision(v), 0);
   const totalComisionHoy = comisionAccHoy + comisionTelHoy;
 
   const totalPesosAcc = ventasHoyAcc.filter((v) => !v.cancelada).reduce((s, v) => s + v.precio_unitario * v.cantidad, 0);
   const totalPesosTel = ventasHoyTel.filter((v) => !v.cancelada).reduce((s, v) => s + v.precio_unitario * v.cantidad, 0);
   const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-  // Mapa id → comision_total para accesorios, construido desde ciclo_por_fechas
-  const comisionAccMap: Record<number, number> = Object.fromEntries(
-    (comisionesHoy?.ventas_accesorios ?? [])
-      .filter((va: any) => va.id != null)
-      .map((va: any) => [va.id, va.comision_total ?? va.comision * va.cantidad]),
-  );
-
-  const comisionMisVentasMap: Record<number, number> = Object.fromEntries(
-    (comisionesMisVentas?.ventas_accesorios ?? [])
-      .filter((va: any) => va.id != null)
-      .map((va: any) => [va.id, va.comision_total ?? va.comision * va.cantidad]),
-  );
 
   // ── Formulario (compartido) ───────────────────────────────────────────────
   const formulario = (
@@ -489,8 +611,7 @@ const FormularioVentaMultiple = () => {
       .filter((v) => !v.cancelada)
       .reduce((s, v) => s + v.precio_unitario * v.cantidad, 0);
     const totalMisVentasComision =
-      misVentasAcc.filter((v) => !v.cancelada).reduce((s, v) => s + (comisionMisVentasMap[v.id] ?? 0), 0) +
-      misVentasTel.filter((v) => !v.cancelada).reduce((s, v) => s + (BONO_TEL[(v.tipo_venta || '').toLowerCase()] || 0), 0);
+      [...misVentasAcc, ...misVentasTel].filter((v) => !v.cancelada).reduce((s, v) => s + calcComision(v), 0);
 
     return (
       <Box sx={{ mt: 2, px: 2 }}>
@@ -552,7 +673,7 @@ const FormularioVentaMultiple = () => {
                       <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
                       <td style={tdStyle}>{v.producto}</td>
                       <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
-                      <td style={tdStyle}>${fmt(comisionAccMap[v.id] ?? 0)}</td>
+                      <td style={tdStyle}>${fmt(calcComision(v))}</td>
                       <td style={tdStyle}>
                         <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
                           <DeleteIcon fontSize="small" />
@@ -566,7 +687,7 @@ const FormularioVentaMultiple = () => {
                       <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
                       <td style={tdStyle}>{v.producto}</td>
                       <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
-                      <td style={tdStyle}>${fmt(BONO_TEL[(v.tipo_venta || '').toLowerCase()] || 0)}</td>
+                      <td style={tdStyle}>${fmt(calcComision(v))}</td>
                       <td style={tdStyle}>
                         <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
                           <DeleteIcon fontSize="small" />
@@ -665,7 +786,7 @@ const FormularioVentaMultiple = () => {
                         <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
                         <td style={tdStyle}>{v.producto}</td>
                         <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
-                        <td style={tdStyle}>${fmt(comisionMisVentasMap[v.id] ?? 0)}</td>
+                        <td style={tdStyle}>${fmt(calcComision(v))}</td>
                         <td style={tdStyle}>
                           <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
                             {v.cancelada ? 'Cancelada' : 'Activa'}
@@ -678,7 +799,7 @@ const FormularioVentaMultiple = () => {
                         <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
                         <td style={tdStyle}>{v.producto}</td>
                         <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
-                        <td style={tdStyle}>${fmt(BONO_TEL[(v.tipo_venta || '').toLowerCase()] || 0)}</td>
+                        <td style={tdStyle}>${fmt(calcComision(v))}</td>
                         <td style={tdStyle}>
                           <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
                             {v.cancelada ? 'Cancelada' : 'Activa'}
