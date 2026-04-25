@@ -480,8 +480,8 @@ const FormularioVentaMultiple = () => {
   };
 
   // ── Cálculos asesor del día ──────────────────────────────────────────────
-  const ventasHoyAcc = ventas.filter((v) => v.tipo_producto === 'accesorios' && v.fecha?.startsWith(HOY));
-  const ventasHoyTel = ventas.filter((v) => v.tipo_producto === 'telefono' && v.fecha?.startsWith(HOY));
+  const ventasHoyAcc = ventas.filter((v) => v.tipo_producto === 'accesorios' && v.fecha?.startsWith(HOY)).sort((a, b) => a.producto.localeCompare(b.producto, 'es'));
+  const ventasHoyTel = ventas.filter((v) => v.tipo_producto === 'telefono' && v.fecha?.startsWith(HOY)).sort((a, b) => a.producto.localeCompare(b.producto, 'es'));
   // Chips: el endpoint ya filtra por HOY, no se necesita filtro adicional
   const chipsHoy: any[] = comisionesHoy?.ventas_chips || [];
 
