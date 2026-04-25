@@ -19,13 +19,10 @@ const SeleccionCadena: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (sessionStorage.getItem('cadena_seleccionada')) {
-      navigate('/ventas', { replace: true });
-      return;
-    }
+    sessionStorage.removeItem('cadena_seleccionada');
     const modulo = localStorage.getItem('modulo') || '';
     const rol = (localStorage.getItem('rol') || '').toLowerCase();
-    if (modulo !== 'Cadenas C.' || rol !== 'asesor') {
+    if (!modulo.toLowerCase().includes('cadena') || rol !== 'asesor') {
       navigate('/ventas', { replace: true });
     }
   }, [navigate]);
