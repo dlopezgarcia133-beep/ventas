@@ -39,14 +39,6 @@ export interface VentaTelefono {
   cancelada?: boolean;
 }
   
-export interface ProductoEnVenta {
-    id: number;
-    nombre: string;
-    cantidad: number;
-    precio_unitario: number;
-}
-  
-
 export interface Traspaso {
   id: number;
   producto: string;
@@ -119,6 +111,8 @@ export interface InventarioTelefonoModulo {
 
 
 export interface ProductoEnVenta {
+  id: number;
+  nombre: string;
   producto: string;
   cantidad: number;
   precio_unitario: number;
@@ -155,6 +149,7 @@ export interface ComisionData {
   total_general: number;
   
   ventas_accesorios: {
+    id?: number;
     producto: string;
     cantidad: number;
     comision: number;
@@ -164,6 +159,7 @@ export interface ComisionData {
     hora: string;
   }[];
   ventas_telefonos: {
+    id?: number;
     producto: string;
     cantidad: number;
     comision: number;
@@ -173,6 +169,7 @@ export interface ComisionData {
     hora: string;
   }[];
   ventas_chips: {
+    id?: number;
     tipo_chip: string;
     numero_telefono: string;
     comision: number;

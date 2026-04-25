@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Box, Paper, Typography, Divider, CircularProgress } from "@mui/material";
 import { MiNominaResponse } from "../Types";
 
 export default function NominaEmpleado() {
@@ -11,7 +12,6 @@ export default function NominaEmpleado() {
   const diaSemana = hoy.getDay();
 
   let diasHastaMiercoles;
-
   if (diaSemana <= 3) {
     diasHastaMiercoles = 3 - diaSemana;
   } else {
@@ -54,135 +54,75 @@ export default function NominaEmpleado() {
     cargarNomina();
   }, []);
 
-  if (loading) return <p style={{ textAlign: "center" }}>Cargando nómina...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (loading) return (
+    <Box display="flex" justifyContent="center" mt={4}>
+      <CircularProgress />
+    </Box>
+  );
+  if (error) return <Typography color="error" align="center" mt={4}>{error}</Typography>;
   if (!data) return null;
 
   const { empleado, periodo, comisiones, sueldo, total_pagar } = data;
 
-  const card = {
-    background: "#fff",
-    padding: 20,
-    borderRadius: 12,
-    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-    marginBottom: 20,
-  };
-
-  const row = {
-    display: "flex",
-    justifyContent: "space-between",
-    marginBottom: 6,
-  };
+  const Row = ({ label, value }: { label: string; value: string | number }) => (
+    <Box display="flex" justifyContent="space-between" mb={0.75}>
+      <Typography>{label}</Typography>
+      <Typography fontWeight="bold">{value}</Typography>
+    </Box>
+  );
 
   return (
-    <div
-      style={{
-        maxWidth: 600,
-        margin: "auto",
-        fontFamily: "system-ui",
-        padding: 20,
-      }}
-    >
-      <h2 style={{ textAlign: "center", marginBottom: 20 }}>
+    <Box maxWidth={600} mx="auto" p={2.5}>
+      <Typography variant="h5" align="center" gutterBottom>
         💰 Mi Nómina
-      </h2>
+      </Typography>
 
       {/* EMPLEADO */}
-      <div style={card}>
-        <h3>👤 Empleado</h3>
-        <p>
-          <b>{empleado.username}</b>
-        </p>
-        <p>
+      <Paper sx={{ p: 2.5, mb: 2.5, borderRadius: 3 }}>
+        <Typography variant="h6" gutterBottom>👤 Empleado</Typography>
+        <Typography fontWeight="bold">{empleado.username}</Typography>
+        <Typography variant="body2" color="text.secondary">
           Periodo: {periodo.inicio} → {periodo.fin}
-        </p>
-      </div>
+        </Typography>
+      </Paper>
 
       {/* COMISIONES */}
-      <div style={card}>
-        <h3>📊 Comisiones</h3>
-
-        <div style={row}>
-          <span>Accesorios</span>
-          <b>${comisiones.accesorios}</b>
-        </div>
-
-        <div style={row}>
-          <span>Teléfonos</span>
-          <b>${comisiones.telefonos}</b>
-        </div>
-
-        <div style={row}>
-          <span>Chips</span>
-          <b>${comisiones.chips}</b>
-        </div>
-
-        <hr />
-
-        <div style={{ ...row, fontSize: 18 }}>
-          <b>Total comisiones</b>
-          <b>${comisiones.total}</b>
-        </div>
-      </div>
+      <Paper sx={{ p: 2.5, mb: 2.5, borderRadius: 3 }}>
+        <Typography variant="h6" gutterBottom>📊 Comisiones</Typography>
+        <Row label="Accesorios" value={`$${comisiones.accesorios}`} />
+        <Row label="Teléfonos" value={`$${comisiones.telefonos}`} />
+        <Row label="Chips" value={`$${comisiones.chips}`} />
+        <Divider sx={{ my: 1 }} />
+        <Box display="flex" justifyContent="space-between">
+          <Typography fontWeight="bold" fontSize={16}>Total comisiones</Typography>
+          <Typography fontWeight="bold" fontSize={16}>${comisiones.total}</Typography>
+        </Box>
+      </Paper>
 
       {/* SUELDO */}
-      <div style={card}>
-        <h3>💼 Sueldo</h3>
-
-        <div style={row}>
-          <span>Sueldo base</span>
-          <b>${sueldo.base}</b>
-        </div>
-
-        <div style={row}>
-          <span>Horas extra</span>
-          <b>{sueldo.horas_extra}</b>
-        </div>
-
-        <div style={row}>
-          <span>Pago horas extra</span>
-          <b>${sueldo.pago_horas_extra}</b>
-        </div>
-
-        <div style={row}>
-          <span>Sanciones</span>
-          <b>-${sueldo?.sanciones ?? 0}</b>
-        </div>
-
-        <div style={row}>
-          <span>Comisiones pendientes</span>
-          <b>${sueldo?.comisiones_pendientes ?? 0}</b>
-        </div>
-      </div>
+      <Paper sx={{ p: 2.5, mb: 2.5, borderRadius: 3 }}>
+        <Typography variant="h6" gutterBottom>💼 Sueldo</Typography>
+        <Row label="Sueldo base" value={`$${sueldo.base}`} />
+        <Row label="Horas extra" value={sueldo.horas_extra} />
+        <Row label="Pago horas extra" value={`$${sueldo.pago_horas_extra}`} />
+        <Row label="Sanciones" value={`-$${sueldo?.sanciones ?? 0}`} />
+        <Row label="Comisiones pendientes" value={`$${sueldo?.comisiones_pendientes ?? 0}`} />
+      </Paper>
 
       {/* TOTAL */}
-      <div
-        style={{
-          background: "#0f172a",
-          color: "white",
-          padding: 20,
-          borderRadius: 12,
-          textAlign: "center",
-          marginBottom: 20,
-        }}
-      >
-        <h2>Total a pagar</h2>
-        <h1>${total_pagar}</h1>
-      </div>
+      <Paper sx={{ p: 2.5, mb: 2.5, borderRadius: 3, bgcolor: "#f97316", color: "white", textAlign: "center" }}>
+        <Typography variant="h6">Total a pagar</Typography>
+        <Typography variant="h4" fontWeight="bold">${total_pagar}</Typography>
+      </Paper>
 
       {/* FECHA PAGO */}
-      <div
-        style={{
-          background: "#e8f3ff",
-          padding: 15,
-          borderRadius: 10,
-          textAlign: "center",
-        }}
-      >
-        📅 <b>Fecha de pago</b>
-        <br />
-        {fechaPagoFormateada}
-      </div>
-    </div>
+      <Paper sx={{ p: 2, borderRadius: 3, bgcolor: "#fff7ed", border: "1px solid rgba(249,115,22,0.25)", textAlign: "center" }}>
+        <Typography>
+          📅 <strong>Fecha de pago</strong>
+          <br />
+          {fechaPagoFormateada}
+        </Typography>
+      </Paper>
+    </Box>
   );
 }
