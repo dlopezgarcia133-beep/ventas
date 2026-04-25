@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { ProductoEnVenta, Usuario, Venta } from '../Types';
@@ -74,6 +75,7 @@ const FormularioVentaMultiple = () => {
   const [misVentasFecha, setMisVentasFecha] = useState(HOY);
   const [misVentasData, setMisVentasData] = useState<Venta[]>([]);
   const [comisionesMisVentas, setComisionesMisVentas] = useState<any>(null);
+  const [catalogoComisiones, setCatalogoComisiones] = useState<{ producto: string; cantidad: number }[]>([]);
 
   const token = localStorage.getItem('token');
   const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -92,6 +94,13 @@ const FormularioVentaMultiple = () => {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const fetchCatalogoComisiones = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/comisiones/comisiones`, config);
+      setCatalogoComisiones(res.data);
+    } catch (err) { console.error(err); }
   };
 
   const fetchMisVentas = async (fecha: string) => {
@@ -219,6 +228,10 @@ const FormularioVentaMultiple = () => {
       fetchComisionesPorFecha(misVentasFecha);
     }
   }, [tabAsesor, misVentasFecha, rol]);
+
+  useEffect(() => {
+    if (rol === 'asesor' && tabAsesor === 2) fetchCatalogoComisiones();
+  }, [tabAsesor, rol]);
 
   // ── Acciones ─────────────────────────────────────────────────────────────
   const agregarAlCarrito = () => {
@@ -497,6 +510,12 @@ const FormularioVentaMultiple = () => {
             label="MIS VENTAS"
             sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
           />
+          <Tab
+            icon={<MonetizationOnIcon fontSize="small" />}
+            iconPosition="start"
+            label="COMISIONES"
+            sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
+          />
         </Tabs>
 
         {/* ── Tab TICKET ── */}
@@ -689,6 +708,67 @@ const FormularioVentaMultiple = () => {
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Comisión: <strong>${fmt(totalMisVentasComision)}</strong>
+                </Typography>
+              </Box>
+            </Paper>
+          </Box>
+        )}
+
+        {/* ── Tab COMISIONES ── */}
+        {tabAsesor === 2 && (
+          <Box sx={{ maxWidth: 680 }}>
+            <Paper sx={{ overflow: 'hidden' }}>
+              <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid #e2e8f0' }}>
+                <Typography variant="subtitle1" fontWeight={700}>
+                  Tasas de comisión configuradas
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Estas son las comisiones que se aplican a cada venta registrada.
+                </Typography>
+              </Box>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={{ ...thStyle, width: '50%' }}>Producto / Tipo de venta</th>
+                    <th style={{ ...thStyle, width: '25%' }}>Comisión</th>
+                    <th style={{ ...thStyle, width: '25%' }}>Tipo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {catalogoComisiones.map((c) => (
+                    <tr key={c.producto}>
+                      <td style={tdStyle}>{c.producto}</td>
+                      <td style={{ ...tdStyle, fontWeight: 600, color: '#16a34a' }}>${fmt(c.cantidad)}</td>
+                      <td style={tdStyle}>
+                        <Chip label="Accesorio" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
+                      </td>
+                    </tr>
+                  ))}
+                  {[
+                    { tipo: 'Contado', bono: 10 },
+                    { tipo: 'Paguitos', bono: 110 },
+                    { tipo: 'Pajoy', bono: 100 },
+                  ].map((t) => (
+                    <tr key={t.tipo}>
+                      <td style={tdStyle}>{t.tipo}</td>
+                      <td style={{ ...tdStyle, fontWeight: 600, color: '#16a34a' }}>${fmt(t.bono)}</td>
+                      <td style={tdStyle}>
+                        <Chip label="Teléfono" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
+                      </td>
+                    </tr>
+                  ))}
+                  {catalogoComisiones.length === 0 && (
+                    <tr>
+                      <td colSpan={3} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 24 }}>
+                        Sin comisiones configuradas para accesorios
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+              <Box sx={{ px: 2.5, py: 1.5, borderTop: '1px solid #e2e8f0', bgcolor: '#f8fafc' }}>
+                <Typography variant="body2" color="text.secondary">
+                  {catalogoComisiones.length} accesorio{catalogoComisiones.length !== 1 ? 's' : ''} · 3 tipos de teléfono
                 </Typography>
               </Box>
             </Paper>
