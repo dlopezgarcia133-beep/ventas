@@ -29,6 +29,7 @@ const SeleccionCadena: React.FC = () => {
   const handleContinuar = () => {
     if (!seleccionada) return;
     sessionStorage.setItem('cadena_seleccionada', seleccionada);
+    window.dispatchEvent(new Event("storage"));
     navigate('/ventas', { replace: true });
   };
 

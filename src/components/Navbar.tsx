@@ -25,6 +25,7 @@ const Navbar = () => {
   const [usuario, setUsuario] = useState(localStorage.getItem("usuario") || "");
   const [modulo, setModulo] = useState(localStorage.getItem("modulo") || "");
   const [rolM, setRolM] = useState(localStorage.getItem("rol") || "");
+  const [cadena, setCadena] = useState(sessionStorage.getItem("cadena_seleccionada") || "");
 
   const [anchorInventario, setAnchorInventario] = useState<null | HTMLElement>(null);
   const [anchorAdmin, setAnchorAdmin] = useState<null | HTMLElement>(null);
@@ -35,6 +36,7 @@ const Navbar = () => {
       setUsuario(localStorage.getItem("usuario") || "");
       setModulo(localStorage.getItem("modulo") || "");
       setRolM(localStorage.getItem("rol") || "");
+      setCadena(sessionStorage.getItem("cadena_seleccionada") || "");
     };
     window.addEventListener("storage", actualizarDatos);
     actualizarDatos();
@@ -94,7 +96,7 @@ const Navbar = () => {
               variant="body2"
               sx={{ color: "#94a3b8", ml: 1.5, display: { xs: "none", sm: "block" } }}
             >
-              {usuario} · {modulo} · {rolM}
+              {usuario} · {modulo}{cadena ? ` · ${cadena}` : ""} · {rolM}
             </Typography>
           )}
         </Box>
