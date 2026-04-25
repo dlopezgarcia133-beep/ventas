@@ -5,13 +5,13 @@ import { useNavigate } from 'react-router-dom';
 import logo from '../ATO.jpeg';
 
 const CADENAS = [
-  { nombre: 'CHEDRAUI', color: '#e31837' },
-  { nombre: 'COPPEL',   color: '#0066cc' },
-  { nombre: 'EKT',      color: '#f97316' },
-  { nombre: 'SUBURBIA', color: '#7c3aed' },
-  { nombre: 'AURRERA',  color: '#16a34a' },
-  { nombre: 'SAMS',     color: '#cc0000' },
-  { nombre: 'WALMART',  color: '#0071ce' },
+  { nombre: 'CHEDRAUI', color: '#f97316' },
+  { nombre: 'COPPEL',   color: '#eab308' },
+  { nombre: 'EKT',      color: '#ef4444' },
+  { nombre: 'SUBURBIA', color: '#ec4899' },
+  { nombre: 'AURRERA',  color: '#22c55e' },
+  { nombre: 'SAMS',     color: '#1e3a5f' },
+  { nombre: 'WALMART',  color: '#3b82f6' },
 ];
 
 const SeleccionCadena: React.FC = () => {
@@ -84,18 +84,17 @@ const SeleccionCadena: React.FC = () => {
                   sx={{
                     p: 3,
                     cursor: 'pointer',
-                    border: activa ? `2px solid ${cadena.color}` : '2px solid #e2e8f0',
+                    border: activa ? `3px solid #1e293b` : `2px solid ${cadena.color}`,
                     borderRadius: 2,
                     textAlign: 'center',
                     position: 'relative',
                     transition: 'all 0.18s ease',
-                    bgcolor: activa ? `${cadena.color}12` : '#ffffff',
+                    bgcolor: cadena.color,
                     userSelect: 'none',
                     '&:hover': {
-                      borderColor: cadena.color,
-                      bgcolor: `${cadena.color}0d`,
                       transform: 'translateY(-2px)',
-                      boxShadow: `0 6px 20px ${cadena.color}30`,
+                      boxShadow: `0 8px 24px rgba(0,0,0,0.25)`,
+                      opacity: 0.92,
                     },
                   }}
                 >
@@ -105,7 +104,7 @@ const SeleccionCadena: React.FC = () => {
                         position: 'absolute',
                         top: 8,
                         right: 8,
-                        color: cadena.color,
+                        color: '#ffffff',
                         fontSize: 20,
                       }}
                     />
@@ -115,7 +114,7 @@ const SeleccionCadena: React.FC = () => {
                       fontWeight: 800,
                       fontSize: 14,
                       letterSpacing: 1.2,
-                      color: activa ? cadena.color : '#1e293b',
+                      color: '#ffffff',
                     }}
                   >
                     {cadena.nombre}
