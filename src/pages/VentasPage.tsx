@@ -229,7 +229,7 @@ const COMISIONES_COPPEL: ComisionChip[] = [
 ];
 
 const COMISIONES_OTRAS_CADENAS: ComisionChip[] = [
-  { tipo: 'Teléfono Activado de Cadenas',       comision: '$40' },
+  { tipo: 'Teléfono Activado de Cadenas',       comision: '$45' },
   { tipo: 'Chip Preactivado / Otras Cadenas',   comision: '$35' },
   { tipo: 'Portabilidad / EKT / Otras Cadenas', comision: '$50' },
 ];
