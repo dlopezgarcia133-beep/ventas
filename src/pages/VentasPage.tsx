@@ -191,8 +191,15 @@ const CHIP_OPCIONES_EKT = [
   { value: 'Porta Otras cadenas', label: 'Portabilidad / EKT / Otras Cadenas' },
 ];
 
+const CHIP_OPCIONES_COPPEL = [
+  { value: 'Activacion',          label: 'Telefono Activado de Cadenas' },
+  { value: 'Chip Coppel',         label: 'Chip Express Coppel' },
+  { value: 'Portabilidad Coppel', label: 'Portabilidad Coppel' },
+];
+
 const CHIP_OPCIONES_POR_CADENA: Record<string, typeof CHIP_OPCIONES_TODAS> = {
-  EKT: CHIP_OPCIONES_EKT,
+  EKT:    CHIP_OPCIONES_EKT,
+  COPPEL: CHIP_OPCIONES_COPPEL,
 };
 
 const FormularioVentaMultiple = () => {
