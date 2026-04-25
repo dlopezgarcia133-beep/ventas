@@ -27,7 +27,15 @@ const LoginPage: React.FC = () => {
       localStorage.setItem("rol", response.data.rol || "");
 
       window.dispatchEvent(new Event("storage"));
-      navegacion('/ventas');
+
+      const modulo = response.data.modulo || "";
+      const rol = (response.data.rol || "").toLowerCase();
+      const necesitaElegirCadena =
+        modulo === "Cadenas C." &&
+        rol === "asesor" &&
+        !sessionStorage.getItem("cadena_seleccionada");
+
+      navegacion(necesitaElegirCadena ? '/seleccionar-cadena' : '/ventas');
     } catch (err) {
       setError('Credenciales inválidas. Intenta nuevamente.');
     }
