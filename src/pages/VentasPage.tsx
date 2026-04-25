@@ -710,98 +710,127 @@ const FormularioVentaMultiple = () => {
             {/* Columna derecha: tabla del día + comisiones */}
             <Grid item xs={12} md={6}>
 
-          {/* ── Ventas del día ── */}
-          <Paper sx={{ p: 2, mb: 2 }}>
-            <Typography variant="h6" fontWeight={700} gutterBottom>
-              Ventas del día
-            </Typography>
-
-            <Box sx={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    <th style={thStyle}>Tipo</th>
-                    <th style={thStyle}>Descripción</th>
-                    <th style={thStyle}>Precio</th>
-                    <th style={thStyle}>Comisión</th>
-                    <th style={thStyle}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ventasHoyAcc.map((v) => (
-                    <tr key={`acc-${v.id}`}>
-                      <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
-                      <td style={tdStyle}>{v.producto}</td>
-                      <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
-                      <td style={tdStyle}>${fmt(calcComision(v))}</td>
-                      <td style={tdStyle}>
-                        <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </td>
-                    </tr>
-                  ))}
-
-                  {ventasHoyTel.map((v) => (
-                    <tr key={`tel-${v.id}`}>
-                      <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
-                      <td style={tdStyle}>{v.producto}</td>
-                      <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
-                      <td style={tdStyle}>${fmt(calcComision(v))}</td>
-                      <td style={tdStyle}>
-                        <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </td>
-                    </tr>
-                  ))}
-
-                  {ventasHoyAcc.length === 0 && ventasHoyTel.length === 0 && (
+          {esCadenas ? (
+            /* ── Activaciones del día (Cadenas C.) ── */
+            <Paper sx={{ p: 2 }}>
+              <Typography variant="h6" fontWeight={700} gutterBottom>
+                Activaciones del día
+              </Typography>
+              <Box sx={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
                     <tr>
-                      <td colSpan={5} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
-                        Sin ventas registradas hoy
-                      </td>
+                      <th style={thStyle}>Tipo de Chip</th>
+                      <th style={thStyle}>Número</th>
+                      <th style={thStyle}>Recarga</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </Box>
-
-            <Box display="flex" justifyContent="flex-start" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
-              <Typography variant="body2" color="text.secondary">
-                Accesorios: <strong>{ventasHoyAcc.length}</strong> | <strong>${fmt(totalPesosAcc)}</strong>
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Teléfonos: <strong>{ventasHoyTel.length}</strong> | <strong>${fmt(totalPesosTel)}</strong>
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Comisión total: <strong>${fmt(totalComisionHoy)}</strong>
-              </Typography>
-            </Box>
-          </Paper>
-
-          {/* ── Comisiones del día ── */}
-          <Paper sx={{ p: 2.5, bgcolor: '#f97316', color: 'white', border: 'none' }}>
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>
-              Comisiones del día
-            </Typography>
-
-            {sinCiclo && (
-              <Alert severity="warning" sx={{ mb: 1.5, fontSize: 12 }}>
-                Sin ciclo de comisiones activo para hoy. Contacta al administrador.
-              </Alert>
-            )}
-
-            <Box display="flex" flexDirection="column" gap={1}>
-              {esCadenas ? (
-                <Box display="flex" justifyContent="space-between">
-                  <Typography variant="body2" sx={{ opacity: 0.85 }}>Chips</Typography>
-                  <Typography variant="body2" fontWeight={600}>
-                    ${((comisionesHoy?.total_chips) ?? 0).toFixed(2)}
+                  </thead>
+                  <tbody>
+                    {chipsHoy.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
+                          Sin activaciones registradas hoy
+                        </td>
+                      </tr>
+                    ) : (
+                      chipsHoy.map((c: any, i: number) => (
+                        <tr key={i}>
+                          <td style={tdStyle}>{c.tipo_chip}</td>
+                          <td style={tdStyle}>{c.numero_telefono}</td>
+                          <td style={tdStyle}>${typeof c.monto_recarga === 'number' ? c.monto_recarga.toFixed(2) : c.monto_recarga}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </Box>
+              {chipsHoy.length > 0 && (
+                <Box mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Total: <strong>{chipsHoy.length}</strong> activación{chipsHoy.length !== 1 ? 'es' : ''}
                   </Typography>
                 </Box>
-              ) : (
-                <>
+              )}
+            </Paper>
+          ) : (
+            <>
+              {/* ── Ventas del día ── */}
+              <Paper sx={{ p: 2, mb: 2 }}>
+                <Typography variant="h6" fontWeight={700} gutterBottom>
+                  Ventas del día
+                </Typography>
+                <Box sx={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        <th style={thStyle}>Tipo</th>
+                        <th style={thStyle}>Descripción</th>
+                        <th style={thStyle}>Precio</th>
+                        <th style={thStyle}>Comisión</th>
+                        <th style={thStyle}></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ventasHoyAcc.map((v) => (
+                        <tr key={`acc-${v.id}`}>
+                          <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
+                          <td style={tdStyle}>{v.producto}</td>
+                          <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                          <td style={tdStyle}>${fmt(calcComision(v))}</td>
+                          <td style={tdStyle}>
+                            <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </td>
+                        </tr>
+                      ))}
+                      {ventasHoyTel.map((v) => (
+                        <tr key={`tel-${v.id}`}>
+                          <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
+                          <td style={tdStyle}>{v.producto}</td>
+                          <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                          <td style={tdStyle}>${fmt(calcComision(v))}</td>
+                          <td style={tdStyle}>
+                            <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </td>
+                        </tr>
+                      ))}
+                      {ventasHoyAcc.length === 0 && ventasHoyTel.length === 0 && (
+                        <tr>
+                          <td colSpan={5} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
+                            Sin ventas registradas hoy
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </Box>
+                <Box display="flex" justifyContent="flex-start" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Accesorios: <strong>{ventasHoyAcc.length}</strong> | <strong>${fmt(totalPesosAcc)}</strong>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Teléfonos: <strong>{ventasHoyTel.length}</strong> | <strong>${fmt(totalPesosTel)}</strong>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Comisión total: <strong>${fmt(totalComisionHoy)}</strong>
+                  </Typography>
+                </Box>
+              </Paper>
+
+              {/* ── Comisiones del día ── */}
+              <Paper sx={{ p: 2.5, bgcolor: '#f97316', color: 'white', border: 'none' }}>
+                <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>
+                  Comisiones del día
+                </Typography>
+                {sinCiclo && (
+                  <Alert severity="warning" sx={{ mb: 1.5, fontSize: 12 }}>
+                    Sin ciclo de comisiones activo para hoy. Contacta al administrador.
+                  </Alert>
+                )}
+                <Box display="flex" flexDirection="column" gap={1}>
                   <Box display="flex" justifyContent="space-between">
                     <Typography variant="body2" sx={{ opacity: 0.85 }}>Accesorios</Typography>
                     <Typography variant="body2" fontWeight={600}>${comisionAccHoy.toFixed(2)}</Typography>
@@ -810,21 +839,15 @@ const FormularioVentaMultiple = () => {
                     <Typography variant="body2" sx={{ opacity: 0.85 }}>Teléfonos</Typography>
                     <Typography variant="body2" fontWeight={600}>${comisionTelHoy.toFixed(2)}</Typography>
                   </Box>
-                </>
-              )}
-            </Box>
-
-            <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.35)' }} />
-
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="body1" fontWeight={700}>Total comisionado</Typography>
-              <Typography variant="h5" fontWeight={800}>
-                ${esCadenas
-                  ? ((comisionesHoy?.total_chips) ?? 0).toFixed(2)
-                  : totalComisionHoy.toFixed(2)}
-              </Typography>
-            </Box>
-          </Paper>
+                </Box>
+                <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.35)' }} />
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="body1" fontWeight={700}>Total comisionado</Typography>
+                  <Typography variant="h5" fontWeight={800}>${totalComisionHoy.toFixed(2)}</Typography>
+                </Box>
+              </Paper>
+            </>
+          )}
 
           </Grid>
           </Grid>
