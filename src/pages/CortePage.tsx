@@ -457,7 +457,7 @@ const totalTarjeta =
             <button
               onClick={guardarCorte}
               style={{
-                backgroundColor: '#1e3a5f',
+                backgroundColor: '#f97316',
                 color: 'white',
                 padding: '10px 20px',
                 border: 'none',
