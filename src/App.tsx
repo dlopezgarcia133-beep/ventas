@@ -1,5 +1,5 @@
 import React from 'react';
-import { useRoutes } from 'react-router-dom';
+import { useRoutes, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPages';
 import VentasPage from './pages/VentasPage';
 import ComisionesPage from './pages/ComisionesPage';
@@ -21,28 +21,33 @@ import Kardex from './pages/Kardex';
 import Metricas from './pages/Metricas';
 import CampañasVIP from "./pages/CampañasVip";
 
+const RutaProtegida: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+  const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/" replace />;
+};
+
 const App: React.FC = () => {
   const routes = useRoutes([
     { path: '/', element: <LoginPage /> },
-    { path: '/ventas', element: <VentasPage /> },
-    { path: '/comisiones', element: <ComisionesPage />},
-    { path: '/comisiones/usuario', element: <ComisionesUser /> },
-    { path: '/traspasos', element: <TraspasosPage /> },
-    { path: '/traspasos/admin', element: <TraspasosAdmin /> },
-    { path: '/usuarios', element: <CrearUsuario /> },
-    { path: '/usuarios/admin', element: <UsuariosAdmin/>},
-    { path: '/inventario', element: <InventarioAdmin /> },
-    { path: '/inventario/modulo', element: <InventarioPorModulo /> },
-    { path: '/ventas/chips', element: <ChipsAdmin/>}, 
-    { path: '/corte', element: <CortePage/>},
-    { path: '/inventario_telefonos', element: <InventarioTelefonosGeneral/> },
-    { path: '/chips_invalidos', element: <ChipsRechazados/> }, 
-    { path: '/inventario/diferencias', element: <DiferenciasInventario /> }, 
-    { path: '/nomina', element: <Nomina /> },
-    { path: '/nominaEmpleado', element: <NominaEmpleado /> },
-    { path: '/kardex', element: <Kardex /> },
-    { path: '/metricas', element: <Metricas /> },
-    { path: '/promos', element: <CampañasVIP/>}
+    { path: '/ventas', element: <RutaProtegida><VentasPage /></RutaProtegida> },
+    { path: '/comisiones', element: <RutaProtegida><ComisionesPage /></RutaProtegida> },
+    { path: '/comisiones/usuario', element: <RutaProtegida><ComisionesUser /></RutaProtegida> },
+    { path: '/traspasos', element: <RutaProtegida><TraspasosPage /></RutaProtegida> },
+    { path: '/traspasos/admin', element: <RutaProtegida><TraspasosAdmin /></RutaProtegida> },
+    { path: '/usuarios', element: <RutaProtegida><CrearUsuario /></RutaProtegida> },
+    { path: '/usuarios/admin', element: <RutaProtegida><UsuariosAdmin /></RutaProtegida> },
+    { path: '/inventario', element: <RutaProtegida><InventarioAdmin /></RutaProtegida> },
+    { path: '/inventario/modulo', element: <RutaProtegida><InventarioPorModulo /></RutaProtegida> },
+    { path: '/ventas/chips', element: <RutaProtegida><ChipsAdmin /></RutaProtegida> },
+    { path: '/corte', element: <RutaProtegida><CortePage /></RutaProtegida> },
+    { path: '/inventario_telefonos', element: <RutaProtegida><InventarioTelefonosGeneral /></RutaProtegida> },
+    { path: '/chips_invalidos', element: <RutaProtegida><ChipsRechazados /></RutaProtegida> },
+    { path: '/inventario/diferencias', element: <RutaProtegida><DiferenciasInventario /></RutaProtegida> },
+    { path: '/nomina', element: <RutaProtegida><Nomina /></RutaProtegida> },
+    { path: '/nominaEmpleado', element: <RutaProtegida><NominaEmpleado /></RutaProtegida> },
+    { path: '/kardex', element: <RutaProtegida><Kardex /></RutaProtegida> },
+    { path: '/metricas', element: <RutaProtegida><Metricas /></RutaProtegida> },
+    { path: '/promos', element: <RutaProtegida><CampañasVIP /></RutaProtegida> },
   ]);
 
   return routes;

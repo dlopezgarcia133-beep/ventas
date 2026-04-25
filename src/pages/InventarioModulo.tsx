@@ -94,7 +94,6 @@ const inputCantidadRef = useRef<HTMLInputElement>(null);
   const cargarInventario = async () => {
     if (!moduloSeleccionado) return;
     const res = await axios.get(`${process.env.REACT_APP_API_URL}/inventario/inventario/modulo?modulo_id=${moduloSeleccionado}`, config);
-    console.log("Inventario recibido:", res.data);
     setInventario(res.data);
   };
 
@@ -387,8 +386,6 @@ const buscarProductosConteo = async (texto: string) => {
         { cantidad: parseInt(nuevaCantidad), modulo_id: moduloSeleccionado },
         config
       );
-      console.log("Voy a actualizar:", selectedItem.producto, "con cantidad:", nuevaCantidad, "modulo:", moduloSeleccionado);
-
       setNuevaCantidad("");
       setSelectedItem(null);
       cargarInventario();
@@ -481,8 +478,6 @@ const agregarEntrada = () => {
       cantidad,
       existencia_actual: existenciaActual
     };
-
-    console.log("Añadiendo entrada:", nuevoItem);
 
     if (index !== -1) {
       const copy = [...prev];

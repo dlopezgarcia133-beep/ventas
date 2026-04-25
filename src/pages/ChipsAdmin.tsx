@@ -3,6 +3,7 @@ import {
   TableContainer,Paper,Table,TableHead,TableRow,TableCell,TableBody,Checkbox,Typography,Box,
   Button,
   Link,
+  TablePagination,
 } from "@mui/material";
 import axios from "axios";
 import { Usuario, VentaChip } from "../Types";
@@ -16,6 +17,9 @@ const ChipsAdmin = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<number | null>(null);
   const rol = obtenerRolDesdeToken();
+  const [paginaAdmin, setPaginaAdmin] = useState(0);
+  const [paginaUser, setPaginaUser] = useState(0);
+  const filasPorPagina = 10;
 
 
   const fetchChips = async () => {
@@ -152,16 +156,16 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
                     <TableCell>Tipo de Chip</TableCell>
                     <TableCell>Número</TableCell>
                     <TableCell>Recarga</TableCell>
-                    <TableCell>Clave</TableCell>
                     <TableCell>Fecha</TableCell>
                     <TableCell>Hora</TableCell>
                     <TableCell>Validado</TableCell>
                     <TableCell>Descripcion</TableCell>
-                    
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {chips.filter(chip => !chip.validado && !chip.descripcion_rechazo).map((chip) => (
+                  {chips.filter(chip => !chip.validado && !chip.descripcion_rechazo)
+                    .slice(paginaAdmin * filasPorPagina, paginaAdmin * filasPorPagina + filasPorPagina)
+                    .map((chip) => (
                     <TableRow key={chip.id}>
   <TableCell>{chip.empleado?.username ?? "Empleado eliminado"}</TableCell>
   <TableCell>{chip.tipo_chip}</TableCell>
@@ -194,7 +198,7 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
       disabled={!chip.comision}
       style={{
         padding: "4px 8px",
-        backgroundColor: "#1976d2",
+        backgroundColor: "#1e3a5f",
         color: "white",
         border: "none",
         borderRadius: "4px",
@@ -264,6 +268,14 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
                 </TableBody>
               </Table>
             </TableContainer>
+            <TablePagination
+              component="div"
+              count={chips.filter(chip => !chip.validado && !chip.descripcion_rechazo).length}
+              page={paginaAdmin}
+              onPageChange={(_, p) => setPaginaAdmin(p)}
+              rowsPerPage={filasPorPagina}
+              rowsPerPageOptions={[filasPorPagina]}
+            />
           </>
         )}
 
@@ -291,7 +303,9 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {chips.filter(chip => !chip.validado).map((chip) => (
+                  {chips.filter(chip => !chip.validado)
+                    .slice(paginaUser * filasPorPagina, paginaUser * filasPorPagina + filasPorPagina)
+                    .map((chip) => (
                     <TableRow key={chip.id}>
                       <TableCell>{chip.empleado && chip.empleado.username? chip.empleado.username: "Empleado eliminado"}</TableCell>
                       <TableCell>{chip.tipo_chip}</TableCell>
@@ -326,10 +340,18 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
                 </TableBody>
               </Table>
             </TableContainer>
+            <TablePagination
+              component="div"
+              count={chips.filter(chip => !chip.validado).length}
+              page={paginaUser}
+              onPageChange={(_, p) => setPaginaUser(p)}
+              rowsPerPage={filasPorPagina}
+              rowsPerPageOptions={[filasPorPagina]}
+            />
           </>
         )}
       </>
-        
+
 
       </>
     </Box>

@@ -49,11 +49,6 @@ const TraspasosEncargado = () => {
     alert("Completa todos los campos");
     return;
   }
-console.log({
-  producto,
-  cantidad,
-  destino
-});
 
   try {
     await axios.post(
@@ -86,14 +81,8 @@ const formatearFecha = (fecha: string) =>
   useEffect(() => {
     cargarModulos();
     cargarTraspasos();
+    cargarProductos();
   }, []);
-
-
-  useEffect(() => {
-  cargarModulos();
-  cargarTraspasos();
-  cargarProductos();
-}, []);
 
   return (
     <Container sx={{ mt: 4 }}>
