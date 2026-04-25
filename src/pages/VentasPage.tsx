@@ -3,9 +3,10 @@ import {
   Box, TextField, Button, Typography, Autocomplete, Alert, Paper,
   TableContainer, MenuItem, FormControlLabel, FormControl, FormLabel,
   RadioGroup, Radio, TablePagination, Table, TableHead, TableRow,
-  TableCell, TableBody, Divider, Chip, IconButton,
+  TableCell, TableBody, Divider, Chip, IconButton, Tabs, Tab,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { ProductoEnVenta, Usuario, Venta } from '../Types';
@@ -69,6 +70,10 @@ const FormularioVentaMultiple = () => {
   // ── Estado asesor ────────────────────────────────────────────────────────
   const [comisionesHoy, setComisionesHoy] = useState<any>(null);
   const [sinCiclo, setSinCiclo] = useState(false);
+  const [tabAsesor, setTabAsesor] = useState(0);
+  const [misVentasFecha, setMisVentasFecha] = useState(HOY);
+  const [misVentasData, setMisVentasData] = useState<Venta[]>([]);
+  const [comisionesMisVentas, setComisionesMisVentas] = useState<any>(null);
 
   const token = localStorage.getItem('token');
   const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -86,6 +91,30 @@ const FormularioVentaMultiple = () => {
       setVentas(res.data);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const fetchMisVentas = async (fecha: string) => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/ventas`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { fecha },
+      });
+      setMisVentasData(res.data);
+    } catch (err) { console.error(err); }
+  };
+
+  const fetchComisionesPorFecha = async (fecha: string) => {
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/comisiones/ciclo_por_fechas`,
+        { ...config, params: { inicio: fecha, fin: fecha } },
+      );
+      setComisionesMisVentas(res.data);
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        setComisionesMisVentas({ total_accesorios: 0, total_telefonos: 0, ventas_accesorios: [], ventas_telefonos: [] });
+      }
     }
   };
 
@@ -183,6 +212,13 @@ const FormularioVentaMultiple = () => {
   useEffect(() => {
     fetchVentas();
   }, [fecha, moduloId, user]);
+
+  useEffect(() => {
+    if (rol === 'asesor' && tabAsesor === 1) {
+      fetchMisVentas(misVentasFecha);
+      fetchComisionesPorFecha(misVentasFecha);
+    }
+  }, [tabAsesor, misVentasFecha, rol]);
 
   // ── Acciones ─────────────────────────────────────────────────────────────
   const agregarAlCarrito = () => {
@@ -316,6 +352,12 @@ const FormularioVentaMultiple = () => {
       .map((va: any) => [va.id, va.comision_total ?? va.comision * va.cantidad]),
   );
 
+  const comisionMisVentasMap: Record<number, number> = Object.fromEntries(
+    (comisionesMisVentas?.ventas_accesorios ?? [])
+      .filter((va: any) => va.id != null)
+      .map((va: any) => [va.id, va.comision_total ?? va.comision * va.cantidad]),
+  );
+
   // ── Formulario (compartido) ───────────────────────────────────────────────
   const formulario = (
     <Paper sx={{ borderRadius: 2, p: 2.5 }}>
@@ -428,15 +470,45 @@ const FormularioVentaMultiple = () => {
   // VISTA ASESOR
   // ════════════════════════════════════════════════════════════════════════════
   if (rol === 'asesor') {
-    return (
-      <Grid container spacing={2} sx={{ mt: 2, px: 2 }}>
-        {/* Columna izquierda: formulario */}
-        <Grid item xs={12} md={6}>
-          {formulario}
-        </Grid>
+    const misVentasAcc = misVentasData.filter((v) => v.tipo_producto === 'accesorios');
+    const misVentasTel = misVentasData.filter((v) => v.tipo_producto === 'telefono');
+    const totalMisVentasPesos = [...misVentasAcc, ...misVentasTel]
+      .filter((v) => !v.cancelada)
+      .reduce((s, v) => s + v.precio_unitario * v.cantidad, 0);
+    const totalMisVentasComision =
+      misVentasAcc.filter((v) => !v.cancelada).reduce((s, v) => s + (comisionMisVentasMap[v.id] ?? 0), 0) +
+      misVentasTel.filter((v) => !v.cancelada).reduce((s, v) => s + (BONO_TEL[(v.tipo_venta || '').toLowerCase()] || 0), 0);
 
-        {/* Columna derecha: tabla del día + comisiones */}
-        <Grid item xs={12} md={6}>
+    return (
+      <Box sx={{ mt: 2, px: 2 }}>
+        <Tabs
+          value={tabAsesor}
+          onChange={(_, v) => setTabAsesor(v)}
+          sx={{ mb: 2, borderBottom: '1px solid #e2e8f0' }}
+          TabIndicatorProps={{ style: { backgroundColor: '#f97316' } }}
+        >
+          <Tab
+            icon={<ConfirmationNumberIcon fontSize="small" />}
+            iconPosition="start"
+            label="TICKET"
+            sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
+          />
+          <Tab
+            label="MIS VENTAS"
+            sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
+          />
+        </Tabs>
+
+        {/* ── Tab TICKET ── */}
+        {tabAsesor === 0 && (
+          <Grid container spacing={2}>
+            {/* Columna izquierda: formulario */}
+            <Grid item xs={12} md={6}>
+              {formulario}
+            </Grid>
+
+            {/* Columna derecha: tabla del día + comisiones */}
+            <Grid item xs={12} md={6}>
 
           {/* ── Ventas del día ── */}
           <Paper sx={{ p: 2, mb: 2 }}>
@@ -539,8 +611,90 @@ const FormularioVentaMultiple = () => {
             </Box>
           </Paper>
 
-        </Grid>
-      </Grid>
+          </Grid>
+          </Grid>
+        )}
+
+        {/* ── Tab MIS VENTAS ── */}
+        {tabAsesor === 1 && (
+          <Box>
+            <Box sx={{ mb: 2 }}>
+              <TextField
+                type="date"
+                size="small"
+                label="Fecha"
+                value={misVentasFecha}
+                onChange={(e) => setMisVentasFecha(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Box>
+            <Paper sx={{ p: 2 }}>
+              <Box sx={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      <th style={thStyle}>Tipo</th>
+                      <th style={thStyle}>Descripción</th>
+                      <th style={thStyle}>Precio</th>
+                      <th style={thStyle}>Comisión</th>
+                      <th style={thStyle}>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {misVentasAcc.map((v) => (
+                      <tr key={`mv-acc-${v.id}`}>
+                        <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
+                        <td style={tdStyle}>{v.producto}</td>
+                        <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                        <td style={tdStyle}>${fmt(comisionMisVentasMap[v.id] ?? 0)}</td>
+                        <td style={tdStyle}>
+                          <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
+                            {v.cancelada ? 'Cancelada' : 'Activa'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {misVentasTel.map((v) => (
+                      <tr key={`mv-tel-${v.id}`}>
+                        <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
+                        <td style={tdStyle}>{v.producto}</td>
+                        <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                        <td style={tdStyle}>${fmt(BONO_TEL[(v.tipo_venta || '').toLowerCase()] || 0)}</td>
+                        <td style={tdStyle}>
+                          <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
+                            {v.cancelada ? 'Cancelada' : 'Activa'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {misVentasAcc.length === 0 && misVentasTel.length === 0 && (
+                      <tr>
+                        <td colSpan={5} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
+                          Sin ventas para esta fecha
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </Box>
+              <Box display="flex" justifyContent="flex-start" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
+                <Typography variant="body2" color="text.secondary">
+                  Accesorios: <strong>{misVentasAcc.filter((v) => !v.cancelada).length}</strong>
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Teléfonos: <strong>{misVentasTel.filter((v) => !v.cancelada).length}</strong>
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Total vendido: <strong>${fmt(totalMisVentasPesos)}</strong>
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Comisión: <strong>${fmt(totalMisVentasComision)}</strong>
+                </Typography>
+              </Box>
+            </Paper>
+          </Box>
+        )}
+      </Box>
     );
   }
 
