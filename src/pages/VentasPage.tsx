@@ -213,6 +213,37 @@ const CHIP_OPCIONES_POR_CADENA: Record<string, typeof CHIP_OPCIONES_TODAS> = {
   WALMART:  CHIP_OPCIONES_OTRAS_CADENAS,
 };
 
+interface ComisionChip { tipo: string; comision: string; nota?: string; }
+
+const COMISIONES_EKT: ComisionChip[] = [
+  { tipo: 'Teléfono Activado de Cadenas',       comision: 'Manual',           nota: 'Asignada al validar' },
+  { tipo: 'Chip Cero / Libre / EKT',            comision: '$25 / $30 / $35',  nota: 'Recarga $0-50 / $51-100 / $101-150' },
+  { tipo: 'Chip Preactivado / Otras Cadenas',   comision: '$35' },
+  { tipo: 'Portabilidad / EKT / Otras Cadenas', comision: '$50' },
+];
+
+const COMISIONES_COPPEL: ComisionChip[] = [
+  { tipo: 'Teléfono Activado de Cadenas', comision: 'Manual',         nota: 'Asignada al validar' },
+  { tipo: 'Chip Express Coppel',          comision: '$10 / $15',      nota: 'Recarga $0-50 / $51-100' },
+  { tipo: 'Portabilidad Coppel',          comision: '$25' },
+];
+
+const COMISIONES_OTRAS_CADENAS: ComisionChip[] = [
+  { tipo: 'Teléfono Activado de Cadenas',       comision: 'Manual', nota: 'Asignada al validar' },
+  { tipo: 'Chip Preactivado / Otras Cadenas',   comision: '$35' },
+  { tipo: 'Portabilidad / EKT / Otras Cadenas', comision: '$50' },
+];
+
+const COMISIONES_POR_CADENA: Record<string, ComisionChip[]> = {
+  EKT:      COMISIONES_EKT,
+  COPPEL:   COMISIONES_COPPEL,
+  CHEDRAUI: COMISIONES_OTRAS_CADENAS,
+  SUBURBIA: COMISIONES_OTRAS_CADENAS,
+  AURRERA:  COMISIONES_OTRAS_CADENAS,
+  SAMS:     COMISIONES_OTRAS_CADENAS,
+  WALMART:  COMISIONES_OTRAS_CADENAS,
+};
+
 const FormularioVentaMultiple = () => {
   const moduloLocal = localStorage.getItem('modulo') || '';
   const esCadenas = moduloLocal.toLowerCase().includes('cadena');
@@ -728,14 +759,12 @@ const FormularioVentaMultiple = () => {
             label={esCadenas ? 'MIS ACTIVACIONES' : 'MIS VENTAS'}
             sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
           />
-          {!esCadenas && (
-            <Tab
-              icon={<MonetizationOnIcon fontSize="small" />}
-              iconPosition="start"
-              label="COMISIONES"
-              sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
-            />
-          )}
+          <Tab
+            icon={<MonetizationOnIcon fontSize="small" />}
+            iconPosition="start"
+            label="COMISIONES"
+            sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
+          />
         </Tabs>
 
         {/* ── Tab TICKET ── */}
@@ -1016,51 +1045,95 @@ const FormularioVentaMultiple = () => {
         {/* ── Tab COMISIONES ── */}
         {tabAsesor === 2 && (
           <Box sx={{ maxWidth: 680 }}>
-            <Paper sx={{ overflow: 'hidden' }}>
-              <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid #e2e8f0' }}>
-                <Typography variant="subtitle1" fontWeight={700}>
-                  Tasas de comisión configuradas
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Estas son las comisiones que se aplican a cada venta registrada.
-                </Typography>
-              </Box>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    <th style={{ ...thStyle, width: '50%' }}>Producto / Tipo de venta</th>
-                    <th style={{ ...thStyle, width: '25%' }}>Comisión</th>
-                    <th style={{ ...thStyle, width: '25%' }}>Tipo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tablaComisionesItems.map((item) => (
-                    <tr key={item.nombre}>
-                      <td style={tdStyle}>{item.nombre}</td>
-                      <td style={{ ...tdStyle, fontWeight: 600, color: '#16a34a' }}>${fmt(item.comision)}</td>
-                      <td style={tdStyle}>
-                        {item.esTelefono
-                          ? <Chip label="Teléfono" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
-                          : <Chip label="Accesorio" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
-                        }
-                      </td>
-                    </tr>
-                  ))}
-                  {tablaComisionesItems.length === 0 && (
+            {esCadenas ? (() => {
+              const cadenaActual = sessionStorage.getItem('cadena_seleccionada') || '';
+              const items = COMISIONES_POR_CADENA[cadenaActual];
+              return (
+                <Paper sx={{ overflow: 'hidden' }}>
+                  <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid #e2e8f0' }}>
+                    <Typography variant="subtitle1" fontWeight={700}>
+                      Comisiones — {cadenaActual}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Comisiones por tipo de activación registrada.
+                    </Typography>
+                  </Box>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ ...thStyle, width: '50%' }}>Tipo de Chip</th>
+                        <th style={{ ...thStyle, width: '30%' }}>Comisión</th>
+                        <th style={{ ...thStyle, width: '20%' }}>Nota</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {!items ? (
+                        <tr>
+                          <td colSpan={3} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 24 }}>
+                            Sin comisiones configuradas para {cadenaActual}
+                          </td>
+                        </tr>
+                      ) : items.map((item) => (
+                        <tr key={item.tipo}>
+                          <td style={tdStyle}>{item.tipo}</td>
+                          <td style={{ ...tdStyle, fontWeight: 700, color: item.comision === 'Manual' ? '#64748b' : '#16a34a' }}>
+                            {item.comision === 'Manual' ? item.comision : `$${item.comision.replace(/\$/g, '')}`}
+                          </td>
+                          <td style={{ ...tdStyle, fontSize: 12, color: '#94a3b8' }}>{item.nota ?? ''}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <Box sx={{ px: 2.5, py: 1.5, borderTop: '1px solid #e2e8f0', bgcolor: '#f8fafc' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {items?.length ?? 0} tipos de activación
+                    </Typography>
+                  </Box>
+                </Paper>
+              );
+            })() : (
+              <Paper sx={{ overflow: 'hidden' }}>
+                <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid #e2e8f0' }}>
+                  <Typography variant="subtitle1" fontWeight={700}>Tasas de comisión configuradas</Typography>
+                  <Typography variant="body2" color="text.secondary">Estas son las comisiones que se aplican a cada venta registrada.</Typography>
+                </Box>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
                     <tr>
-                      <td colSpan={3} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 24 }}>
-                        Sin comisiones configuradas
-                      </td>
+                      <th style={{ ...thStyle, width: '50%' }}>Producto / Tipo de venta</th>
+                      <th style={{ ...thStyle, width: '25%' }}>Comisión</th>
+                      <th style={{ ...thStyle, width: '25%' }}>Tipo</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-              <Box sx={{ px: 2.5, py: 1.5, borderTop: '1px solid #e2e8f0', bgcolor: '#f8fafc' }}>
-                <Typography variant="body2" color="text.secondary">
-                  {tablaComisionesItems.filter((i) => !i.esTelefono).length} accesorios · {tablaComisionesItems.filter((i) => i.esTelefono).length} teléfonos
-                </Typography>
-              </Box>
-            </Paper>
+                  </thead>
+                  <tbody>
+                    {tablaComisionesItems.map((item) => (
+                      <tr key={item.nombre}>
+                        <td style={tdStyle}>{item.nombre}</td>
+                        <td style={{ ...tdStyle, fontWeight: 600, color: '#16a34a' }}>${fmt(item.comision)}</td>
+                        <td style={tdStyle}>
+                          {item.esTelefono
+                            ? <Chip label="Teléfono" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
+                            : <Chip label="Accesorio" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
+                          }
+                        </td>
+                      </tr>
+                    ))}
+                    {tablaComisionesItems.length === 0 && (
+                      <tr>
+                        <td colSpan={3} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 24 }}>
+                          Sin comisiones configuradas
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+                <Box sx={{ px: 2.5, py: 1.5, borderTop: '1px solid #e2e8f0', bgcolor: '#f8fafc' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {tablaComisionesItems.filter((i) => !i.esTelefono).length} accesorios · {tablaComisionesItems.filter((i) => i.esTelefono).length} teléfonos
+                  </Typography>
+                </Box>
+              </Paper>
+            )}
           </Box>
         )}
       </Box>
