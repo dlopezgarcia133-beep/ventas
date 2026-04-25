@@ -3,8 +3,9 @@ import {
   Box, TextField, Button, Typography, Autocomplete, Alert, Paper,
   TableContainer, MenuItem, FormControlLabel, FormControl, FormLabel,
   RadioGroup, Radio, TablePagination, Table, TableHead, TableRow,
-  TableCell, TableBody, Divider, Chip,
+  TableCell, TableBody, Divider, Chip, IconButton,
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { ProductoEnVenta, Usuario, Venta } from '../Types';
@@ -439,6 +440,7 @@ const FormularioVentaMultiple = () => {
                     <th style={thStyle}>Tipo</th>
                     <th style={thStyle}>Descripción</th>
                     <th style={thStyle}>Precio</th>
+                    <th style={thStyle}>Comisión</th>
                     <th style={thStyle}></th>
                   </tr>
                 </thead>
@@ -448,10 +450,11 @@ const FormularioVentaMultiple = () => {
                       <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
                       <td style={tdStyle}>{v.producto}</td>
                       <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                      <td style={tdStyle}>${typeof v.comision === 'number' ? v.comision.toFixed(2) : '0.00'}</td>
                       <td style={tdStyle}>
-                        <Button size="small" color="error" variant="outlined" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)} sx={{ py: 0.2, fontSize: 11 }}>
-                          Cancelar
-                        </Button>
+                        <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
                       </td>
                     </tr>
                   ))}
@@ -461,26 +464,18 @@ const FormularioVentaMultiple = () => {
                       <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
                       <td style={tdStyle}>{v.producto}</td>
                       <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                      <td style={tdStyle}>${typeof v.comision === 'number' ? v.comision.toFixed(2) : '0.00'}</td>
                       <td style={tdStyle}>
-                        <Button size="small" color="error" variant="outlined" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)} sx={{ py: 0.2, fontSize: 11 }}>
-                          Cancelar
-                        </Button>
+                        <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
                       </td>
                     </tr>
                   ))}
 
-                  {chipsHoy.map((c, i) => (
-                    <tr key={`chip-${i}`}>
-                      <td style={tdStyle}><Chip label="Chip" size="small" sx={{ bgcolor: '#f0fdf4', color: '#22c55e', fontWeight: 700, fontSize: 11 }} /></td>
-                      <td style={tdStyle}>{c.tipo_chip} · {c.numero_telefono}</td>
-                      <td style={tdStyle}>—</td>
-                      <td style={tdStyle}></td>
-                    </tr>
-                  ))}
-
-                  {ventasHoyAcc.length === 0 && ventasHoyTel.length === 0 && chipsHoy.length === 0 && (
+                  {ventasHoyAcc.length === 0 && ventasHoyTel.length === 0 && (
                     <tr>
-                      <td colSpan={4} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
+                      <td colSpan={5} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
                         Sin ventas registradas hoy
                       </td>
                     </tr>
@@ -495,9 +490,6 @@ const FormularioVentaMultiple = () => {
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Teléfonos: <strong>{ventasHoyTel.length}</strong>
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Chips: <strong>{chipsHoy.length}</strong>
               </Typography>
             </Box>
           </Paper>
