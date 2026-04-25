@@ -66,7 +66,7 @@ const FormularioVentaMultiple = () => {
   const filasPorPagina = 10;
 
   // ── Estado asesor ────────────────────────────────────────────────────────
-  const [comisionesData, setComisionesData] = useState<any>(null);
+  const [comisionesHoy, setComisionesHoy] = useState<any>(null);
 
   const token = localStorage.getItem('token');
   const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -87,15 +87,20 @@ const FormularioVentaMultiple = () => {
     }
   };
 
-  const fetchComisionesData = async () => {
+  const fetchComisionesHoy = async () => {
+    const hoy = new Date().toLocaleDateString('en-CA');
     try {
       const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/comisiones/comisiones/ciclo`,
-        config,
+        `${process.env.REACT_APP_API_URL}/comisiones/ciclo_por_fechas`,
+        { ...config, params: { inicio: hoy, fin: hoy } },
       );
-      setComisionesData(res.data);
-    } catch (err) {
-      console.error('Error fetching comisiones:', err);
+      setComisionesHoy(res.data);
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        setComisionesHoy({ total_accesorios: 0, total_telefonos: 0, total_chips: 0, total_general: 0, ventas_chips: [], ventas_accesorios: [], ventas_telefonos: [] });
+      } else {
+        console.error('Error fetching comisiones del día:', err);
+      }
     }
   };
 
@@ -168,7 +173,7 @@ const FormularioVentaMultiple = () => {
   useEffect(() => {
     if (rol === 'asesor') {
       setFecha(HOY);
-      fetchComisionesData();
+      fetchComisionesHoy();
     }
   }, [rol]);
 
@@ -198,7 +203,7 @@ const FormularioVentaMultiple = () => {
       setMensaje({ tipo: 'success', texto: 'Venta registrada con éxito.' });
       setCarrito([]);
       settelefono('');
-      if (rol === 'asesor') { fetchVentas(); fetchComisionesData(); }
+      if (rol === 'asesor') { fetchVentas(); fetchComisionesHoy(); }
     } catch (err: any) {
       setMensaje({ tipo: 'error', texto: err?.response?.data?.detail || 'Error al registrar la venta' });
     }
@@ -210,7 +215,7 @@ const FormularioVentaMultiple = () => {
       await axios.put(`${process.env.REACT_APP_API_URL}/ventas/ventas/${id}/cancelar`, {}, config);
       alert('Venta cancelada');
       fetchVentas();
-      if (rol === 'asesor') fetchComisionesData();
+      if (rol === 'asesor') fetchComisionesHoy();
     } catch (err: any) {
       alert(err.response?.data?.detail || 'Error al cancelar la venta');
     }
@@ -225,7 +230,7 @@ const FormularioVentaMultiple = () => {
       );
       setMensaje({ tipo: 'success', texto: 'Venta de chip registrada correctamente' });
       setTipoChip(''); setNumero(''); setRecarga(''); settelefono('');
-      if (rol === 'asesor') { fetchVentas(); fetchComisionesData(); }
+      if (rol === 'asesor') { fetchVentas(); fetchComisionesHoy(); }
     } catch (err: any) {
       setMensaje({ tipo: 'error', texto: err?.response?.data?.detail || 'Error al registrar la venta' });
     }
@@ -256,7 +261,7 @@ const FormularioVentaMultiple = () => {
       setMensaje({ tipo: 'success', texto: 'Venta de teléfono registrada correctamente' });
       setTelefonoMarca(''); setTelefonoModelo(''); setTelefonoTipo_venta('');
       setMetodoPago(''); setTelefonoPrecio(''); setChip_casado(''); settelefono('');
-      if (rol === 'asesor') { fetchVentas(); fetchComisionesData(); }
+      if (rol === 'asesor') { fetchVentas(); fetchComisionesHoy(); }
     } catch (err: any) {
       let msg = 'Error al registrar la venta de teléfono';
       if (Array.isArray(err?.response?.data?.detail)) msg = err.response.data.detail.map((e: any) => e.msg).join(' | ');
@@ -281,17 +286,20 @@ const FormularioVentaMultiple = () => {
   // ── Cálculos asesor del día ──────────────────────────────────────────────
   const ventasHoyAcc = ventas.filter((v) => v.tipo_producto === 'accesorios' && v.fecha === HOY);
   const ventasHoyTel = ventas.filter((v) => v.tipo_producto === 'telefono' && v.fecha === HOY);
-  const chipsHoy: any[] = (comisionesData?.ventas_chips || []).filter(
-    (c: any) => c.fecha && c.fecha.startsWith(HOY),
-  );
+  // Chips: el endpoint ya filtra por HOY, no se necesita filtro adicional
+  const chipsHoy: any[] = comisionesHoy?.ventas_chips || [];
 
-  const comisionAccHoy = (comisionesData?.ventas_accesorios || [])
-    .filter((v: any) => v.fecha && v.fecha.startsWith(HOY))
-    .reduce((s: number, v: any) => s + (v.comision_total || 0), 0);
-  const comisionTelHoy = (comisionesData?.ventas_telefonos || [])
-    .filter((v: any) => v.fecha && v.fecha.startsWith(HOY))
-    .reduce((s: number, v: any) => s + (v.comision_total || 0), 0);
-  const comisionChipsHoy = chipsHoy.reduce((s, c) => s + (c.comision || 0), 0);
+  // Accesorios: total calculado por el backend (requiere comision_id configurado en BD)
+  const comisionAccHoy: number = comisionesHoy?.total_accesorios ?? 0;
+
+  // Teléfonos: tasas hardcodeadas en el backend (contado=10, paguitos=110, pajoy=100)
+  // Se calcula desde las ventas locales para garantizar el valor real sin depender de comision_id
+  const BONO_TEL: Record<string, number> = { contado: 10, paguitos: 110, pajoy: 100 };
+  const comisionTelDirecta = ventasHoyTel
+    .filter((v) => !v.cancelada)
+    .reduce((s, v) => s + (BONO_TEL[(v.tipo_venta || '').toLowerCase()] || 0), 0);
+  const comisionTelHoy: number = (comisionesHoy?.total_telefonos ?? 0) || comisionTelDirecta;
+
   const totalComisionHoy = comisionAccHoy + comisionTelHoy;
 
   // ── Formulario (compartido) ───────────────────────────────────────────────
