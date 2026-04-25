@@ -10,7 +10,7 @@ import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
-import { ProductoEnVenta, Usuario, Venta } from '../Types';
+import { InventarioGeneral, ProductoEnVenta, Usuario, Venta } from '../Types';
 import { useNavigate } from 'react-router-dom';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -174,7 +174,7 @@ const calcComision = (v: Venta): number => {
 
 const FormularioVentaMultiple = () => {
   // ── Estado general ───────────────────────────────────────────────────────
-  const [productos, setProductos] = useState<string[]>([]);
+  const [productos, setProductos] = useState<InventarioGeneral[]>([]);
   const [ventas, setVentas] = useState<Venta[]>([]);
   const ventasTelefonos = ventas.filter((v) => v.tipo_producto === 'telefono');
 
@@ -302,7 +302,7 @@ const FormularioVentaMultiple = () => {
     const fetchProductos = async () => {
       try {
         const res = await axios.get(
-          `${process.env.REACT_APP_API_URL}/inventario/inventario/general/productos-nombres`,
+          `${process.env.REACT_APP_API_URL}/inventario/inventario/general`,
           config,
         );
         setProductos(res.data);
@@ -514,7 +514,10 @@ const FormularioVentaMultiple = () => {
       {tipoVenta === 'accesorio' && (
         <>
           <Autocomplete
-            options={productos.filter((p) => !p.toLowerCase().includes('telefono'))}
+            options={productos
+              .filter((p) => !p.producto.toLowerCase().includes('telefono') && p.cantidad > 0)
+              .sort((a, b) => a.producto.localeCompare(b.producto, 'es'))
+              .map((p) => p.producto)}
             value={producto}
             onChange={(_, v) => setProducto(v || '')}
             renderInput={(params) => <TextField {...params} label="Producto" fullWidth margin="normal" />}
