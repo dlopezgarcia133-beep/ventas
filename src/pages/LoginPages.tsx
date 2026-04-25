@@ -30,16 +30,14 @@ const LoginPage: React.FC = () => {
 
       const modulo = response.data.modulo || "";
       const rol = response.data.rol || "";
-      const cadenaGuardada = sessionStorage.getItem("cadena_seleccionada");
 
-      console.log("MODULO EXACTO:", JSON.stringify(modulo), "ROL EXACTO:", JSON.stringify(rol));
+      sessionStorage.removeItem("cadena_seleccionada");
 
-      const necesitaElegirCadena =
+      const esCadenasAsesor =
         modulo?.toLowerCase().includes("cadena") &&
-        rol?.toLowerCase().includes("asesor") &&
-        !cadenaGuardada;
+        rol?.toLowerCase().includes("asesor");
 
-      navegacion(necesitaElegirCadena ? '/seleccionar-cadena' : '/ventas');
+      navegacion(esCadenasAsesor ? '/seleccionar-cadena' : '/ventas');
     } catch (err) {
       setError('Credenciales inválidas. Intenta nuevamente.');
     }

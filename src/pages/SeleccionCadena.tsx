@@ -19,7 +19,6 @@ const SeleccionCadena: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    sessionStorage.removeItem('cadena_seleccionada');
     const modulo = localStorage.getItem('modulo') || '';
     const rol = (localStorage.getItem('rol') || '').toLowerCase();
     if (!modulo.toLowerCase().includes('cadena') || rol !== 'asesor') {
