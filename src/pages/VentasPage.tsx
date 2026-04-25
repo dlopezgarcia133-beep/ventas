@@ -305,6 +305,10 @@ const FormularioVentaMultiple = () => {
 
   const totalComisionHoy = comisionAccHoy + comisionTelHoy;
 
+  const totalPesosAcc = ventasHoyAcc.filter((v) => !v.cancelada).reduce((s, v) => s + v.precio_unitario * v.cantidad, 0);
+  const totalPesosTel = ventasHoyTel.filter((v) => !v.cancelada).reduce((s, v) => s + v.precio_unitario * v.cantidad, 0);
+  const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
   // ── Formulario (compartido) ───────────────────────────────────────────────
   const formulario = (
     <Paper sx={{ borderRadius: 2, p: 2.5 }}>
@@ -484,12 +488,15 @@ const FormularioVentaMultiple = () => {
               </table>
             </Box>
 
-            <Box display="flex" justifyContent="flex-end" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0' }}>
+            <Box display="flex" justifyContent="flex-start" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
               <Typography variant="body2" color="text.secondary">
-                Accesorios: <strong>{ventasHoyAcc.length}</strong>
+                Accesorios: <strong>{ventasHoyAcc.length}</strong> | <strong>${fmt(totalPesosAcc)}</strong>
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Teléfonos: <strong>{ventasHoyTel.length}</strong>
+                Teléfonos: <strong>{ventasHoyTel.length}</strong> | <strong>${fmt(totalPesosTel)}</strong>
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Comisión total: <strong>${fmt(totalComisionHoy)}</strong>
               </Typography>
             </Box>
           </Paper>
