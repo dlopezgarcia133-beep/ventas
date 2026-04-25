@@ -837,7 +837,7 @@ const FormularioVentaMultiple = () => {
           <Tab
             icon={<MonetizationOnIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />}
             iconPosition="start"
-            label="COMISIONES"
+            label={esCadenas ? 'LISTA DE COMISIONES' : 'COMISIONES'}
             sx={{ fontWeight: 700, minHeight: 44, fontSize: { xs: 11, sm: 13 }, px: { xs: 1, sm: 2 }, '&.Mui-selected': { color: '#f97316' } }}
           />
           {esCadenas && (
