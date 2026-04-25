@@ -884,7 +884,7 @@ const FormularioVentaMultiple = () => {
                           {c.numero_telefono}
                         </Typography>
                         <Typography variant="body2" fontWeight={700} sx={{ color: '#16a34a', fontSize: 13 }}>
-                          ${c.monto_recarga.toFixed(2)}
+                          ${(c.monto_recarga ?? 0).toFixed(2)}
                         </Typography>
                       </Box>
                     </Box>
@@ -906,7 +906,7 @@ const FormularioVentaMultiple = () => {
                         <tr key={i}>
                           <td style={tdStyle}>{c.tipo_chip}</td>
                           <td style={tdStyle}>{c.numero_telefono}</td>
-                          <td style={tdStyle}>${c.monto_recarga.toFixed(2)}</td>
+                          <td style={tdStyle}>${(c.monto_recarga ?? 0).toFixed(2)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1054,7 +1054,7 @@ const FormularioVentaMultiple = () => {
                             {c.numero_telefono}
                           </Typography>
                           <Typography variant="body2" fontWeight={700} sx={{ color: '#16a34a', fontSize: 13 }}>
-                            ${c.monto_recarga.toFixed(2)}
+                            ${(c.monto_recarga ?? 0).toFixed(2)}
                           </Typography>
                         </Box>
                       </Box>
@@ -1076,7 +1076,7 @@ const FormularioVentaMultiple = () => {
                           <tr key={c.id}>
                             <td style={tdStyle}>{c.tipo_chip}</td>
                             <td style={tdStyle}>{c.numero_telefono}</td>
-                            <td style={tdStyle}>${c.monto_recarga.toFixed(2)}</td>
+                            <td style={tdStyle}>${(c.monto_recarga ?? 0).toFixed(2)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1268,7 +1268,7 @@ const FormularioVentaMultiple = () => {
           const incubadora = nominaChips.filter((c) => c.es_incubadora);
           const totalCobrar = nominaChips
             .filter((c) => c.validado && !c.es_incubadora)
-            .reduce((s, c) => s + c.comision, 0);
+            .reduce((s, c) => s + (c.comision ?? 0), 0);
 
           return (
             <Box>
@@ -1317,10 +1317,10 @@ const FormularioVentaMultiple = () => {
                           </Typography>
                           <Box display="flex" justifyContent="space-between">
                             <Typography variant="body2" sx={{ fontSize: 12, color: '#475569' }}>
-                              Recarga: ${c.monto_recarga.toFixed(2)}
+                              Recarga: ${(c.monto_recarga ?? 0).toFixed(2)}
                             </Typography>
                             <Typography variant="body2" fontWeight={700} sx={{ fontSize: 12, color: '#16a34a' }}>
-                              Comisión: ${c.comision.toFixed(2)}
+                              Comisión: ${(c.comision ?? 0).toFixed(2)}
                             </Typography>
                           </Box>
                         </Box>
@@ -1346,8 +1346,8 @@ const FormularioVentaMultiple = () => {
                             <tr key={c.id}>
                               <td style={tdStyle}>{c.tipo_chip}</td>
                               <td style={tdStyle}>{c.numero_telefono}</td>
-                              <td style={tdStyle}>${c.monto_recarga.toFixed(2)}</td>
-                              <td style={{ ...tdStyle, fontWeight: 700, color: '#16a34a' }}>${c.comision.toFixed(2)}</td>
+                              <td style={tdStyle}>${(c.monto_recarga ?? 0).toFixed(2)}</td>
+                              <td style={{ ...tdStyle, fontWeight: 700, color: '#16a34a' }}>${(c.comision ?? 0).toFixed(2)}</td>
                               <td style={{ ...tdStyle, color: est.color, fontWeight: 600 }}>{est.label}</td>
                             </tr>
                           );
@@ -1386,10 +1386,10 @@ const FormularioVentaMultiple = () => {
                         </Typography>
                         <Box display="flex" justifyContent="space-between">
                           <Typography variant="body2" sx={{ fontSize: 12, color: '#475569' }}>
-                            Recarga: ${c.monto_recarga.toFixed(2)}
+                            Recarga: ${(c.monto_recarga ?? 0).toFixed(2)}
                           </Typography>
                           <Typography variant="body2" fontWeight={700} sx={{ fontSize: 12, color: '#f97316' }}>
-                            Comisión: ${c.comision.toFixed(2)}
+                            Comisión: ${(c.comision ?? 0).toFixed(2)}
                           </Typography>
                         </Box>
                       </Box>
@@ -1412,8 +1412,8 @@ const FormularioVentaMultiple = () => {
                           <tr key={c.id}>
                             <td style={tdStyle}>{c.tipo_chip}</td>
                             <td style={tdStyle}>{c.numero_telefono}</td>
-                            <td style={tdStyle}>${c.monto_recarga.toFixed(2)}</td>
-                            <td style={{ ...tdStyle, fontWeight: 700, color: '#f97316' }}>${c.comision.toFixed(2)}</td>
+                            <td style={tdStyle}>${(c.monto_recarga ?? 0).toFixed(2)}</td>
+                            <td style={{ ...tdStyle, fontWeight: 700, color: '#f97316' }}>${(c.comision ?? 0).toFixed(2)}</td>
                             <td style={{ ...tdStyle, color: '#f97316', fontWeight: 600 }}>En incubadora</td>
                           </tr>
                         ))}
