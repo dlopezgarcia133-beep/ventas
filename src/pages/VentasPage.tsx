@@ -172,6 +172,29 @@ const calcComision = (v: Venta): number => {
 
 // ────────────────────────────────────────────────────────────────────────────
 
+const CHIP_OPCIONES_TODAS = [
+  { value: 'Chip Equipo',         label: 'Chip Equipo / Promo / ATO' },
+  { value: 'Chip Express',        label: 'Chip Express / ATO' },
+  { value: 'Portabilidad',        label: 'Portabilidad / ATO' },
+  { value: 'Chip Cero/Libre',     label: 'Chip Cero / Libre / EKT' },
+  { value: 'Chip Preactivado',    label: 'Chip Preactivado / Otras Cadenas' },
+  { value: 'Chip Coppel',         label: 'Chip Express Coppel' },
+  { value: 'Portabilidad Coppel', label: 'Portabilidad Coppel' },
+  { value: 'Porta Otras cadenas', label: 'Portabilidad / EKT / Otras Cadenas' },
+  { value: 'Activacion',          label: 'Telefono Activado de Cadenas' },
+];
+
+const CHIP_OPCIONES_EKT = [
+  { value: 'Chip Cero/Libre',     label: 'Chip Cero / Libre / EKT' },
+  { value: 'Chip Preactivado',    label: 'Chip Preactivado / Otras Cadenas' },
+  { value: 'Porta Otras cadenas', label: 'Portabilidad / EKT / Otras Cadenas' },
+  { value: 'Activacion',          label: 'Telefono Activado de Cadenas' },
+];
+
+const CHIP_OPCIONES_POR_CADENA: Record<string, typeof CHIP_OPCIONES_TODAS> = {
+  EKT: CHIP_OPCIONES_EKT,
+};
+
 const FormularioVentaMultiple = () => {
   const moduloLocal = localStorage.getItem('modulo') || '';
   const esCadenas = moduloLocal.toLowerCase().includes('cadena');
@@ -552,15 +575,12 @@ const FormularioVentaMultiple = () => {
       {(esCadenas || tipoVenta === 'chip') && (
         <>
           <TextField select label="Chip" value={tipoChip} onChange={(e) => setTipoChip(e.target.value)} fullWidth margin="normal">
-            <MenuItem value="Chip Equipo">Chip Equipo / Promo / ATO</MenuItem>
-            <MenuItem value="Chip Express">Chip Express / ATO</MenuItem>
-            <MenuItem value="Portabilidad">Portabilidad / ATO</MenuItem>
-            <MenuItem value="Chip Cero/Libre">Chip Cero / Libre / EKT</MenuItem>
-            <MenuItem value="Chip Preactivado">Chip Preactivado / Otras Cadenas</MenuItem>
-            <MenuItem value="Chip Coppel">Chip Express Coppel</MenuItem>
-            <MenuItem value="Portabilidad Coppel">Portabilidad Coppel</MenuItem>
-            <MenuItem value="Porta Otras cadenas">Portabilidad / EKT / Otras Cadenas</MenuItem>
-            <MenuItem value="Activacion">Telefono Activado de Cadenas</MenuItem>
+            {(esCadenas
+              ? CHIP_OPCIONES_POR_CADENA[sessionStorage.getItem('cadena_seleccionada') || ''] ?? CHIP_OPCIONES_TODAS
+              : CHIP_OPCIONES_TODAS
+            ).map((op) => (
+              <MenuItem key={op.value} value={op.value}>{op.label}</MenuItem>
+            ))}
           </TextField>
           <TextField label="Número" type="tel" value={numero} onChange={(e) => setNumero(e.target.value)} fullWidth margin="normal" />
           <TextField label="Recarga" type="number" value={recarga} onChange={(e) => setRecarga(e.target.value)} fullWidth margin="normal" />
