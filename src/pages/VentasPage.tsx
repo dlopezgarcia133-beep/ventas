@@ -3,11 +3,14 @@ import {
   Box, TextField, Button, Typography, Autocomplete, Alert, Paper,
   TableContainer, MenuItem, FormControlLabel, FormControl, FormLabel,
   RadioGroup, Radio, TablePagination, Table, TableHead, TableRow,
-  TableCell, TableBody, Divider, Chip,
+  TableCell, TableBody, Divider, Chip, IconButton, Tabs, Tab,
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
-import { ProductoEnVenta, Usuario, Venta } from '../Types';
+import { InventarioGeneral, ProductoEnVenta, Usuario, Venta } from '../Types';
 import { useNavigate } from 'react-router-dom';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -23,11 +26,155 @@ const thStyle: React.CSSProperties = {
 };
 const tdStyle: React.CSSProperties = { padding: '6px 8px', borderBottom: '1px solid #e2e8f0' };
 
+// ─── Mapas de comisiones ─────────────────────────────────────────────────────
+
+// Accesorios: orden de más específico a más general dentro de cada familia
+const ACC_KEYWORDS: [string, number][] = [
+  ['BOCINA', 20], ['CARGADOR', 20],
+  ['EX. SMART WATCH', 20], ['SMART WATCH', 20],
+  ['FUNDA DE BRAZO', 20], ['FUNDA DE IPAD', 20],
+  ['TABLET $2499', 200], ['TABLET', 100],
+  ['MANOS LIBRES $749', 20], ['MANOS LIBRES $799', 20], ['MANOS LIBRES $849', 20],
+  ['MANOS LIBRES $899', 20], ['MANOS LIBRES $949', 20], ['MANOS LIBRES $999', 20],
+  ['MANOS LIBRES $1099', 20], ['MANOS LIBRES $1199', 20], ['MANOS LIBRES $1249', 20],
+  ['MANOS LIBRES $1299', 20], ['MANOS LIBRES $1399', 20], ['MANOS LIBRES $1449', 20],
+  ['MANOS LIBRES $1499', 20], ['MANOS LIBRES', 10],
+  ['FUNDA $160', 10], ['FUNDA', 20],
+  ['MICA DE HIDROGEL $399', 20], ['MICA DE HIDROGEL', 10],
+  ['MICA $40', 5], ['MICA $99', 5], ['MICA $120', 5], ['MICA', 10],
+  ['PROTECTOR $79', 5], ['PROTECTOR $99', 5], ['PROTECTOR $120', 5],
+  ['PROTECTOR $130', 5], ['PROTECTOR $149', 5], ['PROTECTOR $169', 5],
+  ['PROTECTOR $180', 5], ['PROTECTOR $199', 5],
+  ['PROTECTOR $249', 10], ['PROTECTOR $299', 10], ['PROTECTOR $349', 10],
+  ['PROTECTOR $399', 15], ['PROTECTOR', 20],
+  ['BASE PARA COCHE', 10], ['CABLE USB', 10],
+  ['CÁMARA', 10], ['CAMARA', 10],
+  ['GAMEBOY', 10], ['GAME BOY', 10],
+  ['POWER BANK', 10], ['WEBCAM', 10],
+];
+
+// Teléfonos: nombre exacto (uppercase) → comisión base
+const TEL_EXACT_MAP: Record<string, number> = {
+  'TELEFONO LIBRE HONOR 200 LITE 256GB': 250,
+  'TELEFONO LIBRE HONOR MAGIC 5 LITE 128GB': 200,
+  'TELEFONO LIBRE HONOR MAGIC 5 LITE 256GB': 200,
+  'TELEFONO LIBRE HONOR X5': 200,
+  'TELEFONO LIBRE HONOR X6A 128GB': 200,
+  'TELEFONO LIBRE HONOR X6B PLUS 256GB': 200,
+  'TELEFONO LIBRE HONOR X7A': 250,
+  'TELEFONO LIBRE HONOR X7B 128GB': 100,
+  'TELEFONO LIBRE HONOR X7B 256GB': 100,
+  'TELEFONO LIBRE HONOR X7C 256GB': 100,
+  'TELEFONO LIBRE HONOR X8A 128GB': 200,
+  'TELEFONO LIBRE HONOR X9C 256GB': 200,
+  'TELEFONO LIBRE IPHONE 12 128GB': 100,
+  'TELEFONO LIBRE IPHONE 13 128GB': 100,
+  'TELEFONO LIBRE IPHONE 14 128GB': 100,
+  'TELEFONO LIBRE IPHONE 15 128GB': 100,
+  'TELEFONO LIBRE IPHONE 16 128GB': 100,
+  'TELEFONO LIBRE IPHONE 16 PLUS 128GB': 100,
+  'TELEFONO LIBRE IPHONE 16 PRO 128GB': 100,
+  'TELEFONO LIBRE IPHONE 16E 128GB': 100,
+  'TELEFONO LIBRE KODAK KD50': 100,
+  'TELEFONO LIBRE MOTOROLA G31 128GB': 100,
+  'TELEFONO LIBRE MOTOROLA G85 256GB': 100,
+  'TELEFONO LIBRE OPPO A18 128GB': 100,
+  'TELEFONO LIBRE OPPO A40 128GB': 100,
+  'TELEFONO LIBRE OPPO A78 128GB': 100,
+  'TELEFONO LIBRE REALME C11': 200,
+  'TELEFONO LIBRE REALME C51': 200,
+  'TELEFONO LIBRE RF IPHONE 11 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 11 64GB': 100,
+  'TELEFONO LIBRE RF IPHONE 12 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 12 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 12 PRO MAX 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 13 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 13 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 13 PRO MAX 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 13 PRO MAX 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 14 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 14 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 14 PRO 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 14 PRO MAX 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 15 PRO MAX 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 15 PROMAX 256GB': 100,
+  'TELEFONO LIBRE SAMSUNG A05S 128GB': 100,
+  'TELEFONO LIBRE SAMSUNG A06 128GB': 50,
+  'TELEFONO LIBRE SAMSUNG A06 64GB': 50,
+  'TELEFONO LIBRE SAMSUNG A16 128GB': 50,
+  'TELEFONO LIBRE SAMSUNG A16 256GB': 50,
+  'TELEFONO LIBRE SAMSUNG A23 128GB': 200,
+  'TELEFONO LIBRE SAMSUNG A25 5G 128GB': 200,
+  'TELEFONO LIBRE SAMSUNG A25 5G 256GB': 200,
+  'TELEFONO LIBRE SAMSUNG A26 128GB': 50,
+  'TELEFONO LIBRE SAMSUNG A35 128GB': 200,
+  'TELEFONO LIBRE SAMSUNG A35 256GB': 200,
+  'TELEFONO LIBRE SAMSUNG A55 256GB': 200,
+  'TELEFONO LIBRE VIVO Y01': 200,
+  'TELEFONO LIBRE WIKO T10': 200,
+  'TELEFONO LIBRE XIAOMI REDMI 10A 64GB': 100,
+  'TELEFONO LIBRE XIAOMI REDMI 13 128GB': 100,
+  'TELEFONO LIBRE XIAOMI REDMI 13C 128GB': 100,
+  'TELEFONO LIBRE XIAOMI REDMI NOTE 10 PRO 128GB': 200,
+  'TELEFONO LIBRE XIAOMI REDMI NOTE 12 PRO 128GB': 200,
+  'TELEFONO LIBRE XIAOMI REDMI NOTE 13 128GB': 100,
+  'TELEFONO LIBRE ZTE A31': 200,
+  'TELEFONO LIBRE ZTE A55': 100,
+  'TELEFONO LIBRE ZTE V60 SMART': 100,
+  'TELEFONO TELCEL ACER A62 ULTRA': 200,
+  'TELEFONO TELCEL HONOR X8A': 100,
+  'TELEFONO TELCEL IPHONE 11 64GB': 100,
+  'TELEFONO TELCEL IPHONE 12 128GB': 100,
+  'TELEFONO TELCEL IPHONE 13 128GB': 100,
+  'TELEFONO TELCEL IPHONE 14 128GB': 100,
+  'TELEFONO TELCEL IPHONE 15 128GB': 100,
+  'TELEFONO TELCEL MOTOROLA EDGE 30 128GB': 100,
+  'TELEFONO TELCEL MOTOROLA G24 256GB': 50,
+  'TELEFONO TELCEL MOTOROLA G32 128GB': 200,
+  'TELEFONO TELCEL MOTOROLA G53': 100,
+  'TELEFONO TELCEL NUBIA Z353': 100,
+  'TELEFONO TELCEL OPPO A5 256GB': 100,
+  'TELEFONO TELCEL OPPO A79 256GB': 100,
+  'TELEFONO TELCEL REALME NOTE 60 128GB': 200,
+  'TELEFONO TELCEL SAMSUNG A05S 64GB': 100,
+  'TELEFONO TELCEL SAMSUNG A06 64GB': 50,
+  'TELEFONO TELCEL SAMSUNG A16 128GB': 50,
+  'TELEFONO TELCEL SAMSUNG A25': 200,
+  'TELEFONO TELCEL SAMSUNG A25 128GB': 50,
+  'TELEFONO TELCEL SAMSUNG A35': 100,
+  'TELEFONO TELCEL SAMSUNG A35 128GB': 200,
+  'TELEFONO TELCEL ZTE A51': 200,
+  'TELEFONO TELCEL ZTE A55': 100,
+  'TELEFONO TELCEL ZTE V40 PRO': 100,
+  'TELEFONO TELCEL ZTE V40 VITA': 100,
+  'TELEFONO TELCEL ZTE V60 SMART': 100,
+};
+
+const calcComision = (v: Venta): number => {
+  const nombre = (v.producto || '').toUpperCase();
+  if (v.tipo_producto === 'telefono') {
+    const tipo = (v.tipo_venta || '').toLowerCase();
+    const base = TEL_EXACT_MAP[nombre];
+    const inMap = base !== undefined;
+    if (tipo === 'contado')  return inMap ? base : 10;
+    if (tipo === 'pajoy')    return inMap ? 100 + base : 100;
+    if (tipo === 'paguitos') return inMap ? 110 + base : 110;
+    return 0;
+  }
+  if (v.tipo_producto === 'accesorios') {
+    for (const [keyword, comision] of ACC_KEYWORDS) {
+      if (nombre.includes(keyword)) return comision;
+    }
+    return 0;
+  }
+  return 0;
+};
+
 // ────────────────────────────────────────────────────────────────────────────
 
 const FormularioVentaMultiple = () => {
   // ── Estado general ───────────────────────────────────────────────────────
-  const [productos, setProductos] = useState<string[]>([]);
+  const [productos, setProductos] = useState<InventarioGeneral[]>([]);
   const [ventas, setVentas] = useState<Venta[]>([]);
   const ventasTelefonos = ventas.filter((v) => v.tipo_producto === 'telefono');
 
@@ -67,6 +214,12 @@ const FormularioVentaMultiple = () => {
 
   // ── Estado asesor ────────────────────────────────────────────────────────
   const [comisionesHoy, setComisionesHoy] = useState<any>(null);
+  const [sinCiclo, setSinCiclo] = useState(false);
+  const [tabAsesor, setTabAsesor] = useState(0);
+  const [misVentasFecha, setMisVentasFecha] = useState(HOY);
+  const [misVentasData, setMisVentasData] = useState<Venta[]>([]);
+  const [comisionesMisVentas, setComisionesMisVentas] = useState<any>(null);
+  const [catalogoComisiones, setCatalogoComisiones] = useState<{ producto: string; cantidad: number }[]>([]);
 
   const token = localStorage.getItem('token');
   const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -87,6 +240,37 @@ const FormularioVentaMultiple = () => {
     }
   };
 
+  const fetchCatalogoComisiones = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/comisiones/comisiones`, config);
+      setCatalogoComisiones(res.data);
+    } catch (err) { console.error(err); }
+  };
+
+  const fetchMisVentas = async (fecha: string) => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/ventas`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { fecha },
+      });
+      setMisVentasData(res.data);
+    } catch (err) { console.error(err); }
+  };
+
+  const fetchComisionesPorFecha = async (fecha: string) => {
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/comisiones/ciclo_por_fechas`,
+        { ...config, params: { inicio: fecha, fin: fecha } },
+      );
+      setComisionesMisVentas(res.data);
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        setComisionesMisVentas({ total_accesorios: 0, total_telefonos: 0, ventas_accesorios: [], ventas_telefonos: [] });
+      }
+    }
+  };
+
   const fetchComisionesHoy = async () => {
     const hoy = new Date().toLocaleDateString('en-CA');
     try {
@@ -97,6 +281,7 @@ const FormularioVentaMultiple = () => {
       setComisionesHoy(res.data);
     } catch (err: any) {
       if (err.response?.status === 404) {
+        setSinCiclo(true);
         setComisionesHoy({ total_accesorios: 0, total_telefonos: 0, total_chips: 0, total_general: 0, ventas_chips: [], ventas_accesorios: [], ventas_telefonos: [] });
       } else {
         console.error('Error fetching comisiones del día:', err);
@@ -117,7 +302,7 @@ const FormularioVentaMultiple = () => {
     const fetchProductos = async () => {
       try {
         const res = await axios.get(
-          `${process.env.REACT_APP_API_URL}/inventario/inventario/general/productos-nombres`,
+          `${process.env.REACT_APP_API_URL}/inventario/inventario/general`,
           config,
         );
         setProductos(res.data);
@@ -180,6 +365,17 @@ const FormularioVentaMultiple = () => {
   useEffect(() => {
     fetchVentas();
   }, [fecha, moduloId, user]);
+
+  useEffect(() => {
+    if (rol === 'asesor' && tabAsesor === 1) {
+      fetchMisVentas(misVentasFecha);
+      fetchComisionesPorFecha(misVentasFecha);
+    }
+  }, [tabAsesor, misVentasFecha, rol]);
+
+  useEffect(() => {
+    if (rol === 'asesor' && tabAsesor === 2) fetchCatalogoComisiones();
+  }, [tabAsesor, rol]);
 
   // ── Acciones ─────────────────────────────────────────────────────────────
   const agregarAlCarrito = () => {
@@ -284,23 +480,18 @@ const FormularioVentaMultiple = () => {
   };
 
   // ── Cálculos asesor del día ──────────────────────────────────────────────
-  const ventasHoyAcc = ventas.filter((v) => v.tipo_producto === 'accesorios' && v.fecha === HOY);
-  const ventasHoyTel = ventas.filter((v) => v.tipo_producto === 'telefono' && v.fecha === HOY);
+  const ventasHoyAcc = ventas.filter((v) => v.tipo_producto === 'accesorios' && v.fecha?.startsWith(HOY)).sort((a, b) => a.producto.localeCompare(b.producto, 'es'));
+  const ventasHoyTel = ventas.filter((v) => v.tipo_producto === 'telefono' && v.fecha?.startsWith(HOY)).sort((a, b) => a.producto.localeCompare(b.producto, 'es'));
   // Chips: el endpoint ya filtra por HOY, no se necesita filtro adicional
   const chipsHoy: any[] = comisionesHoy?.ventas_chips || [];
 
-  // Accesorios: total calculado por el backend (requiere comision_id configurado en BD)
-  const comisionAccHoy: number = comisionesHoy?.total_accesorios ?? 0;
-
-  // Teléfonos: tasas hardcodeadas en el backend (contado=10, paguitos=110, pajoy=100)
-  // Se calcula desde las ventas locales para garantizar el valor real sin depender de comision_id
-  const BONO_TEL: Record<string, number> = { contado: 10, paguitos: 110, pajoy: 100 };
-  const comisionTelDirecta = ventasHoyTel
-    .filter((v) => !v.cancelada)
-    .reduce((s, v) => s + (BONO_TEL[(v.tipo_venta || '').toLowerCase()] || 0), 0);
-  const comisionTelHoy: number = (comisionesHoy?.total_telefonos ?? 0) || comisionTelDirecta;
-
+  const comisionAccHoy  = ventasHoyAcc.filter((v) => !v.cancelada).reduce((s, v) => s + calcComision(v), 0);
+  const comisionTelHoy  = ventasHoyTel.filter((v) => !v.cancelada).reduce((s, v) => s + calcComision(v), 0);
   const totalComisionHoy = comisionAccHoy + comisionTelHoy;
+
+  const totalPesosAcc = ventasHoyAcc.filter((v) => !v.cancelada).reduce((s, v) => s + v.precio_unitario * v.cantidad, 0);
+  const totalPesosTel = ventasHoyTel.filter((v) => !v.cancelada).reduce((s, v) => s + v.precio_unitario * v.cantidad, 0);
+  const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   // ── Formulario (compartido) ───────────────────────────────────────────────
   const formulario = (
@@ -323,7 +514,10 @@ const FormularioVentaMultiple = () => {
       {tipoVenta === 'accesorio' && (
         <>
           <Autocomplete
-            options={productos.filter((p) => !p.toLowerCase().includes('telefono'))}
+            options={productos
+              .filter((p) => !p.producto.toLowerCase().includes('telefono') && p.cantidad > 0)
+              .sort((a, b) => a.producto.localeCompare(b.producto, 'es'))
+              .map((p) => p.producto)}
             value={producto}
             onChange={(_, v) => setProducto(v || '')}
             renderInput={(params) => <TextField {...params} label="Producto" fullWidth margin="normal" />}
@@ -414,15 +608,62 @@ const FormularioVentaMultiple = () => {
   // VISTA ASESOR
   // ════════════════════════════════════════════════════════════════════════════
   if (rol === 'asesor') {
-    return (
-      <Grid container spacing={2} sx={{ mt: 2, px: 2 }}>
-        {/* Columna izquierda: formulario */}
-        <Grid item xs={12} md={6}>
-          {formulario}
-        </Grid>
+    const usuarioActual = localStorage.getItem('usuario') || '';
+    const misVentasAcc = misVentasData.filter((v) => v.tipo_producto === 'accesorios' && v.empleado?.username === usuarioActual);
+    const misVentasTel = misVentasData.filter((v) => v.tipo_producto === 'telefono'   && v.empleado?.username === usuarioActual);
+    const totalMisVentasPesos = [...misVentasAcc, ...misVentasTel]
+      .filter((v) => !v.cancelada)
+      .reduce((s, v) => s + v.precio_unitario * v.cantidad, 0);
+    const totalMisVentasComision =
+      [...misVentasAcc, ...misVentasTel].filter((v) => !v.cancelada).reduce((s, v) => s + calcComision(v), 0);
 
-        {/* Columna derecha: tabla del día + comisiones */}
-        <Grid item xs={12} md={6}>
+    const tablaComisionesItems = [
+      ...catalogoComisiones.map((c) => ({
+        nombre: c.producto,
+        comision: c.cantidad,
+        esTelefono: c.producto.toUpperCase().startsWith('TELEFONO'),
+      })),
+      { nombre: 'Contado',  comision: 10,  esTelefono: true },
+      { nombre: 'Paguitos', comision: 110, esTelefono: true },
+      { nombre: 'Pajoy',    comision: 100, esTelefono: true },
+    ].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+    return (
+      <Box sx={{ mt: 2, px: 2 }}>
+        <Tabs
+          value={tabAsesor}
+          onChange={(_, v) => setTabAsesor(v)}
+          sx={{ mb: 2, borderBottom: '1px solid #e2e8f0' }}
+          TabIndicatorProps={{ style: { backgroundColor: '#f97316' } }}
+        >
+          <Tab
+            icon={<ConfirmationNumberIcon fontSize="small" />}
+            iconPosition="start"
+            label="TICKET"
+            sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
+          />
+          <Tab
+            label="MIS VENTAS"
+            sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
+          />
+          <Tab
+            icon={<MonetizationOnIcon fontSize="small" />}
+            iconPosition="start"
+            label="COMISIONES"
+            sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
+          />
+        </Tabs>
+
+        {/* ── Tab TICKET ── */}
+        {tabAsesor === 0 && (
+          <Grid container spacing={2}>
+            {/* Columna izquierda: formulario */}
+            <Grid item xs={12} md={6}>
+              {formulario}
+            </Grid>
+
+            {/* Columna derecha: tabla del día + comisiones */}
+            <Grid item xs={12} md={6}>
 
           {/* ── Ventas del día ── */}
           <Paper sx={{ p: 2, mb: 2 }}>
@@ -437,6 +678,7 @@ const FormularioVentaMultiple = () => {
                     <th style={thStyle}>Tipo</th>
                     <th style={thStyle}>Descripción</th>
                     <th style={thStyle}>Precio</th>
+                    <th style={thStyle}>Comisión</th>
                     <th style={thStyle}></th>
                   </tr>
                 </thead>
@@ -446,10 +688,11 @@ const FormularioVentaMultiple = () => {
                       <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
                       <td style={tdStyle}>{v.producto}</td>
                       <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                      <td style={tdStyle}>${fmt(calcComision(v))}</td>
                       <td style={tdStyle}>
-                        <Button size="small" color="error" variant="outlined" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)} sx={{ py: 0.2, fontSize: 11 }}>
-                          Cancelar
-                        </Button>
+                        <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
                       </td>
                     </tr>
                   ))}
@@ -459,26 +702,18 @@ const FormularioVentaMultiple = () => {
                       <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
                       <td style={tdStyle}>{v.producto}</td>
                       <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                      <td style={tdStyle}>${fmt(calcComision(v))}</td>
                       <td style={tdStyle}>
-                        <Button size="small" color="error" variant="outlined" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)} sx={{ py: 0.2, fontSize: 11 }}>
-                          Cancelar
-                        </Button>
+                        <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
                       </td>
                     </tr>
                   ))}
 
-                  {chipsHoy.map((c, i) => (
-                    <tr key={`chip-${i}`}>
-                      <td style={tdStyle}><Chip label="Chip" size="small" sx={{ bgcolor: '#f0fdf4', color: '#22c55e', fontWeight: 700, fontSize: 11 }} /></td>
-                      <td style={tdStyle}>{c.tipo_chip} · {c.numero_telefono}</td>
-                      <td style={tdStyle}>—</td>
-                      <td style={tdStyle}></td>
-                    </tr>
-                  ))}
-
-                  {ventasHoyAcc.length === 0 && ventasHoyTel.length === 0 && chipsHoy.length === 0 && (
+                  {ventasHoyAcc.length === 0 && ventasHoyTel.length === 0 && (
                     <tr>
-                      <td colSpan={4} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
+                      <td colSpan={5} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
                         Sin ventas registradas hoy
                       </td>
                     </tr>
@@ -487,15 +722,15 @@ const FormularioVentaMultiple = () => {
               </table>
             </Box>
 
-            <Box display="flex" justifyContent="flex-end" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0' }}>
+            <Box display="flex" justifyContent="flex-start" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
               <Typography variant="body2" color="text.secondary">
-                Accesorios: <strong>{ventasHoyAcc.length}</strong>
+                Accesorios: <strong>{ventasHoyAcc.length}</strong> | <strong>${fmt(totalPesosAcc)}</strong>
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Teléfonos: <strong>{ventasHoyTel.length}</strong>
+                Teléfonos: <strong>{ventasHoyTel.length}</strong> | <strong>${fmt(totalPesosTel)}</strong>
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Chips: <strong>{chipsHoy.length}</strong>
+                Comisión total: <strong>${fmt(totalComisionHoy)}</strong>
               </Typography>
             </Box>
           </Paper>
@@ -505,6 +740,12 @@ const FormularioVentaMultiple = () => {
             <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>
               Comisiones del día
             </Typography>
+
+            {sinCiclo && (
+              <Alert severity="warning" sx={{ mb: 1.5, fontSize: 12 }}>
+                Sin ciclo de comisiones activo para hoy. Contacta al administrador.
+              </Alert>
+            )}
 
             <Box display="flex" flexDirection="column" gap={1}>
               <Box display="flex" justifyContent="space-between">
@@ -525,8 +766,141 @@ const FormularioVentaMultiple = () => {
             </Box>
           </Paper>
 
-        </Grid>
-      </Grid>
+          </Grid>
+          </Grid>
+        )}
+
+        {/* ── Tab MIS VENTAS ── */}
+        {tabAsesor === 1 && (
+          <Box>
+            <Box sx={{ mb: 2 }}>
+              <TextField
+                type="date"
+                size="small"
+                label="Fecha"
+                value={misVentasFecha}
+                onChange={(e) => setMisVentasFecha(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Box>
+            <Paper sx={{ p: 2 }}>
+              <Box sx={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      <th style={thStyle}>Tipo</th>
+                      <th style={thStyle}>Descripción</th>
+                      <th style={thStyle}>Precio</th>
+                      <th style={thStyle}>Comisión</th>
+                      <th style={thStyle}>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {misVentasAcc.map((v) => (
+                      <tr key={`mv-acc-${v.id}`}>
+                        <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
+                        <td style={tdStyle}>{v.producto}</td>
+                        <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                        <td style={tdStyle}>${fmt(calcComision(v))}</td>
+                        <td style={tdStyle}>
+                          <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
+                            {v.cancelada ? 'Cancelada' : 'Activa'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {misVentasTel.map((v) => (
+                      <tr key={`mv-tel-${v.id}`}>
+                        <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
+                        <td style={tdStyle}>{v.producto}</td>
+                        <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                        <td style={tdStyle}>${fmt(calcComision(v))}</td>
+                        <td style={tdStyle}>
+                          <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
+                            {v.cancelada ? 'Cancelada' : 'Activa'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {misVentasAcc.length === 0 && misVentasTel.length === 0 && (
+                      <tr>
+                        <td colSpan={5} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
+                          Sin ventas para esta fecha
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </Box>
+              <Box display="flex" justifyContent="flex-start" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
+                <Typography variant="body2" color="text.secondary">
+                  Accesorios: <strong>{misVentasAcc.filter((v) => !v.cancelada).length}</strong>
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Teléfonos: <strong>{misVentasTel.filter((v) => !v.cancelada).length}</strong>
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Total vendido: <strong>${fmt(totalMisVentasPesos)}</strong>
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Comisión: <strong>${fmt(totalMisVentasComision)}</strong>
+                </Typography>
+              </Box>
+            </Paper>
+          </Box>
+        )}
+
+        {/* ── Tab COMISIONES ── */}
+        {tabAsesor === 2 && (
+          <Box sx={{ maxWidth: 680 }}>
+            <Paper sx={{ overflow: 'hidden' }}>
+              <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid #e2e8f0' }}>
+                <Typography variant="subtitle1" fontWeight={700}>
+                  Tasas de comisión configuradas
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Estas son las comisiones que se aplican a cada venta registrada.
+                </Typography>
+              </Box>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={{ ...thStyle, width: '50%' }}>Producto / Tipo de venta</th>
+                    <th style={{ ...thStyle, width: '25%' }}>Comisión</th>
+                    <th style={{ ...thStyle, width: '25%' }}>Tipo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tablaComisionesItems.map((item) => (
+                    <tr key={item.nombre}>
+                      <td style={tdStyle}>{item.nombre}</td>
+                      <td style={{ ...tdStyle, fontWeight: 600, color: '#16a34a' }}>${fmt(item.comision)}</td>
+                      <td style={tdStyle}>
+                        {item.esTelefono
+                          ? <Chip label="Teléfono" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
+                          : <Chip label="Accesorio" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
+                        }
+                      </td>
+                    </tr>
+                  ))}
+                  {tablaComisionesItems.length === 0 && (
+                    <tr>
+                      <td colSpan={3} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 24 }}>
+                        Sin comisiones configuradas
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+              <Box sx={{ px: 2.5, py: 1.5, borderTop: '1px solid #e2e8f0', bgcolor: '#f8fafc' }}>
+                <Typography variant="body2" color="text.secondary">
+                  {tablaComisionesItems.filter((i) => !i.esTelefono).length} accesorios · {tablaComisionesItems.filter((i) => i.esTelefono).length} teléfonos
+                </Typography>
+              </Box>
+            </Paper>
+          </Box>
+        )}
+      </Box>
     );
   }
 
