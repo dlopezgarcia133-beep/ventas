@@ -3,7 +3,7 @@ import {
   Box, TextField, Button, Typography, Autocomplete, Alert, Paper,
   TableContainer, MenuItem, FormControlLabel, FormControl, FormLabel,
   RadioGroup, Radio, TablePagination, Table, TableHead, TableRow,
-  TableCell, TableBody, Divider, Chip, IconButton, Tabs, Tab,
+  TableCell, TableBody, Divider, Chip, IconButton, Tabs, Tab, useMediaQuery,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
@@ -247,6 +247,7 @@ const COMISIONES_POR_CADENA: Record<string, ComisionChip[]> = {
 const FormularioVentaMultiple = () => {
   const moduloLocal = localStorage.getItem('modulo') || '';
   const esCadenas = moduloLocal.toLowerCase().includes('cadena');
+  const isMobile = useMediaQuery('(max-width:767px)');
 
   // ── Estado general ───────────────────────────────────────────────────────
   const [productos, setProductos] = useState<InventarioGeneral[]>([]);
@@ -607,7 +608,7 @@ const FormularioVentaMultiple = () => {
 
   // ── Formulario (compartido) ───────────────────────────────────────────────
   const formulario = (
-    <Paper sx={{ borderRadius: 2, p: 2.5 }}>
+    <Paper sx={{ borderRadius: 2, p: { xs: 1.5, sm: 2.5 } }}>
       <Typography variant="h5" gutterBottom fontWeight={700}>
         {esCadenas ? 'Activaciones' : 'Registrar Venta'}
       </Typography>
@@ -742,28 +743,30 @@ const FormularioVentaMultiple = () => {
     ].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 
     return (
-      <Box sx={{ mt: 2, px: 2 }}>
+      <Box sx={{ mt: { xs: 1, sm: 2 }, px: { xs: 1, sm: 2 } }}>
         <Tabs
           value={tabAsesor}
           onChange={(_, v) => setTabAsesor(v)}
-          sx={{ mb: 2, borderBottom: '1px solid #e2e8f0' }}
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{ mb: 2, borderBottom: '1px solid #e2e8f0', minHeight: 44 }}
           TabIndicatorProps={{ style: { backgroundColor: '#f97316' } }}
         >
           <Tab
-            icon={<ConfirmationNumberIcon fontSize="small" />}
+            icon={<ConfirmationNumberIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />}
             iconPosition="start"
             label="TICKET"
-            sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
+            sx={{ fontWeight: 700, minHeight: 44, fontSize: { xs: 11, sm: 13 }, px: { xs: 1, sm: 2 }, '&.Mui-selected': { color: '#f97316' } }}
           />
           <Tab
             label={esCadenas ? 'MIS ACTIVACIONES' : 'MIS VENTAS'}
-            sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
+            sx={{ fontWeight: 700, minHeight: 44, fontSize: { xs: 11, sm: 13 }, px: { xs: 1, sm: 2 }, '&.Mui-selected': { color: '#f97316' } }}
           />
           <Tab
-            icon={<MonetizationOnIcon fontSize="small" />}
+            icon={<MonetizationOnIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />}
             iconPosition="start"
             label="COMISIONES"
-            sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
+            sx={{ fontWeight: 700, minHeight: 44, fontSize: { xs: 11, sm: 13 }, px: { xs: 1, sm: 2 }, '&.Mui-selected': { color: '#f97316' } }}
           />
         </Tabs>
 
@@ -780,38 +783,56 @@ const FormularioVentaMultiple = () => {
 
           {esCadenas ? (
             /* ── Activaciones del día (Cadenas C.) ── */
-            <Paper sx={{ p: 2 }}>
+            <Paper sx={{ p: { xs: 1.5, sm: 2 } }}>
               <Typography variant="h6" fontWeight={700} gutterBottom>
                 Activaciones del día
               </Typography>
-              <Box sx={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr>
-                      <th style={thStyle}>Tipo de Chip</th>
-                      <th style={thStyle}>Número</th>
-                      <th style={thStyle}>Recarga</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {chipsHoy.length === 0 ? (
+              {chipsHoy.length === 0 ? (
+                <Typography variant="body2" sx={{ color: '#94a3b8', textAlign: 'center', py: 2 }}>
+                  Sin activaciones registradas hoy
+                </Typography>
+              ) : isMobile ? (
+                /* Cards on mobile */
+                <Box>
+                  {chipsHoy.map((c: any, i: number) => (
+                    <Box key={i} sx={{ p: 1.5, mb: 1, border: '1px solid #e2e8f0', borderRadius: 1.5, bgcolor: '#f8fafc' }}>
+                      <Typography variant="body2" fontWeight={700} sx={{ mb: 0.5, color: '#1e293b', fontSize: 13 }}>
+                        {c.tipo_chip}
+                      </Typography>
+                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12 }}>
+                          {c.numero_telefono}
+                        </Typography>
+                        <Typography variant="body2" fontWeight={700} sx={{ color: '#16a34a', fontSize: 13 }}>
+                          ${c.monto_recarga.toFixed(2)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              ) : (
+                /* Table on desktop */
+                <Box sx={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
                       <tr>
-                        <td colSpan={3} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
-                          Sin activaciones registradas hoy
-                        </td>
+                        <th style={thStyle}>Tipo de Chip</th>
+                        <th style={thStyle}>Número</th>
+                        <th style={thStyle}>Recarga</th>
                       </tr>
-                    ) : (
-                      chipsHoy.map((c: any, i: number) => (
+                    </thead>
+                    <tbody>
+                      {chipsHoy.map((c: any, i: number) => (
                         <tr key={i}>
                           <td style={tdStyle}>{c.tipo_chip}</td>
                           <td style={tdStyle}>{c.numero_telefono}</td>
                           <td style={tdStyle}>${c.monto_recarga.toFixed(2)}</td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </Box>
+                      ))}
+                    </tbody>
+                  </table>
+                </Box>
+              )}
               {chipsHoy.length > 0 && (
                 <Box mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0' }}>
                   <Typography variant="body2" color="text.secondary">
@@ -935,35 +956,53 @@ const FormularioVentaMultiple = () => {
 
             {esCadenas ? (
               /* ── Mis Activaciones (Cadenas C.) ── */
-              <Paper sx={{ p: 2 }}>
-                <Box sx={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr>
-                        <th style={thStyle}>Tipo de Chip</th>
-                        <th style={thStyle}>Número</th>
-                        <th style={thStyle}>Recarga</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {misActivacionesData.length === 0 ? (
+              <Paper sx={{ p: { xs: 1.5, sm: 2 } }}>
+                {misActivacionesData.length === 0 ? (
+                  <Typography variant="body2" sx={{ color: '#94a3b8', textAlign: 'center', py: 2 }}>
+                    Sin activaciones para esta fecha
+                  </Typography>
+                ) : isMobile ? (
+                  /* Cards on mobile */
+                  <Box>
+                    {misActivacionesData.map((c) => (
+                      <Box key={c.id} sx={{ p: 1.5, mb: 1, border: '1px solid #e2e8f0', borderRadius: 1.5, bgcolor: '#f8fafc' }}>
+                        <Typography variant="body2" fontWeight={700} sx={{ mb: 0.5, color: '#1e293b', fontSize: 13 }}>
+                          {c.tipo_chip}
+                        </Typography>
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12 }}>
+                            {c.numero_telefono}
+                          </Typography>
+                          <Typography variant="body2" fontWeight={700} sx={{ color: '#16a34a', fontSize: 13 }}>
+                            ${c.monto_recarga.toFixed(2)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    ))}
+                  </Box>
+                ) : (
+                  /* Table on desktop */
+                  <Box sx={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
                         <tr>
-                          <td colSpan={3} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
-                            Sin activaciones para esta fecha
-                          </td>
+                          <th style={thStyle}>Tipo de Chip</th>
+                          <th style={thStyle}>Número</th>
+                          <th style={thStyle}>Recarga</th>
                         </tr>
-                      ) : (
-                        misActivacionesData.map((c) => (
+                      </thead>
+                      <tbody>
+                        {misActivacionesData.map((c) => (
                           <tr key={c.id}>
                             <td style={tdStyle}>{c.tipo_chip}</td>
                             <td style={tdStyle}>{c.numero_telefono}</td>
                             <td style={tdStyle}>${c.monto_recarga.toFixed(2)}</td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </Box>
+                        ))}
+                      </tbody>
+                    </table>
+                  </Box>
+                )}
                 {misActivacionesData.length > 0 && (
                   <Box mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0' }}>
                     <Typography variant="body2" color="text.secondary">
@@ -1044,7 +1083,7 @@ const FormularioVentaMultiple = () => {
 
         {/* ── Tab COMISIONES ── */}
         {tabAsesor === 2 && (
-          <Box sx={{ maxWidth: 680 }}>
+          <Box sx={{ maxWidth: { xs: '100%', sm: 680 } }}>
             {esCadenas ? (() => {
               const cadenaActual = sessionStorage.getItem('cadena_seleccionada') || '';
               const items = COMISIONES_POR_CADENA[cadenaActual];
