@@ -605,8 +605,9 @@ const FormularioVentaMultiple = () => {
   // VISTA ASESOR
   // ════════════════════════════════════════════════════════════════════════════
   if (rol === 'asesor') {
-    const misVentasAcc = misVentasData.filter((v) => v.tipo_producto === 'accesorios');
-    const misVentasTel = misVentasData.filter((v) => v.tipo_producto === 'telefono');
+    const usuarioActual = localStorage.getItem('usuario') || '';
+    const misVentasAcc = misVentasData.filter((v) => v.tipo_producto === 'accesorios' && v.empleado?.username === usuarioActual);
+    const misVentasTel = misVentasData.filter((v) => v.tipo_producto === 'telefono'   && v.empleado?.username === usuarioActual);
     const totalMisVentasPesos = [...misVentasAcc, ...misVentasTel]
       .filter((v) => !v.cancelada)
       .reduce((s, v) => s + v.precio_unitario * v.cantidad, 0);
