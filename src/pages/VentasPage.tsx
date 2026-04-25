@@ -309,6 +309,13 @@ const FormularioVentaMultiple = () => {
   const totalPesosTel = ventasHoyTel.filter((v) => !v.cancelada).reduce((s, v) => s + v.precio_unitario * v.cantidad, 0);
   const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+  // Mapa id → comision_total para accesorios, construido desde ciclo_por_fechas
+  const comisionAccMap: Record<number, number> = Object.fromEntries(
+    (comisionesHoy?.ventas_accesorios ?? [])
+      .filter((va: any) => va.id != null)
+      .map((va: any) => [va.id, va.comision_total ?? va.comision * va.cantidad]),
+  );
+
   // ── Formulario (compartido) ───────────────────────────────────────────────
   const formulario = (
     <Paper sx={{ borderRadius: 2, p: 2.5 }}>
@@ -454,7 +461,7 @@ const FormularioVentaMultiple = () => {
                       <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
                       <td style={tdStyle}>{v.producto}</td>
                       <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
-                      <td style={tdStyle}>${typeof v.comision === 'number' ? v.comision.toFixed(2) : '0.00'}</td>
+                      <td style={tdStyle}>${fmt(comisionAccMap[v.id] ?? 0)}</td>
                       <td style={tdStyle}>
                         <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
                           <DeleteIcon fontSize="small" />
@@ -468,7 +475,7 @@ const FormularioVentaMultiple = () => {
                       <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
                       <td style={tdStyle}>{v.producto}</td>
                       <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
-                      <td style={tdStyle}>${typeof v.comision === 'number' ? v.comision.toFixed(2) : '0.00'}</td>
+                      <td style={tdStyle}>${fmt(BONO_TEL[(v.tipo_venta || '').toLowerCase()] || 0)}</td>
                       <td style={tdStyle}>
                         <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
                           <DeleteIcon fontSize="small" />
