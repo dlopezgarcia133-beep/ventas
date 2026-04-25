@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   AppBar, Toolbar, Typography, Button, Box, MenuItem, Menu
 } from "@mui/material";
+import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../ATO.jpeg";
 import { obtenerRolDesdeToken } from "./Token";
@@ -111,7 +112,7 @@ const Navbar = () => {
                 open={Boolean(anchorVentas)}
                 onClose={() => closeMenu(setAnchorVentas)}
               >
-                <MenuItem component={Link} to="/ventas">Ventas</MenuItem>
+                <MenuItem component={Link} to="/ventas"><ConfirmationNumberIcon fontSize="small" sx={{ mr: 0.5, verticalAlign: 'middle' }} />Ticket</MenuItem>
                 <MenuItem component={Link} to="/ventas/chips">Chips</MenuItem>
                 <MenuItem component={Link} to="/corte">Cortes</MenuItem>
               </Menu>
@@ -162,7 +163,7 @@ const Navbar = () => {
               <Button sx={navBtnSx} component={Link} to="/kardex">Kardex</Button>
               <Button sx={navBtnSx} component={Link} to="/nominaEmpleado">Nómina</Button>
               <Button sx={navBtnSx} component={Link} to="/traspasos">Traspasos</Button>
-              <Button sx={navBtnSx} component={Link} to="/ventas">Ventas</Button>
+              <Button sx={navBtnSx} component={Link} to="/ventas" startIcon={<ConfirmationNumberIcon />}>Ticket</Button>
               <Button sx={navBtnSx} component={Link} to="/comisiones/usuario">Comisiones</Button>
               <Button sx={navBtnSx} component={Link} to="/inventario/modulo">Inventario</Button>
               <Button sx={navBtnSx} component={Link} to="/ventas/chips">Chips</Button>
@@ -172,7 +173,7 @@ const Navbar = () => {
           {rolToken === "asesor" && (
             <>
               <Button sx={navBtnSx} component={Link} to="/nominaEmpleado">Nómina</Button>
-              <Button sx={navBtnSx} component={Link} to="/ventas">Ventas</Button>
+              <Button sx={navBtnSx} component={Link} to="/ventas" startIcon={<ConfirmationNumberIcon />}>Ticket</Button>
               <Button sx={navBtnSx} component={Link} to="/comisiones/usuario">Comisiones</Button>
               <Button sx={navBtnSx} component={Link} to="/ventas/chips">Chips</Button>
             </>
