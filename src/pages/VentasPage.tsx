@@ -185,10 +185,10 @@ const CHIP_OPCIONES_TODAS = [
 ];
 
 const CHIP_OPCIONES_EKT = [
+  { value: 'Activacion',          label: 'Telefono Activado de Cadenas' },
   { value: 'Chip Cero/Libre',     label: 'Chip Cero / Libre / EKT' },
   { value: 'Chip Preactivado',    label: 'Chip Preactivado / Otras Cadenas' },
   { value: 'Porta Otras cadenas', label: 'Portabilidad / EKT / Otras Cadenas' },
-  { value: 'Activacion',          label: 'Telefono Activado de Cadenas' },
 ];
 
 const CHIP_OPCIONES_POR_CADENA: Record<string, typeof CHIP_OPCIONES_TODAS> = {
