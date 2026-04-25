@@ -247,7 +247,7 @@ const COMISIONES_POR_CADENA: Record<string, ComisionChip[]> = {
 
 // ─── Helpers de ciclos de nómina ─────────────────────────────────────────────
 
-const NOMINA_SYSTEM_START = new Date(2025, 0, 4); // 4 Ene 2025 (sábado)
+const NOMINA_SYSTEM_START = new Date(2026, 3, 11); // 11 Abr 2026 (sábado)
 const MESES_CORTOS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
 interface Ciclo { inicio: Date; fin: Date; pago: Date; }
@@ -261,10 +261,10 @@ function getCiclos(): Ciclo[] {
   while (true) {
     const inicio = new Date(current);
     const fin = new Date(current);
-    fin.setDate(fin.getDate() + 6); // sábado + 6 = viernes
-    if (fin >= hoy) break;          // ciclo aún no cerrado
+    fin.setDate(fin.getDate() + 6);    // sábado + 6 = viernes
     const pago = new Date(fin);
     pago.setDate(pago.getDate() + 12); // viernes + 12 = miércoles
+    if (pago > hoy) break;             // ciclo visible solo cuando su miércoles de pago llega
     ciclos.push({ inicio, fin, pago });
     current.setDate(current.getDate() + 7);
   }
