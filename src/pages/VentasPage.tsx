@@ -67,6 +67,7 @@ const FormularioVentaMultiple = () => {
 
   // ── Estado asesor ────────────────────────────────────────────────────────
   const [comisionesHoy, setComisionesHoy] = useState<any>(null);
+  const [sinCiclo, setSinCiclo] = useState(false);
 
   const token = localStorage.getItem('token');
   const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -97,6 +98,7 @@ const FormularioVentaMultiple = () => {
       setComisionesHoy(res.data);
     } catch (err: any) {
       if (err.response?.status === 404) {
+        setSinCiclo(true);
         setComisionesHoy({ total_accesorios: 0, total_telefonos: 0, total_chips: 0, total_general: 0, ventas_chips: [], ventas_accesorios: [], ventas_telefonos: [] });
       } else {
         console.error('Error fetching comisiones del día:', err);
@@ -284,8 +286,8 @@ const FormularioVentaMultiple = () => {
   };
 
   // ── Cálculos asesor del día ──────────────────────────────────────────────
-  const ventasHoyAcc = ventas.filter((v) => v.tipo_producto === 'accesorios' && v.fecha === HOY);
-  const ventasHoyTel = ventas.filter((v) => v.tipo_producto === 'telefono' && v.fecha === HOY);
+  const ventasHoyAcc = ventas.filter((v) => v.tipo_producto === 'accesorios' && v.fecha?.startsWith(HOY));
+  const ventasHoyTel = ventas.filter((v) => v.tipo_producto === 'telefono' && v.fecha?.startsWith(HOY));
   // Chips: el endpoint ya filtra por HOY, no se necesita filtro adicional
   const chipsHoy: any[] = comisionesHoy?.ventas_chips || [];
 
@@ -505,6 +507,12 @@ const FormularioVentaMultiple = () => {
             <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>
               Comisiones del día
             </Typography>
+
+            {sinCiclo && (
+              <Alert severity="warning" sx={{ mb: 1.5, fontSize: 12 }}>
+                Sin ciclo de comisiones activo para hoy. Contacta al administrador.
+              </Alert>
+            )}
 
             <Box display="flex" flexDirection="column" gap={1}>
               <Box display="flex" justifyContent="space-between">
