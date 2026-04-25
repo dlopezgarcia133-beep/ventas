@@ -10,7 +10,7 @@ import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
-import { InventarioGeneral, ProductoEnVenta, Usuario, Venta } from '../Types';
+import { InventarioGeneral, ProductoEnVenta, Usuario, Venta, VentaChip } from '../Types';
 import { useNavigate } from 'react-router-dom';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -257,6 +257,7 @@ const FormularioVentaMultiple = () => {
   const filasPorPagina = 10;
 
   // ── Estado asesor ────────────────────────────────────────────────────────
+  const [chipsDelDia, setChipsDelDia] = useState<VentaChip[]>([]);
   const [comisionesHoy, setComisionesHoy] = useState<any>(null);
   const [sinCiclo, setSinCiclo] = useState(false);
   const [tabAsesor, setTabAsesor] = useState(0);
@@ -312,6 +313,22 @@ const FormularioVentaMultiple = () => {
       if (err.response?.status === 404) {
         setComisionesMisVentas({ total_accesorios: 0, total_telefonos: 0, ventas_accesorios: [], ventas_telefonos: [] });
       }
+    }
+  };
+
+  const fetchChipsDelDia = async () => {
+    try {
+      const res = await axios.get<VentaChip[]>(
+        `${process.env.REACT_APP_API_URL}/ventas/venta_chips`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      const usuario = localStorage.getItem('usuario') || '';
+      const hoy = new Date().toLocaleDateString('en-CA');
+      setChipsDelDia(
+        res.data.filter((c) => c.fecha === hoy && c.empleado?.username === usuario),
+      );
+    } catch (err) {
+      console.error('Error al cargar chips del día:', err);
     }
   };
 
@@ -403,6 +420,7 @@ const FormularioVentaMultiple = () => {
     if (rol === 'asesor') {
       setFecha(HOY);
       fetchComisionesHoy();
+      fetchChipsDelDia();
     }
   }, [rol]);
 
@@ -470,7 +488,7 @@ const FormularioVentaMultiple = () => {
       );
       setMensaje({ tipo: 'success', texto: 'Venta de chip registrada correctamente' });
       setTipoChip(''); setNumero(''); setRecarga(''); settelefono('');
-      if (rol === 'asesor') { fetchVentas(); fetchComisionesHoy(); }
+      if (rol === 'asesor') { fetchVentas(); fetchComisionesHoy(); fetchChipsDelDia(); }
     } catch (err: any) {
       setMensaje({ tipo: 'error', texto: err?.response?.data?.detail || 'Error al registrar la venta' });
     }
@@ -526,10 +544,7 @@ const FormularioVentaMultiple = () => {
   // ── Cálculos asesor del día ──────────────────────────────────────────────
   const ventasHoyAcc = ventas.filter((v) => v.tipo_producto === 'accesorios' && v.fecha?.startsWith(HOY)).sort((a, b) => a.producto.localeCompare(b.producto, 'es'));
   const ventasHoyTel = ventas.filter((v) => v.tipo_producto === 'telefono' && v.fecha?.startsWith(HOY)).sort((a, b) => a.producto.localeCompare(b.producto, 'es'));
-  const usuarioActual = localStorage.getItem('usuario') || '';
-  const chipsHoy = ventas.filter(
-    (v: any) => v.tipo_producto === 'chip' && v.fecha?.startsWith(HOY) && v.empleado?.username === usuarioActual,
-  );
+  const chipsHoy = chipsDelDia;
 
   const comisionAccHoy  = ventasHoyAcc.filter((v) => !v.cancelada).reduce((s, v) => s + calcComision(v), 0);
   const comisionTelHoy  = ventasHoyTel.filter((v) => !v.cancelada).reduce((s, v) => s + calcComision(v), 0);
@@ -737,9 +752,9 @@ const FormularioVentaMultiple = () => {
                     ) : (
                       chipsHoy.map((c: any, i: number) => (
                         <tr key={i}>
-                          <td style={tdStyle}>{c.producto ?? c.tipo_chip}</td>
+                          <td style={tdStyle}>{c.tipo_chip}</td>
                           <td style={tdStyle}>{c.numero_telefono}</td>
-                          <td style={tdStyle}>${typeof c.monto_recarga === 'number' ? c.monto_recarga.toFixed(2) : (typeof c.precio_unitario === 'number' ? c.precio_unitario.toFixed(2) : '0.00')}</td>
+                          <td style={tdStyle}>${c.monto_recarga.toFixed(2)}</td>
                         </tr>
                       ))
                     )}
