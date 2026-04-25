@@ -223,8 +223,8 @@ const COMISIONES_EKT: ComisionChip[] = [
 ];
 
 const COMISIONES_COPPEL: ComisionChip[] = [
-  { tipo: 'Teléfono Activado de Cadenas', comision: '$40' },
-  { tipo: 'Chip Express Coppel',          comision: '$10 / $15', nota: 'Recarga $0-50 / $51-100' },
+  { tipo: 'Teléfono Activado de Cadenas', comision: 'Depende del valor del equipo' },
+  { tipo: 'Chip Express Coppel',          comision: '$15' },
   { tipo: 'Portabilidad Coppel',          comision: '$25' },
 ];
 
@@ -1076,7 +1076,7 @@ const FormularioVentaMultiple = () => {
                         <tr key={item.tipo}>
                           <td style={tdStyle}>{item.tipo}</td>
                           <td style={{ ...tdStyle, fontWeight: 700, color: '#16a34a' }}>
-                            {item.comision.startsWith('$') ? item.comision : `$${item.comision}`}
+                            {item.comision}
                           </td>
                         </tr>
                       ))}
