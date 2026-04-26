@@ -261,14 +261,14 @@ function getCiclos(): Ciclo[] {
   while (true) {
     const inicio = new Date(current);
     const fin = new Date(current);
-    fin.setDate(fin.getDate() + 6);    // sábado + 6 = viernes
+    fin.setDate(fin.getDate() + 6);
     const pago = new Date(fin);
-    pago.setDate(pago.getDate() + 12); // viernes + 12 = miércoles
-    if (pago > hoy) break;             // ciclo visible solo cuando su miércoles de pago llega
-    ciclos.push({ inicio, fin, pago });
+    pago.setDate(pago.getDate() + 12);
+    ciclos.push({ inicio, fin, pago }); // siempre incluir al menos el primer ciclo
+    if (pago > hoy) break;              // cada miércoles de pago que pasa habilita el siguiente
     current.setDate(current.getDate() + 7);
   }
-  return ciclos.reverse(); // más reciente primero
+  return ciclos.reverse();
 }
 
 function fmtDiaMes(d: Date): string {
@@ -553,13 +553,11 @@ const FormularioVentaMultiple = () => {
   useEffect(() => {
     if (rol === 'asesor' && esCadenas && tabAsesor === 3) {
       const ciclos = getCiclos();
-      if (ciclos.length > 0) {
-        const c = ciclos[nominaCicloIdx] ?? ciclos[0];
-        fetchNominaChips(
-          c.inicio.toLocaleDateString('en-CA'),
-          c.fin.toLocaleDateString('en-CA'),
-        );
-      }
+      const c = ciclos[nominaCicloIdx] ?? ciclos[0];
+      fetchNominaChips(
+        c.inicio.toLocaleDateString('en-CA'),
+        c.fin.toLocaleDateString('en-CA'),
+      );
     }
   }, [tabAsesor, nominaCicloIdx, rol]);
 
@@ -1257,13 +1255,6 @@ const FormularioVentaMultiple = () => {
         {/* ── Tab NÓMINA (solo Cadenas C.) ── */}
         {tabAsesor === 3 && esCadenas && (() => {
           const ciclos = getCiclos();
-          if (ciclos.length === 0) {
-            return (
-              <Box sx={{ py: 4, textAlign: 'center' }}>
-                <Typography color="text.secondary">No hay ciclos cerrados disponibles aún.</Typography>
-              </Box>
-            );
-          }
           const cicloActual = ciclos[nominaCicloIdx] ?? ciclos[0];
           const incubadora = nominaChips.filter((c) => c.es_incubadora);
           const totalCobrar = nominaChips
