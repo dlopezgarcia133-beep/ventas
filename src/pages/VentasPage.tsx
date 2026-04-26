@@ -3,14 +3,15 @@ import {
   Box, TextField, Button, Typography, Autocomplete, Alert, Paper,
   TableContainer, MenuItem, FormControlLabel, FormControl, FormLabel,
   RadioGroup, Radio, TablePagination, Table, TableHead, TableRow,
-  TableCell, TableBody, Divider, Chip, IconButton, Tabs, Tab,
+  TableCell, TableBody, Divider, Chip, IconButton, Tabs, Tab, useMediaQuery,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
-import { InventarioGeneral, ProductoEnVenta, Usuario, Venta } from '../Types';
+import { InventarioGeneral, ProductoEnVenta, Usuario, Venta, VentaChip } from '../Types';
 import { useNavigate } from 'react-router-dom';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -172,7 +173,124 @@ const calcComision = (v: Venta): number => {
 
 // ────────────────────────────────────────────────────────────────────────────
 
+const CHIP_OPCIONES_TODAS = [
+  { value: 'Chip Equipo',         label: 'Chip Equipo / Promo / ATO' },
+  { value: 'Chip Express',        label: 'Chip Express / ATO' },
+  { value: 'Portabilidad',        label: 'Portabilidad / ATO' },
+  { value: 'Chip Cero/Libre',     label: 'Chip Cero / Libre / EKT' },
+  { value: 'Chip Preactivado',    label: 'Chip Preactivado / Otras Cadenas' },
+  { value: 'Chip Coppel',         label: 'Chip Express Coppel' },
+  { value: 'Portabilidad Coppel', label: 'Portabilidad Coppel' },
+  { value: 'Porta Otras cadenas', label: 'Portabilidad / EKT / Otras Cadenas' },
+  { value: 'Activacion',          label: 'Telefono Activado de Cadenas' },
+];
+
+const CHIP_OPCIONES_EKT = [
+  { value: 'Activacion',          label: 'Telefono Activado de Cadenas' },
+  { value: 'Chip Cero/Libre',     label: 'Chip Cero / Libre / EKT' },
+  { value: 'Chip Preactivado',    label: 'Chip Preactivado / Otras Cadenas' },
+  { value: 'Porta Otras cadenas', label: 'Portabilidad / EKT / Otras Cadenas' },
+];
+
+const CHIP_OPCIONES_COPPEL = [
+  { value: 'Activacion',          label: 'Telefono Activado de Cadenas' },
+  { value: 'Chip Coppel',         label: 'Chip Express Coppel' },
+  { value: 'Portabilidad Coppel', label: 'Portabilidad Coppel' },
+];
+
+const CHIP_OPCIONES_OTRAS_CADENAS = [
+  { value: 'Activacion',          label: 'Telefono Activado de Cadenas' },
+  { value: 'Chip Preactivado',    label: 'Chip Preactivado / Otras Cadenas' },
+  { value: 'Porta Otras cadenas', label: 'Portabilidad / EKT / Otras Cadenas' },
+];
+
+const CHIP_OPCIONES_POR_CADENA: Record<string, typeof CHIP_OPCIONES_TODAS> = {
+  EKT:      CHIP_OPCIONES_EKT,
+  COPPEL:   CHIP_OPCIONES_COPPEL,
+  CHEDRAUI: CHIP_OPCIONES_OTRAS_CADENAS,
+  SUBURBIA: CHIP_OPCIONES_OTRAS_CADENAS,
+  AURRERA:  CHIP_OPCIONES_OTRAS_CADENAS,
+  SAMS:     CHIP_OPCIONES_OTRAS_CADENAS,
+  WALMART:  CHIP_OPCIONES_OTRAS_CADENAS,
+};
+
+interface ComisionChip { tipo: string; comision: string; nota?: string; }
+
+const COMISIONES_EKT: ComisionChip[] = [
+  { tipo: 'Teléfono Activado de Cadenas',       comision: '$40' },
+  { tipo: 'Chip Cero / Libre / EKT',            comision: '$25' },
+  { tipo: 'Chip Preactivado / Otras Cadenas',   comision: '$35' },
+  { tipo: 'Portabilidad / EKT / Otras Cadenas', comision: '$50' },
+];
+
+const COMISIONES_COPPEL: ComisionChip[] = [
+  { tipo: 'Teléfono Activado de Cadenas', comision: 'Depende del valor del equipo' },
+  { tipo: 'Chip Express Coppel',          comision: '$15' },
+  { tipo: 'Portabilidad Coppel',          comision: '$25' },
+];
+
+const COMISIONES_OTRAS_CADENAS: ComisionChip[] = [
+  { tipo: 'Teléfono Activado de Cadenas',       comision: '$45' },
+  { tipo: 'Chip Preactivado / Otras Cadenas',   comision: '$35' },
+  { tipo: 'Portabilidad / EKT / Otras Cadenas', comision: '$50' },
+];
+
+const COMISIONES_POR_CADENA: Record<string, ComisionChip[]> = {
+  EKT:      COMISIONES_EKT,
+  COPPEL:   COMISIONES_COPPEL,
+  CHEDRAUI: COMISIONES_OTRAS_CADENAS,
+  SUBURBIA: COMISIONES_OTRAS_CADENAS,
+  AURRERA:  COMISIONES_OTRAS_CADENAS,
+  SAMS:     COMISIONES_OTRAS_CADENAS,
+  WALMART:  COMISIONES_OTRAS_CADENAS,
+};
+
+// ─── Helpers de ciclos de nómina ─────────────────────────────────────────────
+
+const NOMINA_SYSTEM_START = new Date(2026, 3, 11); // 11 Abr 2026 (sábado)
+const MESES_CORTOS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+interface Ciclo { inicio: Date; fin: Date; pago: Date; }
+
+function getCiclos(): Ciclo[] {
+  const ciclos: Ciclo[] = [];
+  const current = new Date(NOMINA_SYSTEM_START);
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
+  while (true) {
+    const inicio = new Date(current);
+    const fin = new Date(current);
+    fin.setDate(fin.getDate() + 6);    // sábado + 6 = viernes
+    const pago = new Date(fin);
+    pago.setDate(pago.getDate() + 12); // viernes + 12 = miércoles
+    if (pago > hoy) break;             // ciclo visible solo cuando su miércoles de pago llega
+    ciclos.push({ inicio, fin, pago });
+    current.setDate(current.getDate() + 7);
+  }
+  return ciclos.reverse(); // más reciente primero
+}
+
+function fmtDiaMes(d: Date): string {
+  return `${d.getDate()} ${MESES_CORTOS[d.getMonth()]}`;
+}
+
+function labelCiclo(c: Ciclo): string {
+  return `${fmtDiaMes(c.inicio)} - ${fmtDiaMes(c.fin)} ${c.fin.getFullYear()} · Pago: ${fmtDiaMes(c.pago)}`;
+}
+
+function getEstadoChip(c: VentaChip): { label: string; color: string } {
+  if (c.es_incubadora)      return { label: 'En incubadora',        color: '#f97316' };
+  if (c.descripcion_rechazo) return { label: 'Rechazado',            color: '#ef4444' };
+  if (c.validado)            return { label: 'Validado',             color: '#16a34a' };
+  return                            { label: 'Esperando validación', color: '#64748b' };
+}
+
 const FormularioVentaMultiple = () => {
+  const moduloLocal = localStorage.getItem('modulo') || '';
+  const esCadenas = moduloLocal.toLowerCase().includes('cadena');
+  const isMobile = useMediaQuery('(max-width:767px)');
+
   // ── Estado general ───────────────────────────────────────────────────────
   const [productos, setProductos] = useState<InventarioGeneral[]>([]);
   const [ventas, setVentas] = useState<Venta[]>([]);
@@ -186,7 +304,7 @@ const FormularioVentaMultiple = () => {
   const [carrito, setCarrito] = useState<ProductoEnVenta[]>([]);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
 
-  const [tipoVenta, setTipoVenta] = useState<'accesorio' | 'chip' | 'telefono'>('accesorio');
+  const [tipoVenta, setTipoVenta] = useState<'accesorio' | 'chip' | 'telefono'>(esCadenas ? 'chip' : 'accesorio');
   const [tipoChip, setTipoChip] = useState('');
   const [numero, setNumero] = useState('');
   const [recarga, setRecarga] = useState('');
@@ -213,6 +331,8 @@ const FormularioVentaMultiple = () => {
   const filasPorPagina = 10;
 
   // ── Estado asesor ────────────────────────────────────────────────────────
+  const [chipsDelDia, setChipsDelDia] = useState<VentaChip[]>([]);
+  const [misActivacionesData, setMisActivacionesData] = useState<VentaChip[]>([]);
   const [comisionesHoy, setComisionesHoy] = useState<any>(null);
   const [sinCiclo, setSinCiclo] = useState(false);
   const [tabAsesor, setTabAsesor] = useState(0);
@@ -220,6 +340,8 @@ const FormularioVentaMultiple = () => {
   const [misVentasData, setMisVentasData] = useState<Venta[]>([]);
   const [comisionesMisVentas, setComisionesMisVentas] = useState<any>(null);
   const [catalogoComisiones, setCatalogoComisiones] = useState<{ producto: string; cantidad: number }[]>([]);
+  const [nominaCicloIdx, setNominaCicloIdx] = useState(0);
+  const [nominaChips, setNominaChips] = useState<VentaChip[]>([]);
 
   const token = localStorage.getItem('token');
   const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -268,6 +390,52 @@ const FormularioVentaMultiple = () => {
       if (err.response?.status === 404) {
         setComisionesMisVentas({ total_accesorios: 0, total_telefonos: 0, ventas_accesorios: [], ventas_telefonos: [] });
       }
+    }
+  };
+
+  const fetchChipsDelDia = async () => {
+    try {
+      const res = await axios.get<VentaChip[]>(
+        `${process.env.REACT_APP_API_URL}/ventas/venta_chips`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      const usuario = localStorage.getItem('usuario') || '';
+      const hoy = new Date().toLocaleDateString('en-CA');
+      setChipsDelDia(
+        res.data.filter((c) => c.fecha === hoy && c.empleado?.username === usuario),
+      );
+    } catch (err) {
+      console.error('Error al cargar chips del día:', err);
+    }
+  };
+
+  const fetchMisActivaciones = async (fecha: string) => {
+    try {
+      const res = await axios.get<VentaChip[]>(
+        `${process.env.REACT_APP_API_URL}/ventas/venta_chips`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      const usuario = localStorage.getItem('usuario') || '';
+      setMisActivacionesData(
+        res.data.filter((c) => c.fecha === fecha && c.empleado?.username === usuario),
+      );
+    } catch (err) {
+      console.error('Error al cargar mis activaciones:', err);
+    }
+  };
+
+  const fetchNominaChips = async (inicio: string, fin: string) => {
+    try {
+      const res = await axios.get<VentaChip[]>(
+        `${process.env.REACT_APP_API_URL}/ventas/venta_chips`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      const usr = localStorage.getItem('usuario') || '';
+      setNominaChips(
+        res.data.filter((c) => c.fecha >= inicio && c.fecha <= fin && c.empleado?.username === usr),
+      );
+    } catch (err) {
+      console.error('Error al cargar chips de nómina:', err);
     }
   };
 
@@ -359,6 +527,7 @@ const FormularioVentaMultiple = () => {
     if (rol === 'asesor') {
       setFecha(HOY);
       fetchComisionesHoy();
+      fetchChipsDelDia();
     }
   }, [rol]);
 
@@ -368,14 +537,31 @@ const FormularioVentaMultiple = () => {
 
   useEffect(() => {
     if (rol === 'asesor' && tabAsesor === 1) {
-      fetchMisVentas(misVentasFecha);
-      fetchComisionesPorFecha(misVentasFecha);
+      if (esCadenas) {
+        fetchMisActivaciones(misVentasFecha);
+      } else {
+        fetchMisVentas(misVentasFecha);
+        fetchComisionesPorFecha(misVentasFecha);
+      }
     }
   }, [tabAsesor, misVentasFecha, rol]);
 
   useEffect(() => {
     if (rol === 'asesor' && tabAsesor === 2) fetchCatalogoComisiones();
   }, [tabAsesor, rol]);
+
+  useEffect(() => {
+    if (rol === 'asesor' && esCadenas && tabAsesor === 3) {
+      const ciclos = getCiclos();
+      if (ciclos.length > 0) {
+        const c = ciclos[nominaCicloIdx] ?? ciclos[0];
+        fetchNominaChips(
+          c.inicio.toLocaleDateString('en-CA'),
+          c.fin.toLocaleDateString('en-CA'),
+        );
+      }
+    }
+  }, [tabAsesor, nominaCicloIdx, rol]);
 
   // ── Acciones ─────────────────────────────────────────────────────────────
   const agregarAlCarrito = () => {
@@ -426,7 +612,7 @@ const FormularioVentaMultiple = () => {
       );
       setMensaje({ tipo: 'success', texto: 'Venta de chip registrada correctamente' });
       setTipoChip(''); setNumero(''); setRecarga(''); settelefono('');
-      if (rol === 'asesor') { fetchVentas(); fetchComisionesHoy(); }
+      if (rol === 'asesor') { fetchVentas(); fetchComisionesHoy(); fetchChipsDelDia(); }
     } catch (err: any) {
       setMensaje({ tipo: 'error', texto: err?.response?.data?.detail || 'Error al registrar la venta' });
     }
@@ -482,8 +668,7 @@ const FormularioVentaMultiple = () => {
   // ── Cálculos asesor del día ──────────────────────────────────────────────
   const ventasHoyAcc = ventas.filter((v) => v.tipo_producto === 'accesorios' && v.fecha?.startsWith(HOY)).sort((a, b) => a.producto.localeCompare(b.producto, 'es'));
   const ventasHoyTel = ventas.filter((v) => v.tipo_producto === 'telefono' && v.fecha?.startsWith(HOY)).sort((a, b) => a.producto.localeCompare(b.producto, 'es'));
-  // Chips: el endpoint ya filtra por HOY, no se necesita filtro adicional
-  const chipsHoy: any[] = comisionesHoy?.ventas_chips || [];
+  const chipsHoy = chipsDelDia;
 
   const comisionAccHoy  = ventasHoyAcc.filter((v) => !v.cancelada).reduce((s, v) => s + calcComision(v), 0);
   const comisionTelHoy  = ventasHoyTel.filter((v) => !v.cancelada).reduce((s, v) => s + calcComision(v), 0);
@@ -495,23 +680,27 @@ const FormularioVentaMultiple = () => {
 
   // ── Formulario (compartido) ───────────────────────────────────────────────
   const formulario = (
-    <Paper sx={{ borderRadius: 2, p: 2.5 }}>
-      <Typography variant="h5" gutterBottom fontWeight={700}>Registrar Venta</Typography>
+    <Paper sx={{ borderRadius: 2, p: { xs: 1.5, sm: 2.5 } }}>
+      <Typography variant="h5" gutterBottom fontWeight={700}>
+        {esCadenas ? 'Activaciones' : 'Registrar Venta'}
+      </Typography>
 
       {mensaje && <Alert severity={mensaje.tipo} sx={{ mb: 2 }}>{mensaje.texto}</Alert>}
 
-      <TextField
-        select label="Tipo de venta" value={tipoVenta}
-        onChange={(e) => { setTipoVenta(e.target.value as any); setMensaje(null); }}
-        fullWidth margin="normal"
-      >
-        <MenuItem value="accesorio">Accesorio</MenuItem>
-        <MenuItem value="chip">Chip</MenuItem>
-        <MenuItem value="telefono">Teléfono</MenuItem>
-      </TextField>
+      {!esCadenas && (
+        <TextField
+          select label="Tipo de venta" value={tipoVenta}
+          onChange={(e) => { setTipoVenta(e.target.value as any); setMensaje(null); }}
+          fullWidth margin="normal"
+        >
+          <MenuItem value="accesorio">Accesorio</MenuItem>
+          <MenuItem value="chip">Chip</MenuItem>
+          <MenuItem value="telefono">Teléfono</MenuItem>
+        </TextField>
+      )}
 
       {/* ── Accesorio ── */}
-      {tipoVenta === 'accesorio' && (
+      {!esCadenas && tipoVenta === 'accesorio' && (
         <>
           <Autocomplete
             options={productos
@@ -542,18 +731,15 @@ const FormularioVentaMultiple = () => {
       )}
 
       {/* ── Chip ── */}
-      {tipoVenta === 'chip' && (
+      {(esCadenas || tipoVenta === 'chip') && (
         <>
           <TextField select label="Chip" value={tipoChip} onChange={(e) => setTipoChip(e.target.value)} fullWidth margin="normal">
-            <MenuItem value="Chip Equipo">Chip Equipo / Promo / ATO</MenuItem>
-            <MenuItem value="Chip Express">Chip Express / ATO</MenuItem>
-            <MenuItem value="Portabilidad">Portabilidad / ATO</MenuItem>
-            <MenuItem value="Chip Cero/Libre">Chip Cero / Libre / EKT</MenuItem>
-            <MenuItem value="Chip Preactivado">Chip Preactivado / Otras Cadenas</MenuItem>
-            <MenuItem value="Chip Coppel">Chip Express Coppel</MenuItem>
-            <MenuItem value="Portabilidad Coppel">Portabilidad Coppel</MenuItem>
-            <MenuItem value="Porta Otras cadenas">Portabilidad / EKT / Otras Cadenas</MenuItem>
-            <MenuItem value="Activacion">Telefono Activado de Cadenas</MenuItem>
+            {(esCadenas
+              ? CHIP_OPCIONES_POR_CADENA[sessionStorage.getItem('cadena_seleccionada') || ''] ?? CHIP_OPCIONES_TODAS
+              : CHIP_OPCIONES_TODAS
+            ).map((op) => (
+              <MenuItem key={op.value} value={op.value}>{op.label}</MenuItem>
+            ))}
           </TextField>
           <TextField label="Número" type="tel" value={numero} onChange={(e) => setNumero(e.target.value)} fullWidth margin="normal" />
           <TextField label="Recarga" type="number" value={recarga} onChange={(e) => setRecarga(e.target.value)} fullWidth margin="normal" />
@@ -569,7 +755,7 @@ const FormularioVentaMultiple = () => {
       )}
 
       {/* ── Teléfono ── */}
-      {tipoVenta === 'telefono' && (
+      {!esCadenas && tipoVenta === 'telefono' && (
         <>
           <Autocomplete
             freeSolo loading={buscando} options={opcionesTelefonos}
@@ -629,29 +815,39 @@ const FormularioVentaMultiple = () => {
     ].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 
     return (
-      <Box sx={{ mt: 2, px: 2 }}>
+      <Box sx={{ mt: { xs: 1, sm: 2 }, px: { xs: 1, sm: 2 } }}>
         <Tabs
           value={tabAsesor}
           onChange={(_, v) => setTabAsesor(v)}
-          sx={{ mb: 2, borderBottom: '1px solid #e2e8f0' }}
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{ mb: 2, borderBottom: '1px solid #e2e8f0', minHeight: 44 }}
           TabIndicatorProps={{ style: { backgroundColor: '#f97316' } }}
         >
           <Tab
-            icon={<ConfirmationNumberIcon fontSize="small" />}
+            icon={<ConfirmationNumberIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />}
             iconPosition="start"
             label="TICKET"
-            sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
+            sx={{ fontWeight: 700, minHeight: 44, fontSize: { xs: 11, sm: 13 }, px: { xs: 1, sm: 2 }, '&.Mui-selected': { color: '#f97316' } }}
           />
           <Tab
-            label="MIS VENTAS"
-            sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
+            label={esCadenas ? 'MIS ACTIVACIONES' : 'MIS VENTAS'}
+            sx={{ fontWeight: 700, minHeight: 44, fontSize: { xs: 11, sm: 13 }, px: { xs: 1, sm: 2 }, '&.Mui-selected': { color: '#f97316' } }}
           />
           <Tab
-            icon={<MonetizationOnIcon fontSize="small" />}
+            icon={<MonetizationOnIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />}
             iconPosition="start"
-            label="COMISIONES"
-            sx={{ fontWeight: 700, minHeight: 44, '&.Mui-selected': { color: '#f97316' } }}
+            label={esCadenas ? 'LISTA DE COMISIONES' : 'COMISIONES'}
+            sx={{ fontWeight: 700, minHeight: 44, fontSize: { xs: 11, sm: 13 }, px: { xs: 1, sm: 2 }, '&.Mui-selected': { color: '#f97316' } }}
           />
+          {esCadenas && (
+            <Tab
+              icon={<AccountBalanceWalletIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />}
+              iconPosition="start"
+              label="NÓMINA"
+              sx={{ fontWeight: 700, minHeight: 44, fontSize: { xs: 11, sm: 13 }, px: { xs: 1, sm: 2 }, '&.Mui-selected': { color: '#f97316' } }}
+            />
+          )}
         </Tabs>
 
         {/* ── Tab TICKET ── */}
@@ -665,241 +861,570 @@ const FormularioVentaMultiple = () => {
             {/* Columna derecha: tabla del día + comisiones */}
             <Grid item xs={12} md={6}>
 
-          {/* ── Ventas del día ── */}
-          <Paper sx={{ p: 2, mb: 2 }}>
-            <Typography variant="h6" fontWeight={700} gutterBottom>
-              Ventas del día
-            </Typography>
-
-            <Box sx={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    <th style={thStyle}>Tipo</th>
-                    <th style={thStyle}>Descripción</th>
-                    <th style={thStyle}>Precio</th>
-                    <th style={thStyle}>Comisión</th>
-                    <th style={thStyle}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ventasHoyAcc.map((v) => (
-                    <tr key={`acc-${v.id}`}>
-                      <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
-                      <td style={tdStyle}>{v.producto}</td>
-                      <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
-                      <td style={tdStyle}>${fmt(calcComision(v))}</td>
-                      <td style={tdStyle}>
-                        <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </td>
-                    </tr>
+          {esCadenas ? (
+            /* ── Activaciones del día (Cadenas C.) ── */
+            <Paper sx={{ p: { xs: 1.5, sm: 2 } }}>
+              <Typography variant="h6" fontWeight={700} gutterBottom>
+                Activaciones del día
+              </Typography>
+              {chipsHoy.length === 0 ? (
+                <Typography variant="body2" sx={{ color: '#94a3b8', textAlign: 'center', py: 2 }}>
+                  Sin activaciones registradas hoy
+                </Typography>
+              ) : isMobile ? (
+                /* Cards on mobile */
+                <Box>
+                  {chipsHoy.map((c: any, i: number) => (
+                    <Box key={i} sx={{ p: 1.5, mb: 1, border: '1px solid #e2e8f0', borderRadius: 1.5, bgcolor: '#f8fafc' }}>
+                      <Typography variant="body2" fontWeight={700} sx={{ mb: 0.5, color: '#1e293b', fontSize: 13 }}>
+                        {c.tipo_chip}
+                      </Typography>
+                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12 }}>
+                          {c.numero_telefono}
+                        </Typography>
+                        <Typography variant="body2" fontWeight={700} sx={{ color: '#16a34a', fontSize: 13 }}>
+                          ${(c.monto_recarga ?? 0).toFixed(2)}
+                        </Typography>
+                      </Box>
+                    </Box>
                   ))}
+                </Box>
+              ) : (
+                /* Table on desktop */
+                <Box sx={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        <th style={thStyle}>Tipo de Chip</th>
+                        <th style={thStyle}>Número</th>
+                        <th style={thStyle}>Recarga</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {chipsHoy.map((c: any, i: number) => (
+                        <tr key={i}>
+                          <td style={tdStyle}>{c.tipo_chip}</td>
+                          <td style={tdStyle}>{c.numero_telefono}</td>
+                          <td style={tdStyle}>${(c.monto_recarga ?? 0).toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </Box>
+              )}
+              {chipsHoy.length > 0 && (
+                <Box mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Total: <strong>{chipsHoy.length}</strong> activación{chipsHoy.length !== 1 ? 'es' : ''}
+                  </Typography>
+                </Box>
+              )}
+            </Paper>
+          ) : (
+            <>
+              {/* ── Ventas del día ── */}
+              <Paper sx={{ p: 2, mb: 2 }}>
+                <Typography variant="h6" fontWeight={700} gutterBottom>
+                  Ventas del día
+                </Typography>
+                <Box sx={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        <th style={thStyle}>Tipo</th>
+                        <th style={thStyle}>Descripción</th>
+                        <th style={thStyle}>Precio</th>
+                        <th style={thStyle}>Comisión</th>
+                        <th style={thStyle}></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ventasHoyAcc.map((v) => (
+                        <tr key={`acc-${v.id}`}>
+                          <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
+                          <td style={tdStyle}>{v.producto}</td>
+                          <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                          <td style={tdStyle}>${fmt(calcComision(v))}</td>
+                          <td style={tdStyle}>
+                            <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </td>
+                        </tr>
+                      ))}
+                      {ventasHoyTel.map((v) => (
+                        <tr key={`tel-${v.id}`}>
+                          <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
+                          <td style={tdStyle}>{v.producto}</td>
+                          <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                          <td style={tdStyle}>${fmt(calcComision(v))}</td>
+                          <td style={tdStyle}>
+                            <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </td>
+                        </tr>
+                      ))}
+                      {ventasHoyAcc.length === 0 && ventasHoyTel.length === 0 && (
+                        <tr>
+                          <td colSpan={5} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
+                            Sin ventas registradas hoy
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </Box>
+                <Box display="flex" justifyContent="flex-start" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Accesorios: <strong>{ventasHoyAcc.length}</strong> | <strong>${fmt(totalPesosAcc)}</strong>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Teléfonos: <strong>{ventasHoyTel.length}</strong> | <strong>${fmt(totalPesosTel)}</strong>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Comisión total: <strong>${fmt(totalComisionHoy)}</strong>
+                  </Typography>
+                </Box>
+              </Paper>
 
-                  {ventasHoyTel.map((v) => (
-                    <tr key={`tel-${v.id}`}>
-                      <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
-                      <td style={tdStyle}>{v.producto}</td>
-                      <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
-                      <td style={tdStyle}>${fmt(calcComision(v))}</td>
-                      <td style={tdStyle}>
-                        <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </td>
-                    </tr>
-                  ))}
-
-                  {ventasHoyAcc.length === 0 && ventasHoyTel.length === 0 && (
-                    <tr>
-                      <td colSpan={5} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
-                        Sin ventas registradas hoy
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </Box>
-
-            <Box display="flex" justifyContent="flex-start" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
-              <Typography variant="body2" color="text.secondary">
-                Accesorios: <strong>{ventasHoyAcc.length}</strong> | <strong>${fmt(totalPesosAcc)}</strong>
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Teléfonos: <strong>{ventasHoyTel.length}</strong> | <strong>${fmt(totalPesosTel)}</strong>
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Comisión total: <strong>${fmt(totalComisionHoy)}</strong>
-              </Typography>
-            </Box>
-          </Paper>
-
-          {/* ── Comisiones del día ── */}
-          <Paper sx={{ p: 2.5, bgcolor: '#f97316', color: 'white', border: 'none' }}>
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>
-              Comisiones del día
-            </Typography>
-
-            {sinCiclo && (
-              <Alert severity="warning" sx={{ mb: 1.5, fontSize: 12 }}>
-                Sin ciclo de comisiones activo para hoy. Contacta al administrador.
-              </Alert>
-            )}
-
-            <Box display="flex" flexDirection="column" gap={1}>
-              <Box display="flex" justifyContent="space-between">
-                <Typography variant="body2" sx={{ opacity: 0.85 }}>Accesorios</Typography>
-                <Typography variant="body2" fontWeight={600}>${comisionAccHoy.toFixed(2)}</Typography>
-              </Box>
-              <Box display="flex" justifyContent="space-between">
-                <Typography variant="body2" sx={{ opacity: 0.85 }}>Teléfonos</Typography>
-                <Typography variant="body2" fontWeight={600}>${comisionTelHoy.toFixed(2)}</Typography>
-              </Box>
-            </Box>
-
-            <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.35)' }} />
-
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="body1" fontWeight={700}>Total comisionado</Typography>
-              <Typography variant="h5" fontWeight={800}>${totalComisionHoy.toFixed(2)}</Typography>
-            </Box>
-          </Paper>
+              {/* ── Comisiones del día ── */}
+              <Paper sx={{ p: 2.5, bgcolor: '#f97316', color: 'white', border: 'none' }}>
+                <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>
+                  Comisiones del día
+                </Typography>
+                {sinCiclo && (
+                  <Alert severity="warning" sx={{ mb: 1.5, fontSize: 12 }}>
+                    Sin ciclo de comisiones activo para hoy. Contacta al administrador.
+                  </Alert>
+                )}
+                <Box display="flex" flexDirection="column" gap={1}>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="body2" sx={{ opacity: 0.85 }}>Accesorios</Typography>
+                    <Typography variant="body2" fontWeight={600}>${comisionAccHoy.toFixed(2)}</Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="body2" sx={{ opacity: 0.85 }}>Teléfonos</Typography>
+                    <Typography variant="body2" fontWeight={600}>${comisionTelHoy.toFixed(2)}</Typography>
+                  </Box>
+                </Box>
+                <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.35)' }} />
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="body1" fontWeight={700}>Total comisionado</Typography>
+                  <Typography variant="h5" fontWeight={800}>${totalComisionHoy.toFixed(2)}</Typography>
+                </Box>
+              </Paper>
+            </>
+          )}
 
           </Grid>
           </Grid>
         )}
 
-        {/* ── Tab MIS VENTAS ── */}
+        {/* ── Tab MIS VENTAS / MIS ACTIVACIONES ── */}
         {tabAsesor === 1 && (
           <Box>
             <Box sx={{ mb: 2 }}>
               <TextField
-                type="date"
-                size="small"
-                label="Fecha"
+                type="date" size="small" label="Fecha"
                 value={misVentasFecha}
                 onChange={(e) => setMisVentasFecha(e.target.value)}
                 InputLabelProps={{ shrink: true }}
               />
             </Box>
-            <Paper sx={{ p: 2 }}>
-              <Box sx={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr>
-                      <th style={thStyle}>Tipo</th>
-                      <th style={thStyle}>Descripción</th>
-                      <th style={thStyle}>Precio</th>
-                      <th style={thStyle}>Comisión</th>
-                      <th style={thStyle}>Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {misVentasAcc.map((v) => (
-                      <tr key={`mv-acc-${v.id}`}>
-                        <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
-                        <td style={tdStyle}>{v.producto}</td>
-                        <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
-                        <td style={tdStyle}>${fmt(calcComision(v))}</td>
-                        <td style={tdStyle}>
-                          <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
-                            {v.cancelada ? 'Cancelada' : 'Activa'}
-                          </span>
-                        </td>
-                      </tr>
+
+            {esCadenas ? (
+              /* ── Mis Activaciones (Cadenas C.) ── */
+              <Paper sx={{ p: { xs: 1.5, sm: 2 } }}>
+                {misActivacionesData.length === 0 ? (
+                  <Typography variant="body2" sx={{ color: '#94a3b8', textAlign: 'center', py: 2 }}>
+                    Sin activaciones para esta fecha
+                  </Typography>
+                ) : isMobile ? (
+                  /* Cards on mobile */
+                  <Box>
+                    {misActivacionesData.map((c) => (
+                      <Box key={c.id} sx={{ p: 1.5, mb: 1, border: '1px solid #e2e8f0', borderRadius: 1.5, bgcolor: '#f8fafc' }}>
+                        <Typography variant="body2" fontWeight={700} sx={{ mb: 0.5, color: '#1e293b', fontSize: 13 }}>
+                          {c.tipo_chip}
+                        </Typography>
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12 }}>
+                            {c.numero_telefono}
+                          </Typography>
+                          <Typography variant="body2" fontWeight={700} sx={{ color: '#16a34a', fontSize: 13 }}>
+                            ${(c.monto_recarga ?? 0).toFixed(2)}
+                          </Typography>
+                        </Box>
+                      </Box>
                     ))}
-                    {misVentasTel.map((v) => (
-                      <tr key={`mv-tel-${v.id}`}>
-                        <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
-                        <td style={tdStyle}>{v.producto}</td>
-                        <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
-                        <td style={tdStyle}>${fmt(calcComision(v))}</td>
-                        <td style={tdStyle}>
-                          <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
-                            {v.cancelada ? 'Cancelada' : 'Activa'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                    {misVentasAcc.length === 0 && misVentasTel.length === 0 && (
+                  </Box>
+                ) : (
+                  /* Table on desktop */
+                  <Box sx={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr>
+                          <th style={thStyle}>Tipo de Chip</th>
+                          <th style={thStyle}>Número</th>
+                          <th style={thStyle}>Recarga</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {misActivacionesData.map((c) => (
+                          <tr key={c.id}>
+                            <td style={tdStyle}>{c.tipo_chip}</td>
+                            <td style={tdStyle}>{c.numero_telefono}</td>
+                            <td style={tdStyle}>${(c.monto_recarga ?? 0).toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </Box>
+                )}
+                {misActivacionesData.length > 0 && (
+                  <Box mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Total: <strong>{misActivacionesData.length}</strong> activación{misActivacionesData.length !== 1 ? 'es' : ''}
+                    </Typography>
+                  </Box>
+                )}
+              </Paper>
+            ) : (
+              /* ── Mis Ventas (otros asesores) ── */
+              <Paper sx={{ p: 2 }}>
+                <Box sx={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
                       <tr>
-                        <td colSpan={5} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
-                          Sin ventas para esta fecha
-                        </td>
+                        <th style={thStyle}>Tipo</th>
+                        <th style={thStyle}>Descripción</th>
+                        <th style={thStyle}>Precio</th>
+                        <th style={thStyle}>Comisión</th>
+                        <th style={thStyle}>Estado</th>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
-              </Box>
-              <Box display="flex" justifyContent="flex-start" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
-                <Typography variant="body2" color="text.secondary">
-                  Accesorios: <strong>{misVentasAcc.filter((v) => !v.cancelada).length}</strong>
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Teléfonos: <strong>{misVentasTel.filter((v) => !v.cancelada).length}</strong>
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Total vendido: <strong>${fmt(totalMisVentasPesos)}</strong>
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Comisión: <strong>${fmt(totalMisVentasComision)}</strong>
-                </Typography>
-              </Box>
-            </Paper>
+                    </thead>
+                    <tbody>
+                      {misVentasAcc.map((v) => (
+                        <tr key={`mv-acc-${v.id}`}>
+                          <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
+                          <td style={tdStyle}>{v.producto}</td>
+                          <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                          <td style={tdStyle}>${fmt(calcComision(v))}</td>
+                          <td style={tdStyle}>
+                            <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
+                              {v.cancelada ? 'Cancelada' : 'Activa'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                      {misVentasTel.map((v) => (
+                        <tr key={`mv-tel-${v.id}`}>
+                          <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
+                          <td style={tdStyle}>{v.producto}</td>
+                          <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                          <td style={tdStyle}>${fmt(calcComision(v))}</td>
+                          <td style={tdStyle}>
+                            <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
+                              {v.cancelada ? 'Cancelada' : 'Activa'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                      {misVentasAcc.length === 0 && misVentasTel.length === 0 && (
+                        <tr>
+                          <td colSpan={5} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
+                            Sin ventas para esta fecha
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </Box>
+                <Box display="flex" justifyContent="flex-start" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Accesorios: <strong>{misVentasAcc.filter((v) => !v.cancelada).length}</strong>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Teléfonos: <strong>{misVentasTel.filter((v) => !v.cancelada).length}</strong>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Total vendido: <strong>${fmt(totalMisVentasPesos)}</strong>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Comisión: <strong>${fmt(totalMisVentasComision)}</strong>
+                  </Typography>
+                </Box>
+              </Paper>
+            )}
           </Box>
         )}
 
         {/* ── Tab COMISIONES ── */}
         {tabAsesor === 2 && (
-          <Box sx={{ maxWidth: 680 }}>
-            <Paper sx={{ overflow: 'hidden' }}>
-              <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid #e2e8f0' }}>
-                <Typography variant="subtitle1" fontWeight={700}>
-                  Tasas de comisión configuradas
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Estas son las comisiones que se aplican a cada venta registrada.
-                </Typography>
-              </Box>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    <th style={{ ...thStyle, width: '50%' }}>Producto / Tipo de venta</th>
-                    <th style={{ ...thStyle, width: '25%' }}>Comisión</th>
-                    <th style={{ ...thStyle, width: '25%' }}>Tipo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tablaComisionesItems.map((item) => (
-                    <tr key={item.nombre}>
-                      <td style={tdStyle}>{item.nombre}</td>
-                      <td style={{ ...tdStyle, fontWeight: 600, color: '#16a34a' }}>${fmt(item.comision)}</td>
-                      <td style={tdStyle}>
-                        {item.esTelefono
-                          ? <Chip label="Teléfono" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
-                          : <Chip label="Accesorio" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
-                        }
-                      </td>
-                    </tr>
-                  ))}
-                  {tablaComisionesItems.length === 0 && (
+          <Box sx={{ maxWidth: { xs: '100%', sm: 680 } }}>
+            {esCadenas ? (() => {
+              const cadenaActual = sessionStorage.getItem('cadena_seleccionada') || '';
+              const items = COMISIONES_POR_CADENA[cadenaActual];
+              return (
+                <Paper sx={{ overflow: 'hidden' }}>
+                  <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid #e2e8f0' }}>
+                    <Typography variant="subtitle1" fontWeight={700}>
+                      Comisiones — {cadenaActual}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Comisiones por tipo de activación registrada.
+                    </Typography>
+                  </Box>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ ...thStyle, width: '70%' }}>Tipo de Chip</th>
+                        <th style={{ ...thStyle, width: '30%' }}>Comisión</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {!items ? (
+                        <tr>
+                          <td colSpan={2} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 24 }}>
+                            Sin comisiones configuradas para {cadenaActual}
+                          </td>
+                        </tr>
+                      ) : items.map((item) => (
+                        <tr key={item.tipo}>
+                          <td style={tdStyle}>{item.tipo}</td>
+                          <td style={{ ...tdStyle, fontWeight: 700, color: '#16a34a' }}>
+                            {item.comision}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <Box sx={{ px: 2.5, py: 1.5, borderTop: '1px solid #e2e8f0', bgcolor: '#f8fafc' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {items?.length ?? 0} tipos de activación
+                    </Typography>
+                  </Box>
+                </Paper>
+              );
+            })() : (
+              <Paper sx={{ overflow: 'hidden' }}>
+                <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid #e2e8f0' }}>
+                  <Typography variant="subtitle1" fontWeight={700}>Tasas de comisión configuradas</Typography>
+                  <Typography variant="body2" color="text.secondary">Estas son las comisiones que se aplican a cada venta registrada.</Typography>
+                </Box>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
                     <tr>
-                      <td colSpan={3} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 24 }}>
-                        Sin comisiones configuradas
-                      </td>
+                      <th style={{ ...thStyle, width: '50%' }}>Producto / Tipo de venta</th>
+                      <th style={{ ...thStyle, width: '25%' }}>Comisión</th>
+                      <th style={{ ...thStyle, width: '25%' }}>Tipo</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-              <Box sx={{ px: 2.5, py: 1.5, borderTop: '1px solid #e2e8f0', bgcolor: '#f8fafc' }}>
-                <Typography variant="body2" color="text.secondary">
-                  {tablaComisionesItems.filter((i) => !i.esTelefono).length} accesorios · {tablaComisionesItems.filter((i) => i.esTelefono).length} teléfonos
-                </Typography>
-              </Box>
-            </Paper>
+                  </thead>
+                  <tbody>
+                    {tablaComisionesItems.map((item) => (
+                      <tr key={item.nombre}>
+                        <td style={tdStyle}>{item.nombre}</td>
+                        <td style={{ ...tdStyle, fontWeight: 600, color: '#16a34a' }}>${fmt(item.comision)}</td>
+                        <td style={tdStyle}>
+                          {item.esTelefono
+                            ? <Chip label="Teléfono" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
+                            : <Chip label="Accesorio" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
+                          }
+                        </td>
+                      </tr>
+                    ))}
+                    {tablaComisionesItems.length === 0 && (
+                      <tr>
+                        <td colSpan={3} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 24 }}>
+                          Sin comisiones configuradas
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+                <Box sx={{ px: 2.5, py: 1.5, borderTop: '1px solid #e2e8f0', bgcolor: '#f8fafc' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {tablaComisionesItems.filter((i) => !i.esTelefono).length} accesorios · {tablaComisionesItems.filter((i) => i.esTelefono).length} teléfonos
+                  </Typography>
+                </Box>
+              </Paper>
+            )}
           </Box>
         )}
+
+        {/* ── Tab NÓMINA (solo Cadenas C.) ── */}
+        {tabAsesor === 3 && esCadenas && (() => {
+          const ciclos = getCiclos();
+          if (ciclos.length === 0) {
+            return (
+              <Box sx={{ py: 4, textAlign: 'center' }}>
+                <Typography color="text.secondary">No hay ciclos cerrados disponibles aún.</Typography>
+              </Box>
+            );
+          }
+          const cicloActual = ciclos[nominaCicloIdx] ?? ciclos[0];
+          const incubadora = nominaChips.filter((c) => c.es_incubadora);
+          const totalCobrar = nominaChips
+            .filter((c) => c.validado && !c.es_incubadora)
+            .reduce((s, c) => s + (c.comision ?? 0), 0);
+
+          return (
+            <Box>
+              {/* Selector de ciclo */}
+              <TextField
+                select
+                size="small"
+                label="Ciclo"
+                value={nominaCicloIdx}
+                onChange={(e) => setNominaCicloIdx(Number(e.target.value))}
+                sx={{ mb: 3, minWidth: { xs: '100%', sm: 360 } }}
+              >
+                {ciclos.map((c, i) => (
+                  <MenuItem key={i} value={i}>{labelCiclo(c)}</MenuItem>
+                ))}
+              </TextField>
+
+              {/* Cuadro 1: Activaciones del ciclo */}
+              <Paper sx={{ mb: 3, overflow: 'hidden' }}>
+                <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid #e2e8f0' }}>
+                  <Typography variant="subtitle1" fontWeight={700}>
+                    Activaciones del ciclo {fmtDiaMes(cicloActual.inicio)} al {fmtDiaMes(cicloActual.fin)} {cicloActual.fin.getFullYear()}
+                  </Typography>
+                </Box>
+
+                {nominaChips.length === 0 ? (
+                  <Box sx={{ px: 2.5, py: 2.5 }}>
+                    <Typography color="text.secondary" variant="body2">Sin activaciones en este ciclo.</Typography>
+                  </Box>
+                ) : isMobile ? (
+                  <Box sx={{ p: 1.5 }}>
+                    {nominaChips.map((c) => {
+                      const est = getEstadoChip(c);
+                      return (
+                        <Box key={c.id} sx={{ p: 1.5, mb: 1, border: '1px solid #e2e8f0', borderRadius: 1.5, bgcolor: '#f8fafc' }}>
+                          <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                            <Typography variant="body2" fontWeight={700} sx={{ fontSize: 13, color: '#1e293b' }}>
+                              {c.tipo_chip}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: est.color, fontWeight: 700, fontSize: 11 }}>
+                              {est.label}
+                            </Typography>
+                          </Box>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12, mb: 0.5 }}>
+                            {c.numero_telefono}
+                          </Typography>
+                          <Box display="flex" justifyContent="space-between">
+                            <Typography variant="body2" sx={{ fontSize: 12, color: '#475569' }}>
+                              Recarga: ${(c.monto_recarga ?? 0).toFixed(2)}
+                            </Typography>
+                            <Typography variant="body2" fontWeight={700} sx={{ fontSize: 12, color: '#16a34a' }}>
+                              Comisión: ${(c.comision ?? 0).toFixed(2)}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                ) : (
+                  <Box sx={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr>
+                          <th style={thStyle}>Tipo de Chip</th>
+                          <th style={thStyle}>Número</th>
+                          <th style={thStyle}>Recarga</th>
+                          <th style={thStyle}>Comisión</th>
+                          <th style={thStyle}>Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {nominaChips.map((c) => {
+                          const est = getEstadoChip(c);
+                          return (
+                            <tr key={c.id}>
+                              <td style={tdStyle}>{c.tipo_chip}</td>
+                              <td style={tdStyle}>{c.numero_telefono}</td>
+                              <td style={tdStyle}>${(c.monto_recarga ?? 0).toFixed(2)}</td>
+                              <td style={{ ...tdStyle, fontWeight: 700, color: '#16a34a' }}>${(c.comision ?? 0).toFixed(2)}</td>
+                              <td style={{ ...tdStyle, color: est.color, fontWeight: 600 }}>{est.label}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </Box>
+                )}
+
+                <Box sx={{ px: 2.5, py: 1.5, borderTop: '1px solid #e2e8f0', bgcolor: '#f0fdf4' }}>
+                  <Typography variant="body2" fontWeight={700} sx={{ color: '#16a34a' }}>
+                    Total a cobrar el {fmtDiaMes(cicloActual.pago)}: ${totalCobrar.toFixed(2)}
+                  </Typography>
+                </Box>
+              </Paper>
+
+              {/* Cuadro 2: Líneas en incubadora */}
+              <Paper sx={{ overflow: 'hidden', mb: 2 }}>
+                <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid #e2e8f0' }}>
+                  <Typography variant="subtitle1" fontWeight={700}>Líneas en incubadora</Typography>
+                </Box>
+
+                {incubadora.length === 0 ? (
+                  <Box sx={{ px: 2.5, py: 2.5 }}>
+                    <Typography color="text.secondary" variant="body2">Sin líneas en incubadora este ciclo.</Typography>
+                  </Box>
+                ) : isMobile ? (
+                  <Box sx={{ p: 1.5 }}>
+                    {incubadora.map((c) => (
+                      <Box key={c.id} sx={{ p: 1.5, mb: 1, border: '1px solid #fed7aa', borderRadius: 1.5, bgcolor: '#fff7ed' }}>
+                        <Typography variant="body2" fontWeight={700} sx={{ fontSize: 13, color: '#1e293b', mb: 0.5 }}>
+                          {c.tipo_chip}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12, mb: 0.5 }}>
+                          {c.numero_telefono}
+                        </Typography>
+                        <Box display="flex" justifyContent="space-between">
+                          <Typography variant="body2" sx={{ fontSize: 12, color: '#475569' }}>
+                            Recarga: ${(c.monto_recarga ?? 0).toFixed(2)}
+                          </Typography>
+                          <Typography variant="body2" fontWeight={700} sx={{ fontSize: 12, color: '#f97316' }}>
+                            Comisión: ${(c.comision ?? 0).toFixed(2)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    ))}
+                  </Box>
+                ) : (
+                  <Box sx={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr>
+                          <th style={thStyle}>Tipo de Chip</th>
+                          <th style={thStyle}>Número</th>
+                          <th style={thStyle}>Recarga</th>
+                          <th style={thStyle}>Comisión</th>
+                          <th style={thStyle}>Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {incubadora.map((c) => (
+                          <tr key={c.id}>
+                            <td style={tdStyle}>{c.tipo_chip}</td>
+                            <td style={tdStyle}>{c.numero_telefono}</td>
+                            <td style={tdStyle}>${(c.monto_recarga ?? 0).toFixed(2)}</td>
+                            <td style={{ ...tdStyle, fontWeight: 700, color: '#f97316' }}>${(c.comision ?? 0).toFixed(2)}</td>
+                            <td style={{ ...tdStyle, color: '#f97316', fontWeight: 600 }}>En incubadora</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </Box>
+                )}
+              </Paper>
+            </Box>
+          );
+        })()}
       </Box>
     );
   }

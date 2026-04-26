@@ -20,6 +20,7 @@ import NominaEmpleado from './pages/NominaEmpleado';
 import Kardex from './pages/Kardex';
 import Metricas from './pages/Metricas';
 import CampañasVIP from "./pages/CampañasVip";
+import SeleccionCadena from "./pages/SeleccionCadena";
 
 const RutaProtegida: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -48,6 +49,7 @@ const App: React.FC = () => {
     { path: '/kardex', element: <RutaProtegida><Kardex /></RutaProtegida> },
     { path: '/metricas', element: <RutaProtegida><Metricas /></RutaProtegida> },
     { path: '/promos', element: <RutaProtegida><CampañasVIP /></RutaProtegida> },
+    { path: '/seleccionar-cadena', element: <RutaProtegida><SeleccionCadena /></RutaProtegida> },
   ]);
 
   return routes;
