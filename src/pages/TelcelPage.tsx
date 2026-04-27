@@ -54,6 +54,11 @@ const TelcelPage = () => {
       const ws  = wb.Sheets[wb.SheetNames[0]];
       const raw: any[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
 
+      if (raw.length > 0) {
+        console.log("[TelcelPage] Keys del primer registro:", Object.keys(raw[0]));
+        console.log("[TelcelPage] Primer registro completo:", raw[0]);
+      }
+
       setFilas(
         raw.map((row) => ({
           numero:          pick(row, "numero"),
