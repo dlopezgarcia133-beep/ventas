@@ -178,6 +178,7 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
                     <TableCell>Hora</TableCell>
                     <TableCell>Validado</TableCell>
                     <TableCell>Descripcion</TableCell>
+                    <TableCell></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -279,13 +280,20 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
     </select>
   )}
 </TableCell>
+  <TableCell>
+    {esDup && (
+      <Button color="error" size="small" onClick={() => eliminarChip(chip.id)}>
+        <DeleteIcon fontSize="small" />
+      </Button>
+    )}
+  </TableCell>
 </TableRow>
                         );
                       });
                   })()}
                   {chips.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={7} align="center">
+                      <TableCell colSpan={9} align="center">
                         No hay chips registrados
                       </TableCell>
                     </TableRow>
