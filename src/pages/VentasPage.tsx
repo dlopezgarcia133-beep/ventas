@@ -791,7 +791,8 @@ const FormularioVentaMultiple = () => {
   // ════════════════════════════════════════════════════════════════════════════
   // VISTA ADMIN
   // ════════════════════════════════════════════════════════════════════════════
-  if (localStorage.getItem('rol') === 'admin') {
+  console.log('ROL EN STORAGE:', localStorage.getItem('rol'));
+  if (localStorage.getItem('rol') === 'admin' || localStorage.getItem('rol') === 'ADMIN') {
     return (
       <Box sx={{ mt: 2, px: { xs: 1, sm: 2 } }}>
         <Typography variant="h6" gutterBottom fontWeight={700}>Ventas Realizadas</Typography>
