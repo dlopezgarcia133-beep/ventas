@@ -11,6 +11,24 @@ import { obtenerRolDesdeToken } from "../components/Token";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 
+const getDuplicados = (arr: VentaChip[]): Set<string> => {
+  const counts: Record<string, number> = {};
+  arr.forEach((c) => {
+    counts[c.numero_telefono] = (counts[c.numero_telefono] || 0) + 1;
+  });
+  return new Set(Object.keys(counts).filter((k) => counts[k] > 1));
+};
+
+const sortConDuplicados = (arr: VentaChip[], dups: Set<string>): VentaChip[] =>
+  [...arr].sort((a, b) => {
+    const aDup = dups.has(a.numero_telefono) ? 0 : 1;
+    const bDup = dups.has(b.numero_telefono) ? 0 : 1;
+    return aDup - bDup;
+  });
+
+const rowDupSx   = { bgcolor: "#fee2e2" };
+const cellDupSx  = { color: "#b91c1c", fontWeight: 700 };
+
 const ChipsAdmin = () => {
   const [chips, setChips] = useState<VentaChip[]>([]);
   const token = localStorage.getItem("token");
@@ -163,13 +181,18 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {chips.filter(chip => !chip.validado && !chip.descripcion_rechazo)
-                    .slice(paginaAdmin * filasPorPagina, paginaAdmin * filasPorPagina + filasPorPagina)
-                    .map((chip) => (
-                    <TableRow key={chip.id}>
-  <TableCell>{chip.empleado?.username ?? "Empleado eliminado"}</TableCell>
-  <TableCell>{chip.tipo_chip}</TableCell>
-  <TableCell>{chip.numero_telefono}</TableCell>
+                  {(() => {
+                    const filtrados = chips.filter(c => !c.validado && !c.descripcion_rechazo);
+                    const dups = getDuplicados(filtrados);
+                    return sortConDuplicados(filtrados, dups)
+                      .slice(paginaAdmin * filasPorPagina, (paginaAdmin + 1) * filasPorPagina)
+                      .map((chip) => {
+                        const esDup = dups.has(chip.numero_telefono);
+                        return (
+                    <TableRow key={chip.id} sx={esDup ? rowDupSx : {}}>
+  <TableCell sx={esDup ? cellDupSx : {}}>{chip.empleado?.username ?? "Empleado eliminado"}</TableCell>
+  <TableCell sx={esDup ? cellDupSx : {}}>{chip.tipo_chip}</TableCell>
+  <TableCell sx={esDup ? cellDupSx : {}}>{chip.numero_telefono}</TableCell>
   <TableCell>${chip.monto_recarga.toFixed(2)}</TableCell>
   <TableCell>{chip.fecha}</TableCell>
   <TableCell>{chip.hora}</TableCell>
@@ -257,7 +280,9 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
   )}
 </TableCell>
 </TableRow>
-                  ))}
+                        );
+                      });
+                  })()}
                   {chips.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={7} align="center">
@@ -303,13 +328,18 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {chips.filter(chip => !chip.validado)
-                    .slice(paginaUser * filasPorPagina, paginaUser * filasPorPagina + filasPorPagina)
-                    .map((chip) => (
-                    <TableRow key={chip.id}>
-                      <TableCell>{chip.empleado && chip.empleado.username? chip.empleado.username: "Empleado eliminado"}</TableCell>
-                      <TableCell>{chip.tipo_chip}</TableCell>
-                      <TableCell>{chip.numero_telefono}</TableCell>
+                  {(() => {
+                    const filtrados = chips.filter(c => !c.validado);
+                    const dups = getDuplicados(filtrados);
+                    return sortConDuplicados(filtrados, dups)
+                      .slice(paginaUser * filasPorPagina, (paginaUser + 1) * filasPorPagina)
+                      .map((chip) => {
+                        const esDup = dups.has(chip.numero_telefono);
+                        return (
+                    <TableRow key={chip.id} sx={esDup ? rowDupSx : {}}>
+                      <TableCell sx={esDup ? cellDupSx : {}}>{chip.empleado && chip.empleado.username ? chip.empleado.username : "Empleado eliminado"}</TableCell>
+                      <TableCell sx={esDup ? cellDupSx : {}}>{chip.tipo_chip}</TableCell>
+                      <TableCell sx={esDup ? cellDupSx : {}}>{chip.numero_telefono}</TableCell>
                       <TableCell>${chip.monto_recarga.toFixed(2)}</TableCell>
                       <TableCell>{chip.fecha}</TableCell>
                       <TableCell>{chip.hora}</TableCell>
@@ -329,7 +359,9 @@ const validarChip = async (id: number, tipo_chip: string, comision?: number) => 
                         )}
                       </TableCell>
                     </TableRow>
-                  ))}
+                        );
+                      });
+                  })()}
                   {chips.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={7} align="center">
