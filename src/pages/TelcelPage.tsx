@@ -168,19 +168,23 @@ const TelcelPage = () => {
     setSuccessMsg(null);
 
     try {
-      const { error } = await sb.from("comisiones_telcel").insert(filas);
-
-      if (error) {
-        setErrorMsg(`Error al guardar: ${error.message}`);
-      } else {
-        setSuccessMsg(
-          `${filas.length} registro${filas.length !== 1 ? "s" : ""} guardado${filas.length !== 1 ? "s" : ""} correctamente.`
-        );
-        setFilas([]);
-        setNombreArchivo("");
-        if (inputRef.current) inputRef.current.value = "";
-        await fetchResumenDB();
+      const BATCH = 100;
+      for (let i = 0; i < filas.length; i += BATCH) {
+        const lote = filas.slice(i, i + BATCH);
+        const { error } = await sb.from("comisiones_telcel").insert(lote);
+        if (error) {
+          setErrorMsg(`Error al guardar lote ${Math.floor(i / BATCH) + 1}: ${error.message}`);
+          return;
+        }
       }
+
+      setSuccessMsg(
+        `${filas.length} registro${filas.length !== 1 ? "s" : ""} guardado${filas.length !== 1 ? "s" : ""} correctamente.`
+      );
+      setFilas([]);
+      setNombreArchivo("");
+      if (inputRef.current) inputRef.current.value = "";
+      await fetchResumenDB();
     } catch (err: any) {
       setErrorMsg(`Error inesperado: ${err.message}`);
     } finally {
