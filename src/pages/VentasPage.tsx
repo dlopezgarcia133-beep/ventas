@@ -851,13 +851,15 @@ const FormularioVentaMultiple = () => {
         {/* ── Tab TICKET ── */}
         {tabAsesor === 0 && (
           <Grid container spacing={2}>
-            {/* Columna izquierda: formulario */}
-            <Grid item xs={12} md={6}>
-              {formulario}
-            </Grid>
+            {/* Columna izquierda: formulario (oculto para admin) */}
+            {rol !== 'admin' && (
+              <Grid item xs={12} md={6}>
+                {formulario}
+              </Grid>
+            )}
 
             {/* Columna derecha: tabla del día + comisiones */}
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={rol === 'admin' ? 12 : 6}>
 
           {esCadenas ? (
             /* ── Activaciones del día (Cadenas C.) ── */
