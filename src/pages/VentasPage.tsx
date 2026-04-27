@@ -319,7 +319,7 @@ const FormularioVentaMultiple = () => {
   const [opcionesTelefonos, setOpcionesTelefonos] = useState<any[]>([]);
   const [buscando, setBuscando] = useState(false);
   const [moduloId, setModuloId] = useState<number | null>(null);
-  const [rol, setRol] = useState<Usuario['rol'] | null>(null);
+  const [rol, setRol] = useState<Usuario['rol'] | null>(localStorage.getItem('rol') as Usuario['rol'] | null);
   const [modulos, setModulos] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
