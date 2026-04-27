@@ -127,6 +127,7 @@ export interface VentaChip {
   fecha: string;
   hora: string;
   validado: boolean;
+  comision_pagada: boolean;
   comision: number;
   comision_manual: number;
   cvip: boolean;

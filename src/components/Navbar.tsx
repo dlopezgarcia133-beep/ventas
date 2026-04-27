@@ -149,6 +149,9 @@ const Navbar = () => {
               <Button sx={navBtnSx} component={Link} to="/telcel">
                 TELCEL
               </Button>
+              <Button sx={navBtnSx} component={Link} to="/clineas">
+                C LÍNEAS
+              </Button>
             </>
           )}
 
