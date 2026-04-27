@@ -789,6 +789,132 @@ const FormularioVentaMultiple = () => {
   ) : null;
 
   // ════════════════════════════════════════════════════════════════════════════
+  // VISTA ADMIN
+  // ════════════════════════════════════════════════════════════════════════════
+  if (localStorage.getItem('rol') === 'admin') {
+    return (
+      <Box sx={{ mt: 2, px: { xs: 1, sm: 2 } }}>
+        <Typography variant="h6" gutterBottom fontWeight={700}>Ventas Realizadas</Typography>
+        <Box sx={{ mb: 2 }}>
+          {user?.is_admin && modulos.length > 0 && (
+            <>
+              <label htmlFor="modulo-admin">Selecciona Módulo</label>
+              <select
+                id="modulo-admin"
+                value={moduloId ?? ''}
+                onChange={(e) => setModuloId(e.target.value ? Number(e.target.value) : null)}
+                style={{ display: 'block', marginTop: 4, marginBottom: 12, padding: '6px 8px', borderRadius: 6, border: '1px solid #e2e8f0', width: '100%' }}
+              >
+                <option value="">-- Selecciona un módulo --</option>
+                {modulos.map((m) => (
+                  <option key={m.id} value={m.id}>{m.nombre}</option>
+                ))}
+              </select>
+            </>
+          )}
+          <Box display="flex" gap={1} alignItems="center">
+            <TextField type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} size="small" />
+            <Button variant="contained" onClick={fetchVentas}>Buscar</Button>
+          </Box>
+        </Box>
+
+        <Paper sx={{ mb: 3, overflowX: 'auto' }}>
+          <Box p={2} component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                {['Nombre', 'Producto', 'Cantidad', 'Precio', 'Total', 'Fecha', 'Estado', 'Acciones'].map((h) => (
+                  <th key={h} style={{ padding: 8, borderBottom: '1px solid #e2e8f0', color: '#f97316', fontWeight: 700, background: '#f8fafc', textAlign: 'left' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {ventas.filter((v) => v.tipo_producto === 'accesorios')
+                .slice(paginaAcc * filasPorPagina, (paginaAcc + 1) * filasPorPagina)
+                .map((v) => (
+                  <tr key={v.id}>
+                    <td style={{ padding: 8 }}>{v.empleado?.username}</td>
+                    <td style={{ padding: 8 }}>{v.producto}</td>
+                    <td style={{ padding: 8 }}>{v.cantidad}</td>
+                    <td style={{ padding: 8 }}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                    <td style={{ padding: 8 }}>${typeof v.total === 'number' ? v.total.toFixed(2) : '0.00'}</td>
+                    <td style={{ padding: 8 }}>{`${v.fecha} ${v.hora}`}</td>
+                    <td style={{ padding: 8 }}>{v.cancelada ? 'Cancelada' : 'Activa'}</td>
+                    <td style={{ padding: 8 }}>
+                      <Button variant="outlined" size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>Cancelar</Button>
+                    </td>
+                  </tr>
+                ))}
+              {ventas.filter((v) => v.tipo_producto === 'accesorios').length === 0 && (
+                <tr><td colSpan={8} style={{ padding: 8, textAlign: 'center' }}>No hay ventas registradas</td></tr>
+              )}
+            </tbody>
+          </Box>
+        </Paper>
+        <TablePagination
+          component="div"
+          count={ventas.filter((v) => v.tipo_producto === 'accesorios').length}
+          page={paginaAcc}
+          onPageChange={(_, p) => setPaginaAcc(p)}
+          rowsPerPage={filasPorPagina}
+          rowsPerPageOptions={[filasPorPagina]}
+        />
+        <Box mb={3} textAlign="right">
+          <Typography variant="subtitle1" fontWeight="bold">Total Ventas Accesorios: ${totalAccesorios.toFixed(2)}</Typography>
+        </Box>
+
+        <Typography variant="h6" gutterBottom fontWeight={700} sx={{ mt: 3 }}>Ventas Teléfonos</Typography>
+        <Paper sx={{ overflowX: 'auto' }}>
+          <Box p={2} component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                {['Nombre', 'Telefono', 'Chip casado', 'Tipo', 'Precio', 'Fecha', 'Estado', 'Acciones'].map((h) => (
+                  <th key={h} style={{ padding: 8, borderBottom: '1px solid #e2e8f0', color: '#f97316', fontWeight: 700, background: '#f8fafc', textAlign: 'left' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {ventasTelefonos.slice(paginaTel * filasPorPagina, (paginaTel + 1) * filasPorPagina).map((v) => (
+                <tr key={v.id}>
+                  <td style={{ padding: 8 }}>{v.empleado?.username}</td>
+                  <td style={{ padding: 8 }}>{v.producto}</td>
+                  <td style={{ padding: 8 }}>{v.chip_casado}</td>
+                  <td style={{ padding: 8 }}>{v.tipo_venta}</td>
+                  <td style={{ padding: 8 }}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                  <td style={{ padding: 8 }}>{new Date(v.fecha).toLocaleDateString()}</td>
+                  <td style={{ padding: 8 }}>
+                    <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 'bold' }}>
+                      {v.cancelada ? 'Cancelada' : 'Activa'}
+                    </span>
+                  </td>
+                  <td style={{ padding: 8 }}>
+                    <Button variant="outlined" size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>Cancelar</Button>
+                  </td>
+                </tr>
+              ))}
+              {ventasTelefonos.length === 0 && (
+                <tr><td colSpan={7} style={{ padding: 8, textAlign: 'center' }}>No hay ventas de teléfonos</td></tr>
+              )}
+            </tbody>
+          </Box>
+        </Paper>
+        <TablePagination
+          component="div"
+          count={ventasTelefonos.length}
+          page={paginaTel}
+          onPageChange={(_, p) => setPaginaTel(p)}
+          rowsPerPage={filasPorPagina}
+          rowsPerPageOptions={[filasPorPagina]}
+        />
+        <Box mb={3} textAlign="right">
+          <Typography variant="subtitle1" fontWeight="bold">Total Ventas Teléfonos: ${totalTelefonos.toFixed(2)}</Typography>
+        </Box>
+
+        <Button variant="contained" onClick={() => navigate('/corte')}>Corte</Button>
+      </Box>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
   // VISTA ASESOR
   // ════════════════════════════════════════════════════════════════════════════
   if (rol === 'asesor') {
