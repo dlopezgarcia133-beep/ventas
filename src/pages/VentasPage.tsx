@@ -608,13 +608,14 @@ const FormularioVentaMultiple = () => {
     if (!num.trim()) return;
     setVerificandoNumero(true);
     setNumeroDuplicado(false);
+    const url = `${process.env.REACT_APP_API_URL}/ventas/venta_chips/verificar_numero/${encodeURIComponent(num)}`;
+    console.log("[verificarNumero] URL:", url);
     try {
-      const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/ventas/venta_chips/verificar_numero/${encodeURIComponent(num)}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
+      console.log("[verificarNumero] respuesta:", res.data);
       setNumeroDuplicado(res.data.duplicado === true);
-    } catch {
+    } catch (err) {
+      console.error("[verificarNumero] error:", err);
       setNumeroDuplicado(false);
     } finally {
       setVerificandoNumero(false);
