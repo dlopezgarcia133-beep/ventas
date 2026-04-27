@@ -609,9 +609,10 @@ const FormularioVentaMultiple = () => {
     setVerificandoNumero(true);
     setNumeroDuplicado(false);
     try {
+      // Sin filtros: trae todos los registros históricos y compara en el cliente
       const res = await axios.get(
         `${process.env.REACT_APP_API_URL}/ventas/venta_chips`,
-        { headers: { Authorization: `Bearer ${token}` }, params: { numero_telefono: num } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       const existe = (res.data as VentaChip[]).some(
         (c) => c.numero_telefono === num
