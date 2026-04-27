@@ -97,29 +97,31 @@ const TelcelPage = () => {
 
   const supabaseOk = Boolean(supabaseUrl && supabaseKey);
 
-  /* ── Carga resumen desde Supabase (agregados en servidor) ── */
+  /* ── Carga resumen desde Supabase via RPC ── */
   const fetchResumenDB = useCallback(async () => {
     const sb = getSupabase();
     if (!sb) return;
     setCargandoDB(true);
     try {
-      const [resCount, resSuma, resFechas] = await Promise.all([
-        sb.from("comisiones_telcel").select("*", { count: "exact", head: true }),
-        sb.from("comisiones_telcel").select("comision_telcel.sum()"),
-        sb.from("comisiones_telcel").select("fecha.min(), fecha.max()"),
-      ]);
+      const { data, error } = await sb.rpc("get_telcel_resumen");
 
-      const total = resCount.count ?? 0;
-      if (total === 0) {
+      if (error || !data) {
+        setResumenDB(null);
+        return;
+      }
+
+      const r = data as { total: number; suma: number; fecha_min: string; fecha_max: string };
+
+      if (!r.total || r.total === 0) {
         setResumenDB(null);
         return;
       }
 
       setResumenDB({
-        totalRegistros: total,
-        totalComision:  Number((resSuma.data as any)?.[0]?.sum ?? 0),
-        fechaMin:       String((resFechas.data as any)?.[0]?.min ?? "—"),
-        fechaMax:       String((resFechas.data as any)?.[0]?.max ?? "—"),
+        totalRegistros: Number(r.total),
+        totalComision:  Number(r.suma ?? 0),
+        fechaMin:       r.fecha_min ?? "—",
+        fechaMax:       r.fecha_max ?? "—",
       });
     } finally {
       setCargandoDB(false);
