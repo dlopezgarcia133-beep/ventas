@@ -979,14 +979,14 @@ const FormularioVentaMultiple = () => {
         {tabAsesor === 0 && (
           <Grid container spacing={2}>
             {/* Columna izquierda: formulario (oculto para admin) */}
-            {rol !== 'admin' && (
+            {(rol as string) !== 'admin' && (
               <Grid item xs={12} md={6}>
                 {formulario}
               </Grid>
             )}
 
             {/* Columna derecha: tabla del día + comisiones */}
-            <Grid item xs={12} md={rol === 'admin' ? 12 : 6}>
+            <Grid item xs={12} md={(rol as string) === 'admin' ? 12 : 6}>
 
           {esCadenas ? (
             /* ── Activaciones del día (Cadenas C.) ── */
@@ -1554,7 +1554,7 @@ const FormularioVentaMultiple = () => {
   // ════════════════════════════════════════════════════════════════════════════
   return (
     <Grid container spacing={2} sx={{ mt: 2 }}>
-      {rol !== 'admin' && (
+      {(rol as string) !== 'admin' && (
         <Grid item xs={12} md={6}>
           {formulario}
         </Grid>
