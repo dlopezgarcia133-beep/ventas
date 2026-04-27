@@ -145,6 +145,10 @@ const Navbar = () => {
                 <MenuItem component={Link} to="/comisiones">Comisiones</MenuItem>
                 <MenuItem component={Link} to="/metricas">Métricas</MenuItem>
               </Menu>
+
+              <Button sx={navBtnSx} component={Link} to="/telcel">
+                TELCEL
+              </Button>
             </>
           )}
 
