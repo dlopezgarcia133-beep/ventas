@@ -106,22 +106,18 @@ const Navbar = () => {
 
           {rolToken === "admin" && (
             <>
-              {!modulo.toLowerCase().includes('cadena') && (
-                <>
-                  <Button sx={navBtnSx} onClick={(e) => openMenu(e, setAnchorVentas)}>
-                    Ventas
-                  </Button>
-                  <Menu
-                    anchorEl={anchorVentas}
-                    open={Boolean(anchorVentas)}
-                    onClose={() => closeMenu(setAnchorVentas)}
-                  >
-                    <MenuItem component={Link} to="/ventas"><ConfirmationNumberIcon fontSize="small" sx={{ mr: 0.5, verticalAlign: 'middle' }} />Ticket</MenuItem>
-                    <MenuItem component={Link} to="/ventas/chips">Chips</MenuItem>
-                    <MenuItem component={Link} to="/corte">Cortes</MenuItem>
-                  </Menu>
-                </>
-              )}
+              <Button sx={navBtnSx} onClick={(e) => openMenu(e, setAnchorVentas)}>
+                Ventas
+              </Button>
+              <Menu
+                anchorEl={anchorVentas}
+                open={Boolean(anchorVentas)}
+                onClose={() => closeMenu(setAnchorVentas)}
+              >
+                <MenuItem component={Link} to="/ventas"><ConfirmationNumberIcon fontSize="small" sx={{ mr: 0.5, verticalAlign: 'middle' }} />Ticket</MenuItem>
+                <MenuItem component={Link} to="/ventas/chips">Chips</MenuItem>
+                <MenuItem component={Link} to="/corte">Cortes</MenuItem>
+              </Menu>
 
               <Button sx={navBtnSx} onClick={(e) => openMenu(e, setAnchorInventario)}>
                 Inventario
