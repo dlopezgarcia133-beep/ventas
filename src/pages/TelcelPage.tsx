@@ -27,13 +27,10 @@ interface FilaComision {
 
 const COLS = ["numero", "cadena", "fecha", "comision_telcel"];
 
-const pick = (row: any, key: string): string =>
-  String(
-    row[key] ??
-    row[key.charAt(0).toUpperCase() + key.slice(1)] ??
-    row[key.toUpperCase()] ??
-    ""
-  );
+const pick = (row: any, key: string): string => {
+  const match = Object.keys(row).find((k) => k.trim().toLowerCase() === key.toLowerCase());
+  return match !== undefined ? String(row[match] ?? "") : "";
+};
 
 const TelcelPage = () => {
   const [filas, setFilas]           = useState<FilaComision[]>([]);
@@ -53,11 +50,6 @@ const TelcelPage = () => {
       const wb  = XLSX.read(ev.target?.result, { type: "array" });
       const ws  = wb.Sheets[wb.SheetNames[0]];
       const raw: any[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
-
-      if (raw.length > 0) {
-        console.log("[TelcelPage] Keys del primer registro:", Object.keys(raw[0]));
-        console.log("[TelcelPage] Primer registro completo:", raw[0]);
-      }
 
       setFilas(
         raw.map((row) => ({
