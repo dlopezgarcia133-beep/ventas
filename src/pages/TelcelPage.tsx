@@ -178,12 +178,17 @@ const TelcelPage = () => {
         }
       }
 
+      const total = filas.length;
       setSuccessMsg(
-        `${filas.length} registro${filas.length !== 1 ? "s" : ""} guardado${filas.length !== 1 ? "s" : ""} correctamente.`
+        `${total} registro${total !== 1 ? "s" : ""} guardado${total !== 1 ? "s" : ""} correctamente.`
       );
       setFilas([]);
       setNombreArchivo("");
       if (inputRef.current) inputRef.current.value = "";
+
+      // Forzar re-fetch limpio: borrar estado previo → spinner → datos frescos
+      setResumenDB(null);
+      setCargandoDB(true);
       await fetchResumenDB();
     } catch (err: any) {
       setErrorMsg(`Error inesperado: ${err.message}`);
