@@ -20,8 +20,13 @@ const sortConDuplicados = (arr: VentaChip[], dups: Set<string>): VentaChip[] =>
 const rowDupSx  = { bgcolor: "#fee2e2" };
 const cellDupSx = { color: "#b91c1c", fontWeight: 700 };
 
-const cellSx = { py: "2px", px: "6px", fontSize: 12 };
-const headSx = { py: "4px", px: "6px", fontSize: 12, fontWeight: 700 };
+const cellSx = { py: "2px", px: "6px", fontSize: 14 };
+const headSx = { py: "4px", px: "6px", fontSize: 14, fontWeight: 700 };
+
+// Anchos fijos por columna — tabla admin
+const colWidthsAdmin = ["110px", "80px", "120px", "70px", "88px", "72px", "130px", "120px", "36px"];
+// Anchos fijos por columna — tabla asesor/encargado
+const colWidthsUser  = ["110px", "80px", "120px", "70px", "88px", "72px", "90px", "36px"];
 
 const ChipsAdmin = () => {
   const [chips, setChips]                     = useState<VentaChip[]>([]);
@@ -104,7 +109,7 @@ const ChipsAdmin = () => {
               <select
                 value={empleadoSeleccionado ?? ""}
                 onChange={(e) => setEmpleadoSeleccionado(e.target.value ? Number(e.target.value) : null)}
-                style={{ fontSize: 12 }}
+                style={{ fontSize: 14 }}
               >
                 <option value="">(Todos)</option>
                 {usuarios.map((u) => (
@@ -117,7 +122,10 @@ const ChipsAdmin = () => {
           </Box>
 
           <TableContainer component={Paper}>
-            <Table size="small">
+            <Table size="small" sx={{ tableLayout: "fixed", width: "100%" }}>
+              <colgroup>
+                {colWidthsAdmin.map((w, i) => <col key={i} style={{ width: w }} />)}
+              </colgroup>
               <TableHead>
                 <TableRow>
                   <TableCell sx={headSx}>Empleado</TableCell>
@@ -257,7 +265,10 @@ const ChipsAdmin = () => {
           <Button size="small" href="/chips_invalidos" sx={{ mb: 1 }}>Incubadora</Button>
 
           <TableContainer component={Paper}>
-            <Table size="small">
+            <Table size="small" sx={{ tableLayout: "fixed", width: "100%" }}>
+              <colgroup>
+                {colWidthsUser.map((w, i) => <col key={i} style={{ width: w }} />)}
+              </colgroup>
               <TableHead>
                 <TableRow>
                   <TableCell sx={headSx}>Empleado</TableCell>
