@@ -4,6 +4,7 @@ import {
   TableContainer, MenuItem, FormControlLabel, FormControl, FormLabel,
   RadioGroup, Radio, TablePagination, Table, TableHead, TableRow,
   TableCell, TableBody, Divider, Chip, IconButton, Tabs, Tab, useMediaQuery,
+  CircularProgress, InputAdornment,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
@@ -307,6 +308,8 @@ const FormularioVentaMultiple = () => {
   const [tipoVenta, setTipoVenta] = useState<'accesorio' | 'chip' | 'telefono'>(esCadenas ? 'chip' : 'accesorio');
   const [tipoChip, setTipoChip] = useState('');
   const [numero, setNumero] = useState('');
+  const [numeroDuplicado, setNumeroDuplicado] = useState(false);
+  const [verificandoNumero, setVerificandoNumero] = useState(false);
   const [recarga, setRecarga] = useState('');
 
   const [telefonoMarca, setTelefonoMarca] = useState('');
@@ -601,6 +604,26 @@ const FormularioVentaMultiple = () => {
     }
   };
 
+  const verificarNumero = async (num: string) => {
+    if (!num.trim()) return;
+    setVerificandoNumero(true);
+    setNumeroDuplicado(false);
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/ventas/venta_chips`,
+        { headers: { Authorization: `Bearer ${token}` }, params: { numero_telefono: num } }
+      );
+      const existe = (res.data as VentaChip[]).some(
+        (c) => c.numero_telefono === num && !c.validado
+      );
+      setNumeroDuplicado(existe);
+    } catch {
+      setNumeroDuplicado(false);
+    } finally {
+      setVerificandoNumero(false);
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       await axios.post(
@@ -739,7 +762,20 @@ const FormularioVentaMultiple = () => {
               <MenuItem key={op.value} value={op.value}>{op.label}</MenuItem>
             ))}
           </TextField>
-          <TextField label="Número" type="tel" value={numero} onChange={(e) => setNumero(e.target.value)} fullWidth margin="normal" />
+          <TextField
+            label="Número" type="tel" value={numero} fullWidth margin="normal"
+            onChange={(e) => { setNumero(e.target.value); setNumeroDuplicado(false); }}
+            onBlur={() => verificarNumero(numero)}
+            error={numeroDuplicado}
+            helperText={
+              numeroDuplicado
+                ? 'Este número ya fue registrado'
+                : verificandoNumero
+                ? 'Verificando…'
+                : ''
+            }
+            InputProps={{ endAdornment: verificandoNumero ? <InputAdornment position="end"><CircularProgress size={16} /></InputAdornment> : undefined }}
+          />
           <TextField label="Recarga" type="number" value={recarga} onChange={(e) => setRecarga(e.target.value)} fullWidth margin="normal" />
           <FormControl sx={{ mt: 1 }}>
             <FormLabel>Cliente VIP</FormLabel>
@@ -748,7 +784,7 @@ const FormularioVentaMultiple = () => {
               <FormControlLabel value="false" control={<Radio />} label="No" />
             </RadioGroup>
           </FormControl>
-          <Button variant="contained" fullWidth onClick={handleSubmit} disabled={!tipoChip || !numero || !recarga} sx={{ mt: 2 }}>Registrar Venta de Chip</Button>
+          <Button variant="contained" fullWidth onClick={handleSubmit} disabled={!tipoChip || !numero || !recarga || numeroDuplicado || verificandoNumero} sx={{ mt: 2 }}>Registrar Venta de Chip</Button>
         </>
       )}
 
