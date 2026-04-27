@@ -677,7 +677,7 @@ const FormularioVentaMultiple = () => {
   const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   // ── Formulario (compartido) ───────────────────────────────────────────────
-  const formulario = (
+  const formulario = localStorage.getItem('rol') !== 'admin' ? (
     <Paper sx={{ borderRadius: 2, p: { xs: 1.5, sm: 2.5 } }}>
       <Typography variant="h5" gutterBottom fontWeight={700}>
         {esCadenas ? 'Activaciones' : 'Registrar Venta'}
@@ -786,7 +786,7 @@ const FormularioVentaMultiple = () => {
         </>
       )}
     </Paper>
-  );
+  ) : null;
 
   // ════════════════════════════════════════════════════════════════════════════
   // VISTA ASESOR
