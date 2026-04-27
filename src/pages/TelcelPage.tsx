@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Box, Typography, Paper, Button, Table, TableHead, TableBody,
   TableRow, TableCell, TableContainer, Alert, CircularProgress, Chip, Grid,
@@ -54,30 +54,11 @@ const parseFecha = (raw: any): string => {
   return String(raw ?? "");
 };
 
-const calcResumen = (filas: FilaComision[]): Resumen => {
-  const fechas = filas.map((f) => f.fecha).filter(Boolean).sort();
-  return {
-    totalRegistros: filas.length,
-    totalComision:  filas.reduce((s, f) => s + Number(f.comision_telcel), 0),
-    fechaMin: fechas[0] ?? "—",
-    fechaMax: fechas[fechas.length - 1] ?? "—",
-  };
-};
-
-const CREATE_TABLE_SQL = `CREATE TABLE IF NOT EXISTS comisiones_telcel (
-  id              bigint generated always as identity primary key,
-  numero          text,
-  cadena          text,
-  fecha           date,
-  comision_telcel numeric,
-  created_at      timestamptz default now()
-);`;
-
 /* ─── Tarjeta de resumen ─── */
 const StatCard = ({
-  icon, label, value, sub,
+  icon, label, value, sub, loading,
 }: {
-  icon: React.ReactNode; label: string; value: string; sub?: string;
+  icon: React.ReactNode; label: string; value: string; sub?: string; loading?: boolean;
 }) => (
   <Paper sx={{ p: 3, display: "flex", flexDirection: "column", gap: 0.5 }}>
     <Box display="flex" alignItems="center" gap={1} sx={{ color: "#64748b", mb: 0.5 }}>
@@ -86,13 +67,19 @@ const StatCard = ({
         {label}
       </Typography>
     </Box>
-    <Typography variant="h4" fontWeight={800} sx={{ color: "#f97316", lineHeight: 1 }}>
-      {value}
-    </Typography>
-    {sub && (
-      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-        {sub}
-      </Typography>
+    {loading ? (
+      <CircularProgress size={28} sx={{ color: "#f97316", mt: 0.5 }} />
+    ) : (
+      <>
+        <Typography variant="h4" fontWeight={800} sx={{ color: "#f97316", lineHeight: 1 }}>
+          {value}
+        </Typography>
+        {sub && (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            {sub}
+          </Typography>
+        )}
+      </>
     )}
   </Paper>
 );
@@ -103,12 +90,52 @@ const TelcelPage = () => {
   const [nombreArchivo, setNombreArchivo] = useState("");
   const [guardando, setGuardando]     = useState(false);
   const [errorMsg, setErrorMsg]       = useState<string | null>(null);
-  const [resumen, setResumen]         = useState<Resumen | null>(null);
+  const [successMsg, setSuccessMsg]   = useState<string | null>(null);
+  const [resumenDB, setResumenDB]     = useState<Resumen | null>(null);
+  const [cargandoDB, setCargandoDB]   = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const supabaseOk = Boolean(supabaseUrl && supabaseKey);
+
+  /* ── Carga resumen desde Supabase ── */
+  const fetchResumenDB = useCallback(async () => {
+    const sb = getSupabase();
+    if (!sb) return;
+    setCargandoDB(true);
+    try {
+      const { data, error } = await sb
+        .from("comisiones_telcel")
+        .select("comision_telcel, fecha");
+
+      if (error || !data || data.length === 0) {
+        setResumenDB(null);
+        return;
+      }
+
+      const fechas = (data as any[])
+        .map((r) => r.fecha as string)
+        .filter(Boolean)
+        .sort();
+
+      setResumenDB({
+        totalRegistros: data.length,
+        totalComision:  (data as any[]).reduce((s, r) => s + Number(r.comision_telcel), 0),
+        fechaMin: fechas[0] ?? "—",
+        fechaMax: fechas[fechas.length - 1] ?? "—",
+      });
+    } finally {
+      setCargandoDB(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchResumenDB();
+  }, [fetchResumenDB]);
+
+  /* ── Parseo del Excel ── */
   const handleArchivo = (e: React.ChangeEvent<HTMLInputElement>) => {
     setErrorMsg(null);
-    setResumen(null);
+    setSuccessMsg(null);
     const file = e.target.files?.[0];
     if (!file) return;
     setNombreArchivo(file.name);
@@ -131,27 +158,28 @@ const TelcelPage = () => {
     reader.readAsArrayBuffer(file);
   };
 
+  /* ── Guardado en Supabase ── */
   const guardar = async () => {
     if (!filas.length) return;
     const sb = getSupabase();
     if (!sb) return;
     setGuardando(true);
     setErrorMsg(null);
+    setSuccessMsg(null);
 
     try {
       const { error } = await sb.from("comisiones_telcel").insert(filas);
 
       if (error) {
-        setErrorMsg(
-          error.code === "42P01"
-            ? `La tabla "comisiones_telcel" no existe. Ejecútala en el SQL Editor de Supabase:\n\n${CREATE_TABLE_SQL}`
-            : `Error al guardar: ${error.message}`
-        );
+        setErrorMsg(`Error al guardar: ${error.message}`);
       } else {
-        setResumen(calcResumen(filas));
+        setSuccessMsg(
+          `${filas.length} registro${filas.length !== 1 ? "s" : ""} guardado${filas.length !== 1 ? "s" : ""} correctamente.`
+        );
         setFilas([]);
         setNombreArchivo("");
         if (inputRef.current) inputRef.current.value = "";
+        await fetchResumenDB();
       }
     } catch (err: any) {
       setErrorMsg(`Error inesperado: ${err.message}`);
@@ -161,11 +189,11 @@ const TelcelPage = () => {
   };
 
   const totalComision = filas.reduce((s, f) => s + Number(f.comision_telcel), 0);
-  const supabaseOk    = Boolean(supabaseUrl && supabaseKey);
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1100, mx: "auto" }}>
-      {/* Header */}
+
+      {/* ── Header ── */}
       <Typography variant="h5" fontWeight={700} sx={{ mb: 0.5, color: "#0d1e3a" }}>
         Comisiones TELCEL
       </Typography>
@@ -181,7 +209,45 @@ const TelcelPage = () => {
         ))}
       </Typography>
 
-      {/* Upload */}
+      {/* ── Tarjetas resumen desde DB ── */}
+      {(supabaseOk && (cargandoDB || resumenDB)) && (
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5 }}>
+            Resumen en base de datos
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4}>
+              <StatCard
+                icon={<TagIcon fontSize="small" />}
+                label="Total registros"
+                value={resumenDB ? resumenDB.totalRegistros.toLocaleString("es-MX") : "—"}
+                loading={cargandoDB}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <StatCard
+                icon={<AttachMoneyIcon fontSize="small" />}
+                label="Total comisión"
+                value={resumenDB
+                  ? `$${resumenDB.totalComision.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  : "—"}
+                loading={cargandoDB}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <StatCard
+                icon={<CalendarMonthIcon fontSize="small" />}
+                label="Período"
+                value={resumenDB ? resumenDB.fechaMin : "—"}
+                sub={resumenDB && resumenDB.fechaMin !== resumenDB.fechaMax ? `hasta ${resumenDB.fechaMax}` : undefined}
+                loading={cargandoDB}
+              />
+            </Grid>
+          </Grid>
+        </Box>
+      )}
+
+      {/* ── Upload ── */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
           <Button
@@ -190,7 +256,7 @@ const TelcelPage = () => {
             onClick={() => inputRef.current?.click()}
             sx={{ bgcolor: "#0d1e3a", "&:hover": { bgcolor: "#1e3a5f" } }}
           >
-            {resumen ? "Subir otro archivo" : "Seleccionar archivo Excel"}
+            Seleccionar archivo Excel
           </Button>
           {nombreArchivo && (
             <Chip
@@ -208,7 +274,7 @@ const TelcelPage = () => {
         />
       </Paper>
 
-      {/* Supabase config warning */}
+      {/* ── Avisos ── */}
       {!supabaseOk && (
         <Alert severity="warning" sx={{ mb: 2 }}>
           Configura <strong>REACT_APP_SUPABASE_URL</strong> y{" "}
@@ -216,51 +282,18 @@ const TelcelPage = () => {
           <code>.env</code> para habilitar el guardado.
         </Alert>
       )}
-
-      {/* Error */}
       {errorMsg && (
-        <Alert severity="error" sx={{ mb: 3, whiteSpace: "pre-wrap" }}>
+        <Alert severity="error" sx={{ mb: 2, whiteSpace: "pre-wrap" }}>
           {errorMsg}
         </Alert>
       )}
-
-      {/* ── ESTADO: guardado exitoso → tarjetas de resumen ── */}
-      {resumen && (
-        <Box sx={{ mb: 3 }}>
-          <Box display="flex" alignItems="center" gap={1} sx={{ mb: 2 }}>
-            <CheckCircleIcon sx={{ color: "#22c55e" }} />
-            <Typography variant="subtitle1" fontWeight={700} sx={{ color: "#22c55e" }}>
-              Guardado correctamente
-            </Typography>
-          </Box>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
-              <StatCard
-                icon={<TagIcon fontSize="small" />}
-                label="Total registros"
-                value={resumen.totalRegistros.toLocaleString("es-MX")}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <StatCard
-                icon={<AttachMoneyIcon fontSize="small" />}
-                label="Total comisión"
-                value={`$${resumen.totalComision.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <StatCard
-                icon={<CalendarMonthIcon fontSize="small" />}
-                label="Período"
-                value={resumen.fechaMin === resumen.fechaMax ? resumen.fechaMin : resumen.fechaMin}
-                sub={resumen.fechaMin !== resumen.fechaMax ? `hasta ${resumen.fechaMax}` : undefined}
-              />
-            </Grid>
-          </Grid>
-        </Box>
+      {successMsg && (
+        <Alert severity="success" icon={<CheckCircleIcon />} sx={{ mb: 2 }}>
+          {successMsg}
+        </Alert>
       )}
 
-      {/* ── ESTADO: archivo cargado → vista previa ── */}
+      {/* ── Vista previa ── */}
       {filas.length > 0 && (
         <Paper sx={{ mb: 3 }}>
           <Box
@@ -319,25 +352,6 @@ const TelcelPage = () => {
               Total comisión:{" "}
               <strong style={{ color: "#16a34a" }}>${totalComision.toFixed(2)}</strong>
             </Typography>
-          </Box>
-        </Paper>
-      )}
-
-      {/* SQL reference — solo visible antes de guardar */}
-      {!resumen && (
-        <Paper sx={{ p: 3, bgcolor: "#f8fafc" }}>
-          <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1, color: "#0d1e3a" }}>
-            SQL para crear la tabla en Supabase
-          </Typography>
-          <Box
-            component="pre"
-            sx={{
-              fontSize: 12, color: "#1e293b", bgcolor: "#f1f5f9",
-              borderRadius: 1, p: 2, overflowX: "auto",
-              border: "1px solid #e2e8f0", m: 0,
-            }}
-          >
-            {CREATE_TABLE_SQL}
           </Box>
         </Paper>
       )}
