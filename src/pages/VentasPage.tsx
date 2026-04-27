@@ -614,7 +614,7 @@ const FormularioVentaMultiple = () => {
         { headers: { Authorization: `Bearer ${token}` }, params: { numero_telefono: num } }
       );
       const existe = (res.data as VentaChip[]).some(
-        (c) => c.numero_telefono === num && !c.validado
+        (c) => c.numero_telefono === num
       );
       setNumeroDuplicado(existe);
     } catch {
