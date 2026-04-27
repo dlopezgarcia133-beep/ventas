@@ -10,9 +10,13 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import SaveIcon from "@mui/icons-material/Save";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
-const supabaseUrl  = process.env.REACT_APP_SUPABASE_URL  || "";
-const supabaseKey  = process.env.REACT_APP_SUPABASE_ANON_KEY || "";
-const supabase     = createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL  || "";
+const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY || "";
+
+const getSupabase = () => {
+  if (!supabaseUrl || !supabaseKey) return null;
+  return createClient(supabaseUrl, supabaseKey);
+};
 
 interface FilaComision {
   numero: string;
@@ -64,11 +68,13 @@ const TelcelPage = () => {
 
   const guardar = async () => {
     if (!filas.length) return;
+    const sb = getSupabase();
+    if (!sb) return;
     setGuardando(true);
     setMensaje(null);
 
     try {
-      const { error } = await supabase.from("comisiones_telcel").insert(filas);
+      const { error } = await sb.from("comisiones_telcel").insert(filas);
 
       if (error) {
         if (error.code === "42P01") {
