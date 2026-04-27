@@ -27,9 +27,22 @@ interface FilaComision {
 
 const COLS = ["numero", "cadena", "fecha", "comision_telcel"];
 
-const pick = (row: any, key: string): string => {
+const pickRaw = (row: any, key: string): any => {
   const match = Object.keys(row).find((k) => k.trim().toLowerCase() === key.toLowerCase());
-  return match !== undefined ? String(row[match] ?? "") : "";
+  return match !== undefined ? row[match] : "";
+};
+
+const pick = (row: any, key: string): string => String(pickRaw(row, key) ?? "");
+
+const excelDateToJS = (serial: number): string => {
+  const utc_days = Math.floor(serial - 25569);
+  const date = new Date(utc_days * 86400 * 1000);
+  return date.toISOString().split("T")[0];
+};
+
+const parseFecha = (raw: any): string => {
+  if (typeof raw === "number") return excelDateToJS(raw);
+  return String(raw ?? "");
 };
 
 const TelcelPage = () => {
@@ -55,7 +68,7 @@ const TelcelPage = () => {
         raw.map((row) => ({
           numero:          pick(row, "numero"),
           cadena:          pick(row, "cadena"),
-          fecha:           pick(row, "fecha"),
+          fecha:           parseFecha(pickRaw(row, "fecha")),
           comision_telcel: Number(pick(row, "comision_telcel")) || 0,
         }))
       );
