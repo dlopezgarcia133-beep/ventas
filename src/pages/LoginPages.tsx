@@ -9,6 +9,7 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navegacion = useNavigate();
+  
 
   const handleLogin = async () => {
     const formData = new URLSearchParams(); 

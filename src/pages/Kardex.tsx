@@ -4,7 +4,6 @@ import {
   TextField, Button, Box, MenuItem, FormControl, InputLabel, Select
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { obtenerRolDesdeToken } from "../components/Token";
 
 interface Kardex {
