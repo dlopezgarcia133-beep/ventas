@@ -59,20 +59,31 @@ const CLineasPage = () => {
       const sb = getSupabase();
       if (!sb) throw new Error("Configura REACT_APP_SUPABASE_URL y REACT_APP_SUPABASE_ANON_KEY");
 
-      const [{ data: telcelData, error }, chipsRes] = await Promise.all([
-        sb.from("comisiones_telcel").select("numero, comision_telcel, fecha, cadena").range(0, 9999),
-        axios.get(`${process.env.REACT_APP_API_URL}/ventas/venta_chips/pendientes`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
+      // Traer todos los registros de Supabase en páginas de 1000
+      let allTelcel: FilaTelcel[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data: page, error } = await sb
+          .from("comisiones_telcel")
+          .select("numero, comision_telcel, fecha, cadena")
+          .range(from, from + pageSize - 1);
+        if (error) throw new Error(`Supabase: ${error.message}`);
+        allTelcel = allTelcel.concat(page as FilaTelcel[]);
+        if ((page as any[]).length < pageSize) break;
+        from += pageSize;
+      }
 
-      if (error) throw new Error(`Supabase: ${error.message}`);
+      const chipsRes = await axios.get(
+        `${process.env.REACT_APP_API_URL}/ventas/venta_chips/pendientes`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-      console.log('Supabase primeros 5:', (telcelData as any[])?.slice(0, 5));
+      console.log('Supabase total:', allTelcel.length, 'primeros 5:', allTelcel.slice(0, 5));
       console.log('Pendientes primeros 5:', chipsRes.data?.slice(0, 5));
 
       const mapTelcel = new Map<string, FilaTelcel>();
-      (telcelData as FilaTelcel[]).forEach((r) => mapTelcel.set(String(r.numero).trim(), r));
+      allTelcel.forEach((r) => mapTelcel.set(String(r.numero).trim(), r));
 
       console.log('Mapa size:', mapTelcel.size);
 
