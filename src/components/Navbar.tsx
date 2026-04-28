@@ -128,7 +128,7 @@ const Navbar = () => {
                 onClose={() => closeMenu(setAnchorInventario)}
               >
                 <MenuItem component={Link} to="/inventario">Inventario</MenuItem>
-                <MenuItem component={Link} to="/traspasos/admin">Traspasos</MenuItem>
+                <MenuItem component={Link} to="/inventario/modulo">Entrada de Mercancia</MenuItem>
                 <MenuItem component={Link} to="/kardex">Kardex</MenuItem>
               </Menu>
 
