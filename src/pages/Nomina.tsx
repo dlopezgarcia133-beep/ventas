@@ -10,6 +10,8 @@ import {
   TextField,
   Button,
   Paper,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import axios from "axios";
 import dayjs, { Dayjs } from "dayjs";
@@ -51,6 +53,7 @@ const Nomina = () => {
 
   const [resumenEmpleado, setResumenEmpleado] = useState<any>(null);
 
+  const [tabActiva, setTabActiva] = useState(0);
   const [grupoSeleccionado, setGrupoSeleccionado] = useState<"A" | "C" | "">("");
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<NominaEmpleado | null>(null);
 
@@ -808,8 +811,17 @@ useEffect(() => {
 
         {periodo && !loading && (
           <>
-            {renderTabla("(A)", asesores)}
-            {renderTabla("(C)", encargados)}
+            <Tabs
+              value={tabActiva}
+              onChange={(_, v) => setTabActiva(v)}
+              sx={{ mb: 2 }}
+            >
+              <Tab label="Asesores (A)" />
+              <Tab label="Encargados (C)" />
+            </Tabs>
+
+            {tabActiva === 0 && renderTabla("Asesores (A)", asesores)}
+            {tabActiva === 1 && renderTabla("Encargados (C)", encargados)}
 
             {esAdmin && (
               <Button
