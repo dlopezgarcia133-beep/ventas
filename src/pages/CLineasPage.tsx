@@ -69,11 +69,11 @@ const CLineasPage = () => {
       if (error) throw new Error(`Supabase: ${error.message}`);
 
       const mapTelcel = new Map<string, FilaTelcel>();
-      (telcelData as FilaTelcel[]).forEach((r) => mapTelcel.set(r.numero, r));
+      (telcelData as FilaTelcel[]).forEach((r) => mapTelcel.set(String(r.numero).trim(), r));
 
       const cruzadas: FilaCruzada[] = [];
       for (const chip of chipsRes.data) {
-        const numeroLimpio = chip.numero_telefono.trim().replace(/\s+.*/, "");
+        const numeroLimpio = String(chip.numero_telefono).trim().replace(/\s+.*/, "");
         const t = mapTelcel.get(numeroLimpio);
         if (!t) continue;
         cruzadas.push({
