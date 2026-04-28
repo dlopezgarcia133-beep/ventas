@@ -11,6 +11,15 @@ from app.routers.usuarios import get_current_user
 from app.utilidades import calcular_comision_telefono, enviar_ticket, verificar_rol_requerido
 from datetime import date
 from app.routers.kardex import registrar_kardex
+import os
+from supabase import create_client
+
+def _get_supabase():
+    url = os.getenv("SUPABASE_URL", "")
+    key = os.getenv("SUPABASE_KEY", "")
+    if not url or not key:
+        return None
+    return create_client(url, key)
 
 
 
@@ -637,6 +646,68 @@ def verificar_numero_duplicado(numero: str, db: Session = Depends(get_db)):
     return {"duplicado": existe is not None}
 
 
+@router.get("/venta_chips/pendientes", response_model=list[schemas.VentaChipResponse])
+def obtener_chips_pendientes(
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user)
+):
+    return (
+        db.query(models.VentaChip)
+        .filter(
+            models.VentaChip.validado == False,
+            models.VentaChip.cancelada == False,
+        )
+        .all()
+    )
+
+
+@router.post("/venta_chips/pagar_comisiones", response_model=schemas.PagarComisionesResponse)
+def pagar_comisiones(
+    data: schemas.PagarComisionesInput,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user)
+):
+    no_encontrados = []
+    pagados = 0
+
+    # Limpiar números de entrada
+    numeros_limpios = [n.strip().split()[0] for n in data.numeros]
+
+    # Consultar comisiones en Supabase de una sola vez
+    comision_telcel: dict[str, float] = {}
+    sb = _get_supabase()
+    if sb:
+        try:
+            res = sb.from_("comisiones_telcel") \
+                .select("numero, comision_telcel") \
+                .in_("numero", numeros_limpios) \
+                .execute()
+            for row in (res.data or []):
+                comision_telcel[str(row["numero"]).strip()] = float(row["comision_telcel"] or 0)
+        except Exception:
+            pass  # Si Supabase falla, continuamos sin escribir el monto
+
+    for numero in data.numeros:
+        numero_limpio = numero.strip().split()[0]
+        candidatos = db.query(models.VentaChip).filter(
+            models.VentaChip.numero_telefono.like(f"{numero_limpio}%")
+        ).all()
+        chip = next(
+            (c for c in candidatos if c.numero_telefono.strip().split()[0] == numero_limpio),
+            None
+        )
+        if chip is None:
+            no_encontrados.append(numero)
+        else:
+            chip.validado = True
+            chip.comision_pagada = True
+            chip.comision = comision_telcel.get(numero_limpio, chip.comision or 0)
+            pagados += 1
+
+    db.commit()
+    return {"pagados": pagados, "no_encontrados": no_encontrados}
+
+
 @router.get("/venta_chips", response_model=list[schemas.VentaChipResponse])
 def obtener_ventas_chips(
     empleado_id: Optional[int] = None, 
@@ -753,7 +824,7 @@ def motivo_rechazo_chip(
     db.commit()
     return {"mensaje": "Motivo de rechazo registrado"}
 
-@router.get("/ventas/chips_rechazados", response_model=List[schemas.VentaChipResponse])
+@router.get("/chips_rechazados", response_model=List[schemas.VentaChipResponse])
 def obtener_chips_rechazados(
     empleado_id: Optional[int] = None,
     db: Session = Depends(get_db),
