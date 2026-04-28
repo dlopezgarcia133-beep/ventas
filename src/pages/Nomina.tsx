@@ -90,8 +90,8 @@ const Nomina = () => {
   const [alerta,    setAlerta]    = useState<{ tipo: "success" | "error"; texto: string } | null>(null);
 
   // ── Derivados ─────────────────────────────────────────────────────────────
-  const asesores   = nomina.filter(e => e.username.startsWith("A"));
-  const encargados = nomina.filter(e => e.username.startsWith("C"));
+  const asesores   = nomina.filter(e => e.username.startsWith("A")).sort((a, b) => a.username.localeCompare(b.username));
+  const encargados = nomina.filter(e => e.username.startsWith("C")).sort((a, b) => a.username.localeCompare(b.username));
   const empleadosGrupo = nomina.filter(e =>
     grupoSeleccionado === "A" ? e.username.startsWith("A") :
     grupoSeleccionado === "C" ? e.username.startsWith("C") : false
