@@ -20,15 +20,15 @@ const sortConDuplicados = (arr: VentaChip[], dups: Set<string>): VentaChip[] =>
 const rowDupSx  = { bgcolor: "#fee2e2" };
 const cellDupSx = { color: "#b91c1c", fontWeight: 700 };
 
-const cellSx   = { py: "2px", px: "4px", fontSize: 15 };
-const headSx   = { py: "4px", px: "4px", fontSize: 15, fontWeight: 700 };
+const cellSx   = { py: "2px", px: "6px", fontSize: 16 };
+const headSx   = { py: "4px", px: "6px", fontSize: 16, fontWeight: 700 };
 const numSx    = { ...cellSx, fontWeight: 600 };
 const numDupSx = { ...numSx, color: "#b91c1c" };
 
 // Anchos fijos — tabla admin (Empleado, Tipo, Número, Recarga, Fecha, Validar, Rechazo, Eliminar)
-const colWidthsAdmin = ["150px", "130px", "120px", "80px", "100px", "130px", "160px", "36px"];
+const colWidthsAdmin = ["160px", "130px", "130px", "80px", "100px", "120px", "150px", "36px"];
 // Anchos fijos — tabla asesor/encargado
-const colWidthsUser  = ["150px", "130px", "120px", "80px", "100px", "160px", "36px"];
+const colWidthsUser  = ["160px", "130px", "130px", "80px", "100px", "150px", "36px"];
 
 const ChipsAdmin = () => {
   const [chips, setChips]                     = useState<VentaChip[]>([]);
