@@ -807,7 +807,10 @@ const confirmarImportacion = async () => {
       Congelar Inventario (Descargar Excel)
     </Button>
 
-    <Button
+
+  {/* borrar entrada de mercancia de aqui */}
+
+    {/* <Button
       variant="contained"
       color="info"
       onClick={() => {
@@ -819,7 +822,7 @@ const confirmarImportacion = async () => {
       }}
     >
       Entrada de mercancía
-    </Button>
+    </Button> */}
 
     <Button
       variant="contained"

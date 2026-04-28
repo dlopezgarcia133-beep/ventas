@@ -1,10 +1,10 @@
+import axios from "axios";
 import {
   Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, Typography,
   TextField, Button, Box, MenuItem, FormControl, InputLabel, Select, TablePagination
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { obtenerRolDesdeToken } from "../components/Token";
 
 interface Kardex {
