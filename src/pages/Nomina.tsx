@@ -69,6 +69,7 @@ const Nomina = () => {
       precio_hora_extra: number;
       sanciones?: number;
       comisiones_pendientes?: number;
+      sueldo_base?: number;
     }>
   >({});
 
@@ -132,7 +133,7 @@ const Nomina = () => {
   };
 
   const calcularTotalFila = (e: NominaEmpleado) => {
-    const sueldo   = e.sueldo_base || 0;
+    const sueldo   = edicion[e.usuario_id]?.sueldo_base ?? e.sueldo_base ?? 0;
     const comis    = e.comisiones  || 0;
     const horas    = edicion[e.usuario_id]?.horas_extra            ?? e.horas_extra            ?? 0;
     const precio   = edicion[e.usuario_id]?.precio_hora_extra      ?? e.precio_hora_extra      ?? 0;
@@ -257,6 +258,7 @@ const Nomina = () => {
         const precio = ed.precio_hora_extra      ?? e.precio_hora_extra      ?? 0;
         const sanc   = ed.sanciones              ?? e.sanciones              ?? 0;
         const comP   = ed.comisiones_pendientes  ?? e.comisiones_pendientes  ?? 0;
+        const sueldo = ed.sueldo_base            ?? e.sueldo_base            ?? 0;
         return {
           usuario_id:            e.usuario_id,
           username:              e.username,
@@ -265,7 +267,7 @@ const Nomina = () => {
           comisiones_telefonos:  0,
           comisiones_chips:      0,
           comisiones_total:      e.comisiones,
-          sueldo_base:           e.sueldo_base,
+          sueldo_base:           sueldo,
           horas_extra:           horas,
           precio_hora_extra:     precio,
           pago_horas_extra:      horas * precio,
@@ -315,6 +317,7 @@ const Nomina = () => {
         precio_hora_extra:     empleadoSeleccionado.precio_hora_extra      || 0,
         sanciones:             empleadoSeleccionado.sanciones              || 0,
         comisiones_pendientes: empleadoSeleccionado.comisiones_pendientes  || 0,
+        sueldo_base:           empleadoSeleccionado.sueldo_base            || 0,
       },
     }));
   }, [empleadoSeleccionado]);
@@ -329,6 +332,7 @@ const Nomina = () => {
             precio_hora_extra:     e.precio_hora_extra      || 0,
             sanciones:             e.sanciones              || 0,
             comisiones_pendientes: e.comisiones_pendientes  || 0,
+            sueldo_base:           e.sueldo_base            || 0,
           };
         }
       });
@@ -367,12 +371,27 @@ const Nomina = () => {
             >
               <TableCell>{e.username}</TableCell>
               <TableCell align="right">${e.comisiones}</TableCell>
-              <TableCell align="right">${e.sueldo_base}</TableCell>
 
               <TableCell align="right">
                 {esAdmin && !soloLectura ? (
                   <TextField
                     size="small" type="number"
+                    sx={{ width: 90 }}
+                    value={edicion[e.usuario_id]?.sueldo_base ?? e.sueldo_base ?? 0}
+                    onClick={ev => ev.stopPropagation()}
+                    onChange={ev => setEdicion(prev => ({
+                      ...prev,
+                      [e.usuario_id]: { ...prev[e.usuario_id], sueldo_base: Number(ev.target.value) },
+                    }))}
+                  />
+                ) : (`$${e.sueldo_base}`)}
+              </TableCell>
+
+              <TableCell align="right">
+                {esAdmin && !soloLectura ? (
+                  <TextField
+                    size="small" type="number"
+                    sx={{ width: 80 }}
                     value={edicion[e.usuario_id]?.horas_extra ?? 0}
                     onClick={ev => ev.stopPropagation()}
                     onChange={ev => setEdicion(prev => ({
@@ -392,6 +411,7 @@ const Nomina = () => {
                 {esAdmin && !soloLectura ? (
                   <TextField
                     size="small" type="number"
+                    sx={{ width: 80 }}
                     value={edicion[e.usuario_id]?.sanciones ?? e.sanciones ?? 0}
                     onClick={ev => ev.stopPropagation()}
                     onChange={ev => setEdicion(prev => ({
@@ -406,6 +426,7 @@ const Nomina = () => {
                 {esAdmin && !soloLectura ? (
                   <TextField
                     size="small" type="number"
+                    sx={{ width: 80 }}
                     value={edicion[e.usuario_id]?.comisiones_pendientes ?? e.comisiones_pendientes ?? 0}
                     onClick={ev => ev.stopPropagation()}
                     onChange={ev => setEdicion(prev => ({
@@ -736,47 +757,61 @@ const Nomina = () => {
 
                 {/* Botones de acción */}
                 {esAdmin && (
-                  <Box display="flex" gap={2} mt={2} flexWrap="wrap" alignItems="center">
-                    {/* Guardar ajustes al backend (horas, sanciones, etc.) */}
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={async () => {
-                        for (const e of nomina) {
-                          await actualizarNominaEmpleado(
-                            e.usuario_id,
-                            Number(edicion[e.usuario_id]?.horas_extra || 0),
-                            {
-                              precio_hora_extra:     edicion[e.usuario_id]?.precio_hora_extra     || 0,
-                              sanciones:             edicion[e.usuario_id]?.sanciones             || 0,
-                              comisiones_pendientes: edicion[e.usuario_id]?.comisiones_pendientes || 0,
-                            }
-                          );
-                        }
-                        fetchResumenNomina();
-                      }}
-                    >
-                      Guardar cambios
-                    </Button>
+                  <>
+                    <Box display="flex" gap={2} mt={2} flexWrap="wrap" alignItems="center">
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={async () => {
+                          for (const e of nomina) {
+                            await actualizarNominaEmpleado(
+                              e.usuario_id,
+                              Number(edicion[e.usuario_id]?.horas_extra || 0),
+                              {
+                                precio_hora_extra:     edicion[e.usuario_id]?.precio_hora_extra     || 0,
+                                sanciones:             edicion[e.usuario_id]?.sanciones             || 0,
+                                comisiones_pendientes: edicion[e.usuario_id]?.comisiones_pendientes || 0,
+                              }
+                            );
+                          }
+                          fetchResumenNomina();
+                        }}
+                      >
+                        Guardar cambios
+                      </Button>
 
-                    {/* Guardar snapshot de la semana en historial */}
-                    <Button
-                      variant="contained"
-                      color="success"
-                      disabled={guardando}
-                      onClick={guardarNomina}
-                    >
-                      {guardando ? "Guardando..." : "Guardar Nómina"}
-                    </Button>
+                      <Button variant="contained" color="error" onClick={cerrarNomina}>
+                        Cerrar nómina
+                      </Button>
 
-                    <Button variant="contained" color="error" onClick={cerrarNomina}>
-                      Cerrar nómina
-                    </Button>
+                      <Button variant="outlined" onClick={descargarNominaExcel}>
+                        Descargar Excel
+                      </Button>
+                    </Box>
 
-                    <Button variant="outlined" onClick={descargarNominaExcel}>
-                      Descargar Excel
-                    </Button>
-                  </Box>
+                    {/* GUARDAR NÓMINA — botón destacado naranja */}
+                    <Box mt={3}>
+                      <Button
+                        variant="contained"
+                        size="large"
+                        fullWidth
+                        disabled={guardando}
+                        onClick={guardarNomina}
+                        sx={{
+                          bgcolor: "#F57C00",
+                          "&:hover": { bgcolor: "#E65100" },
+                          "&:disabled": { bgcolor: "#FFCC80", color: "#fff" },
+                          color: "#fff",
+                          fontWeight: "bold",
+                          fontSize: 18,
+                          py: 1.8,
+                          letterSpacing: 1,
+                        }}
+                      >
+                        {guardando ? "Guardando..." : "GUARDAR NÓMINA"}
+                      </Button>
+                    </Box>
+                  </>
                 )}
 
                 {/* Alerta de resultado del guardado */}
