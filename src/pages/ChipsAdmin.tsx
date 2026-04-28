@@ -20,13 +20,15 @@ const sortConDuplicados = (arr: VentaChip[], dups: Set<string>): VentaChip[] =>
 const rowDupSx  = { bgcolor: "#fee2e2" };
 const cellDupSx = { color: "#b91c1c", fontWeight: 700 };
 
-const cellSx = { py: "2px", px: "6px", fontSize: 15 };
-const headSx = { py: "4px", px: "6px", fontSize: 15, fontWeight: 700 };
+const cellSx   = { py: "2px", px: "4px", fontSize: 15 };
+const headSx   = { py: "4px", px: "4px", fontSize: 15, fontWeight: 700 };
+const numSx    = { ...cellSx, fontWeight: 600 };
+const numDupSx = { ...numSx, color: "#b91c1c" };
 
-// Anchos fijos por columna — tabla admin (Empleado, Tipo, Número, Recarga, Fecha, Hora, Validar, Rechazo, Eliminar)
-const colWidthsAdmin = ["140px", "120px", "110px", "80px", "100px", "100px", "120px", "150px", "36px"];
-// Anchos fijos por columna — tabla asesor/encargado
-const colWidthsUser  = ["140px", "120px", "110px", "80px", "100px", "100px", "150px", "36px"];
+// Anchos fijos — tabla admin (Empleado, Tipo, Número, Recarga, Fecha, Validar, Rechazo, Eliminar)
+const colWidthsAdmin = ["150px", "130px", "120px", "80px", "100px", "130px", "160px", "36px"];
+// Anchos fijos — tabla asesor/encargado
+const colWidthsUser  = ["150px", "130px", "120px", "80px", "100px", "160px", "36px"];
 
 const ChipsAdmin = () => {
   const [chips, setChips]                     = useState<VentaChip[]>([]);
@@ -133,7 +135,6 @@ const ChipsAdmin = () => {
                   <TableCell sx={headSx}>Número</TableCell>
                   <TableCell sx={headSx}>Recarga</TableCell>
                   <TableCell sx={headSx}>Fecha</TableCell>
-                  <TableCell sx={headSx}>Hora</TableCell>
                   <TableCell sx={headSx}>Validar</TableCell>
                   <TableCell sx={headSx}>Rechazo</TableCell>
                   <TableCell sx={headSx}></TableCell>
@@ -150,10 +151,9 @@ const ChipsAdmin = () => {
                       <TableRow key={chip.id} sx={esDup ? rowDupSx : {}}>
                         <TableCell sx={dupCell}>{chip.empleado?.username ?? "Eliminado"}</TableCell>
                         <TableCell sx={dupCell}>{chip.tipo_chip}</TableCell>
-                        <TableCell sx={dupCell}>{chip.numero_telefono}</TableCell>
-                        <TableCell sx={cellSx}>${chip.monto_recarga.toFixed(2)}</TableCell>
+                        <TableCell sx={esDup ? numDupSx : numSx}>{chip.numero_telefono}</TableCell>
+                        <TableCell sx={numSx}>${chip.monto_recarga.toFixed(2)}</TableCell>
                         <TableCell sx={cellSx}>{chip.fecha}</TableCell>
-                        <TableCell sx={cellSx}>{chip.hora}</TableCell>
 
                         <TableCell sx={cellSx}>
                           {chip.tipo_chip === "Activacion" && !chip.validado ? (
@@ -248,7 +248,7 @@ const ChipsAdmin = () => {
                 })()}
                 {chips.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={9} align="center" sx={cellSx}>
+                    <TableCell colSpan={8} align="center" sx={cellSx}>
                       No hay chips registrados
                     </TableCell>
                   </TableRow>
@@ -276,7 +276,6 @@ const ChipsAdmin = () => {
                   <TableCell sx={headSx}>Número</TableCell>
                   <TableCell sx={headSx}>Recarga</TableCell>
                   <TableCell sx={headSx}>Fecha</TableCell>
-                  <TableCell sx={headSx}>Hora</TableCell>
                   <TableCell sx={headSx}>Estado</TableCell>
                   <TableCell sx={headSx}></TableCell>
                 </TableRow>
@@ -292,10 +291,9 @@ const ChipsAdmin = () => {
                       <TableRow key={chip.id} sx={esDup ? rowDupSx : {}}>
                         <TableCell sx={dupCell}>{chip.empleado?.username ?? "Eliminado"}</TableCell>
                         <TableCell sx={dupCell}>{chip.tipo_chip}</TableCell>
-                        <TableCell sx={dupCell}>{chip.numero_telefono}</TableCell>
-                        <TableCell sx={cellSx}>${chip.monto_recarga.toFixed(2)}</TableCell>
+                        <TableCell sx={esDup ? numDupSx : numSx}>{chip.numero_telefono}</TableCell>
+                        <TableCell sx={numSx}>${chip.monto_recarga.toFixed(2)}</TableCell>
                         <TableCell sx={cellSx}>{chip.fecha}</TableCell>
-                        <TableCell sx={cellSx}>{chip.hora}</TableCell>
                         <TableCell sx={cellSx}>
                           {chip.validado
                             ? chip.comision ? `$${chip.comision}` : "Sin comisión"
@@ -314,7 +312,7 @@ const ChipsAdmin = () => {
                 })()}
                 {chips.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={cellSx}>
+                    <TableCell colSpan={7} align="center" sx={cellSx}>
                       No hay chips registrados
                     </TableCell>
                   </TableRow>
