@@ -328,8 +328,17 @@ const Nomina = () => {
       );
 
       setAlerta({ tipo: "success", texto: `Nómina "${formatoSemana(semanaInicio)}" guardada correctamente` });
-    } catch {
-      setAlerta({ tipo: "error", texto: "Error al guardar la nómina" });
+    } catch (err: any) {
+      console.error("❌ Error al guardar nómina — status:", err?.response?.status);
+      console.error("❌ Response data:", err?.response?.data);
+      console.error("❌ Error completo:", err);
+      const detalle = err?.response?.data?.detail;
+      const msg = typeof detalle === "string"
+        ? detalle
+        : Array.isArray(detalle)
+          ? detalle.map((d: any) => `${d.loc?.join(".")}: ${d.msg}`).join(" | ")
+          : "Error al guardar la nómina";
+      setAlerta({ tipo: "error", texto: msg });
     } finally {
       setGuardando(false);
     }
