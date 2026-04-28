@@ -29,8 +29,9 @@ import { obtenerRolDesdeToken } from "../components/Token";
 const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
 const calcularLunes = (ref: Dayjs = dayjs()): Dayjs => {
-  const dia = ref.day(); // 0=Dom 1=Lun ... 6=Sáb
-  return ref.subtract(dia === 0 ? 6 : dia - 1, "day").startOf("day");
+  // (day+6)%7 → 0 para lunes, 1 para martes, ..., 6 para domingo
+  const offset = (ref.day() + 6) % 7;
+  return ref.subtract(offset, "day").startOf("day");
 };
 
 const formatoSemana = (lunes: Dayjs): string => {
@@ -611,6 +612,19 @@ const Nomina = () => {
           >
             ›
           </IconButton>
+
+          {/* Salto directo a cualquier semana */}
+          <TextField
+            type="date"
+            size="small"
+            value={semanaInicio.format("YYYY-MM-DD")}
+            InputLabelProps={{ shrink: true }}
+            inputProps={{ title: "Ir a la semana que contiene esta fecha" }}
+            onChange={e => {
+              if (e.target.value) setSemanaInicio(calcularLunes(dayjs(e.target.value)));
+            }}
+            sx={{ width: 160, ml: 1 }}
+          />
 
           {esAdmin && !modoHistorial && (
             <Button
