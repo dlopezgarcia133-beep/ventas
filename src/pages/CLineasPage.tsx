@@ -68,8 +68,13 @@ const CLineasPage = () => {
 
       if (error) throw new Error(`Supabase: ${error.message}`);
 
+      console.log('Supabase primeros 5:', (telcelData as any[])?.slice(0, 5));
+      console.log('Pendientes primeros 5:', chipsRes.data?.slice(0, 5));
+
       const mapTelcel = new Map<string, FilaTelcel>();
       (telcelData as FilaTelcel[]).forEach((r) => mapTelcel.set(String(r.numero).trim(), r));
+
+      console.log('Mapa size:', mapTelcel.size);
 
       const cruzadas: FilaCruzada[] = [];
       for (const chip of chipsRes.data) {
