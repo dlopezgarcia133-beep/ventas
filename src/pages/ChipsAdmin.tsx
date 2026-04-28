@@ -1,0 +1,329 @@
+import React, { useEffect, useState } from "react";
+import {
+  TableContainer, Paper, Table, TableHead, TableRow, TableCell,
+  TableBody, Checkbox, Typography, Box, Button,
+} from "@mui/material";
+import axios from "axios";
+import { Usuario, VentaChip } from "../Types";
+import { obtenerRolDesdeToken } from "../components/Token";
+import DeleteIcon from "@mui/icons-material/Delete";
+
+const getDuplicados = (arr: VentaChip[]): Set<string> => {
+  const counts: Record<string, number> = {};
+  arr.forEach((c) => { counts[c.numero_telefono] = (counts[c.numero_telefono] || 0) + 1; });
+  return new Set(Object.keys(counts).filter((k) => counts[k] > 1));
+};
+
+const sortConDuplicados = (arr: VentaChip[], dups: Set<string>): VentaChip[] =>
+  [...arr].sort((a, b) => (dups.has(a.numero_telefono) ? 0 : 1) - (dups.has(b.numero_telefono) ? 0 : 1));
+
+const rowDupSx  = { bgcolor: "#fee2e2" };
+const cellDupSx = { color: "#b91c1c", fontWeight: 700 };
+
+const cellSx   = { py: "2px", px: "6px", fontSize: 16 };
+const headSx   = { py: "4px", px: "6px", fontSize: 16, fontWeight: 700 };
+const numSx    = { ...cellSx, fontWeight: 600 };
+const numDupSx = { ...numSx, color: "#b91c1c" };
+
+// Anchos fijos — tabla admin (Empleado, Tipo, Número, Recarga, Fecha, Validar, Rechazo, Eliminar)
+const colWidthsAdmin = ["160px", "130px", "130px", "80px", "100px", "120px", "150px", "36px"];
+// Anchos fijos — tabla asesor/encargado
+const colWidthsUser  = ["160px", "130px", "130px", "80px", "100px", "150px", "36px"];
+
+const ChipsAdmin = () => {
+  const [chips, setChips]                     = useState<VentaChip[]>([]);
+  const [usuarios, setUsuarios]               = useState<Usuario[]>([]);
+  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<number | null>(null);
+  const token = localStorage.getItem("token");
+  const rol   = obtenerRolDesdeToken();
+
+  const fetchChips = async () => {
+    try {
+      const params: any = {};
+      if (empleadoSeleccionado) params.empleado_id = empleadoSeleccionado;
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/ventas/venta_chips`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params,
+      });
+      const sinValidados = res.data
+        .filter((c: VentaChip) => !c.validado)
+        .sort((a: VentaChip, b: VentaChip) =>
+          new Date(`${b.fecha}T${b.hora}`).getTime() - new Date(`${a.fecha}T${a.hora}`).getTime()
+        );
+      setChips(sinValidados);
+    } catch (error) {
+      console.error("Error al cargar chips:", error);
+    }
+  };
+
+  useEffect(() => {
+    axios
+      .get(`${process.env.REACT_APP_API_URL}/registro/usuarios`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((r) => setUsuarios(r.data))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => { fetchChips(); }, [empleadoSeleccionado]);
+
+  const eliminarChip = async (id: number) => {
+    if (!window.confirm("¿Seguro que quieres eliminar este chip?")) return;
+    try {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/ventas/eliminar_chip/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setChips((prev) => prev.filter((c) => c.id !== id));
+    } catch {
+      alert("No se pudo eliminar el chip");
+    }
+  };
+
+  const validarChip = async (id: number, tipo_chip: string, comision?: number) => {
+    if (
+      tipo_chip === "Activacion" &&
+      (comision === undefined || comision === null || isNaN(Number(comision)) || Number(comision) <= 0)
+    ) {
+      alert("Por favor ingresa una comisión válida para chips de tipo Activación.");
+      return;
+    }
+    try {
+      await axios.put(
+        `${process.env.REACT_APP_API_URL}/ventas/venta_chips/${id}/validar`,
+        { comision_manual: comision },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setChips((prev) => prev.map((c) => (c.id === id ? { ...c, validado: true } : c)));
+    } catch {
+      alert("Error al validar chip");
+    }
+  };
+
+  return (
+    <Box sx={{ mt: 2 }}>
+      {rol === "admin" && (
+        <>
+          <Typography variant="h6" gutterBottom>Validación de Chips Vendidos</Typography>
+
+          <Box sx={{ mb: 1, display: "flex", alignItems: "center", gap: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="body2">Empleado:</Typography>
+              <select
+                value={empleadoSeleccionado ?? ""}
+                onChange={(e) => setEmpleadoSeleccionado(e.target.value ? Number(e.target.value) : null)}
+                style={{ fontSize: 14 }}
+              >
+                <option value="">(Todos)</option>
+                {usuarios.map((u) => (
+                  <option key={u.id} value={u.id}>{u.username}</option>
+                ))}
+              </select>
+            </Box>
+            <Button size="small" href="/chips_invalidos">Incubadora</Button>
+            <Button size="small" href="/promos">Promociones Clientes</Button>
+          </Box>
+
+          <TableContainer component={Paper}>
+            <Table size="small" sx={{ tableLayout: "fixed", width: "100%" }}>
+              <colgroup>
+                {colWidthsAdmin.map((w, i) => <col key={i} style={{ width: w }} />)}
+              </colgroup>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={headSx}>Empleado</TableCell>
+                  <TableCell sx={headSx}>Tipo</TableCell>
+                  <TableCell sx={headSx}>Número</TableCell>
+                  <TableCell sx={headSx}>Recarga</TableCell>
+                  <TableCell sx={headSx}>Fecha</TableCell>
+                  <TableCell sx={headSx}>Validar</TableCell>
+                  <TableCell sx={headSx}>Rechazo</TableCell>
+                  <TableCell sx={headSx}></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {(() => {
+                  const filtrados = chips.filter((c) => !c.validado && !c.descripcion_rechazo);
+                  const dups = getDuplicados(filtrados);
+                  return sortConDuplicados(filtrados, dups).map((chip) => {
+                    const esDup = dups.has(chip.numero_telefono);
+                    const dupCell = esDup ? { ...cellSx, ...cellDupSx } : cellSx;
+                    return (
+                      <TableRow key={chip.id} sx={esDup ? rowDupSx : {}}>
+                        <TableCell sx={dupCell}>{chip.empleado?.username ?? "Eliminado"}</TableCell>
+                        <TableCell sx={dupCell}>{chip.tipo_chip}</TableCell>
+                        <TableCell sx={esDup ? numDupSx : numSx}>{chip.numero_telefono}</TableCell>
+                        <TableCell sx={numSx}>${chip.monto_recarga.toFixed(2)}</TableCell>
+                        <TableCell sx={cellSx}>{chip.fecha}</TableCell>
+
+                        <TableCell sx={cellSx}>
+                          {chip.tipo_chip === "Activacion" && !chip.validado ? (
+                            <Box sx={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                              <input
+                                type="number"
+                                placeholder="$"
+                                value={chip.comision || ""}
+                                onChange={(e) =>
+                                  setChips((prev) =>
+                                    prev.map((c) =>
+                                      c.id === chip.id ? { ...c, comision: parseFloat(e.target.value) } : c
+                                    )
+                                  )
+                                }
+                                style={{ width: 52, fontSize: 11, padding: "1px 4px" }}
+                              />
+                              <button
+                                onClick={() => validarChip(chip.id, chip.tipo_chip, chip.comision)}
+                                disabled={!chip.comision}
+                                style={{
+                                  padding: "2px 6px",
+                                  fontSize: 11,
+                                  backgroundColor: "#f97316",
+                                  color: "white",
+                                  border: "none",
+                                  borderRadius: 3,
+                                  cursor: "pointer",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                Validar
+                              </button>
+                            </Box>
+                          ) : chip.validado ? (
+                            <Typography sx={{ fontSize: 12, color: "green" }}>${chip.comision}</Typography>
+                          ) : (
+                            <Checkbox
+                              size="small"
+                              checked={chip.validado}
+                              onChange={() => validarChip(chip.id, chip.tipo_chip, chip.comision_manual)}
+                              disabled={chip.validado}
+                              color="success"
+                            />
+                          )}
+                        </TableCell>
+
+                        <TableCell sx={cellSx}>
+                          {chip.validado ? (
+                            <Typography sx={{ fontSize: 12, color: "green" }}>${chip.comision}</Typography>
+                          ) : (
+                            <select
+                              value={chip.descripcion_rechazo || ""}
+                              style={{ fontSize: 11 }}
+                              onChange={async (e) => {
+                                const motivo = e.target.value;
+                                try {
+                                  await axios.put(
+                                    `${process.env.REACT_APP_API_URL}/ventas/venta_chips/${chip.id}/motivo_rechazo`,
+                                    { descripcion: motivo },
+                                    { headers: { Authorization: `Bearer ${token}` } }
+                                  );
+                                  setChips((prev) =>
+                                    prev.map((c) => (c.id === chip.id ? { ...c, descripcion_rechazo: motivo } : c))
+                                  );
+                                } catch {
+                                  alert("Error al enviar motivo de rechazo");
+                                }
+                              }}
+                            >
+                              <option value="">Rechazar…</option>
+                              <option value="Activacion sin llamada">Activacion sin llamada</option>
+                              <option value="No es su clasificacion">No es su clasificacion</option>
+                              <option value="Esta Preactivado">Esta Preactivado</option>
+                              <option value="No tiene recarga">No tiene recarga</option>
+                              <option value="Linea esta duplicada">Linea esta duplicada</option>
+                              <option value="No esta en el ciclo">No esta en el ciclo</option>
+                            </select>
+                          )}
+                        </TableCell>
+
+                        <TableCell sx={cellSx}>
+                          {esDup && (
+                            <Button color="error" size="small" onClick={() => eliminarChip(chip.id)}>
+                              <DeleteIcon sx={{ fontSize: 16 }} />
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  });
+                })()}
+                {chips.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={8} align="center" sx={cellSx}>
+                      No hay chips registrados
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      )}
+
+      {(rol === "encargado" || rol === "asesor") && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="h6" gutterBottom>Validación de Chips Vendidos</Typography>
+          <Button size="small" href="/chips_invalidos" sx={{ mb: 1 }}>Incubadora</Button>
+
+          <TableContainer component={Paper}>
+            <Table size="small" sx={{ tableLayout: "fixed", width: "100%" }}>
+              <colgroup>
+                {colWidthsUser.map((w, i) => <col key={i} style={{ width: w }} />)}
+              </colgroup>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={headSx}>Empleado</TableCell>
+                  <TableCell sx={headSx}>Tipo</TableCell>
+                  <TableCell sx={headSx}>Número</TableCell>
+                  <TableCell sx={headSx}>Recarga</TableCell>
+                  <TableCell sx={headSx}>Fecha</TableCell>
+                  <TableCell sx={headSx}>Estado</TableCell>
+                  <TableCell sx={headSx}></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {(() => {
+                  const filtrados = chips.filter((c) => !c.validado);
+                  const dups = getDuplicados(filtrados);
+                  return sortConDuplicados(filtrados, dups).map((chip) => {
+                    const esDup = dups.has(chip.numero_telefono);
+                    const dupCell = esDup ? { ...cellSx, ...cellDupSx } : cellSx;
+                    return (
+                      <TableRow key={chip.id} sx={esDup ? rowDupSx : {}}>
+                        <TableCell sx={dupCell}>{chip.empleado?.username ?? "Eliminado"}</TableCell>
+                        <TableCell sx={dupCell}>{chip.tipo_chip}</TableCell>
+                        <TableCell sx={esDup ? numDupSx : numSx}>{chip.numero_telefono}</TableCell>
+                        <TableCell sx={numSx}>${chip.monto_recarga.toFixed(2)}</TableCell>
+                        <TableCell sx={cellSx}>{chip.fecha}</TableCell>
+                        <TableCell sx={cellSx}>
+                          {chip.validado
+                            ? chip.comision ? `$${chip.comision}` : "Sin comisión"
+                            : chip.descripcion_rechazo ?? "Pendiente"}
+                        </TableCell>
+                        <TableCell sx={cellSx}>
+                          {!chip.validado && (
+                            <Button color="error" size="small" onClick={() => eliminarChip(chip.id)}>
+                              <DeleteIcon sx={{ fontSize: 16 }} />
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  });
+                })()}
+                {chips.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center" sx={cellSx}>
+                      No hay chips registrados
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+export default ChipsAdmin;
