@@ -12,7 +12,7 @@ const ChipsRechazados = () => {
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<number | null>(null);
   const token = localStorage.getItem("token");
 
-  const usuario = JSON.parse(localStorage.getItem("user") || "{}");
+  const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
   const rolToken = obtenerRolDesdeToken();
 
   const fetchRechazados = async () => {

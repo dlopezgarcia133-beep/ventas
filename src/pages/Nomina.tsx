@@ -14,7 +14,7 @@ import {
 import axios from "axios";
 import dayjs, { Dayjs } from "dayjs";
 import { NominaEmpleado, NominaPeriodo } from "../Types";
-
+import { obtenerRolDesdeToken } from "../components/Token";
 
 import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 
@@ -22,8 +22,7 @@ import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 const Nomina = () => {
   const token = localStorage.getItem("token");
 
-  // ⚠️ luego puedes obtenerlo del token
-  const esAdmin = true;
+  const esAdmin = obtenerRolDesdeToken() === "admin";
 
   const [periodo, setPeriodo] = useState<NominaPeriodo | null>(null);
   const [nomina, setNomina] = useState<NominaEmpleado[]>([]);
@@ -42,11 +41,11 @@ const Nomina = () => {
 
 
 
-  const [inicioA, setInicioA] = useState<String | null>(null);
-  const [finA, setFinA] = useState<String | null>(null);
+  const [inicioA, setInicioA] = useState<string | null>(null);
+  const [finA, setFinA] = useState<string | null>(null);
 
-  const [inicioC, setInicioC] = useState<String | null>(null);
-  const [finC, setFinC] = useState<String | null>(null);
+  const [inicioC, setInicioC] = useState<string | null>(null);
+  const [finC, setFinC] = useState<string | null>(null);
 
 
 
@@ -211,15 +210,12 @@ const Nomina = () => {
         `${process.env.REACT_APP_API_URL}/nomina/resumen/empleado/${usuarioId}`,
         {
           params: {
-            fecha_inicio: inicioA,
-            fecha_fin: finA,
-
+            fecha_inicio: fechas.inicio,
+            fecha_fin: fechas.fin,
           },
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log("Resumen empleado:", res.data);
-
       setResumenEmpleado(res.data);
     } catch (err) {
       console.error("Error al obtener resumen del empleado", err);
@@ -342,9 +338,6 @@ const Nomina = () => {
   }, [periodo]);
 
 
-  useEffect(() => {
-    console.log("Nomina:", nomina);
-  }, [nomina]);
 
 
 

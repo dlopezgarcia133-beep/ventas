@@ -19,10 +19,15 @@ const ComisionesUsuario = () => {
   const navigate = useNavigate();
 
   const fetchCicloActual = async () => {
-    const res = await axios.get(`${process.env.REACT_APP_API_URL}/comisiones/comisiones/ciclo`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setData(res.data);
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/comisiones/comisiones/ciclo`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setData(res.data);
+    } catch (error) {
+      console.error("Error al obtener ciclo actual:", error);
+      setData(null);
+    }
   };
 
   const fetchCicloPorFechas = async () => {

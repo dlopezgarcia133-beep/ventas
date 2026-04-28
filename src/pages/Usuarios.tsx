@@ -7,7 +7,7 @@ import { Edit, Save, Delete } from "@mui/icons-material";
 import axios from "axios";
 import { Usuario } from "../Types"; // Asegúrate de definir esta interfaz
 
-const roles = ["admin", "encargado", "asesor"];
+const roles = ["admin", "encargado", "asesor", "contador"];
 
 const UsuariosAdmin = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);

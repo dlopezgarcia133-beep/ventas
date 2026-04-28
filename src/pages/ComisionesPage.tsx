@@ -100,10 +100,7 @@ const fetchCicloActual = async () => {
       }
     );
 
-    console.log("Respuesta API:", res.data);
-
     if (res.data === null || res.data === undefined) {
-      console.warn("La API devolvió null");
       return;
     }
 
@@ -126,8 +123,6 @@ const fetchCicloPorFechas = async () => {
     params.empleado_id = empleadoSeleccionado;
   }
 
-  console.log("Consultando:", `${process.env.REACT_APP_API_URL}/comisiones/ciclo_por_fechas`, params);
-  
   try {
     const res = await axios.get(
       `${process.env.REACT_APP_API_URL}/comisiones/ciclo_por_fechas`,
@@ -267,24 +262,25 @@ useEffect(() => {
           <TableCell>
             <IconButton
               color="error"
-              onClick={() => {
+              onClick={async () => {
+                if (v.id) {
+                  try {
+                    await axios.put(
+                      `${process.env.REACT_APP_API_URL}/ventas/ventas/${v.id}/cancelar`,
+                      {},
+                      { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                  } catch (err) {
+                    console.error("Error al cancelar venta:", err);
+                  }
+                }
                 const nuevasVentas = data.ventas_accesorios.filter((_, idx) => idx !== i);
-
-                const nuevoTotalAccesorios = nuevasVentas.reduce(
-                  (acc, item) => acc + item.comision,
-                  0
-                );
-
-                const nuevoTotalGeneral =
-                  nuevoTotalAccesorios +
-                  data.total_telefonos +
-                  data.total_chips;
-
+                const nuevoTotalAccesorios = nuevasVentas.reduce((acc, item) => acc + item.comision, 0);
                 setData({
                   ...data,
                   ventas_accesorios: nuevasVentas,
                   total_accesorios: nuevoTotalAccesorios,
-                  total_general: nuevoTotalGeneral,
+                  total_general: nuevoTotalAccesorios + data.total_telefonos + data.total_chips,
                 });
               }}
             >
@@ -323,24 +319,25 @@ useEffect(() => {
           <TableCell>
             <IconButton
               color="error"
-              onClick={() => {
+              onClick={async () => {
+                if (v.id) {
+                  try {
+                    await axios.put(
+                      `${process.env.REACT_APP_API_URL}/ventas/ventas/${v.id}/cancelar`,
+                      {},
+                      { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                  } catch (err) {
+                    console.error("Error al cancelar venta telefono:", err);
+                  }
+                }
                 const nuevasVentas = data.ventas_telefonos.filter((_, idx) => idx !== i);
-
-                const nuevoTotalTelefonos = nuevasVentas.reduce(
-                  (acc, item) => acc + item.comision_total,
-                  0
-                );
-
-                const nuevoTotalGeneral =
-                  data.total_accesorios +
-                  nuevoTotalTelefonos +
-                  data.total_chips;
-
+                const nuevoTotalTelefonos = nuevasVentas.reduce((acc, item) => acc + item.comision_total, 0);
                 setData({
                   ...data,
                   ventas_telefonos: nuevasVentas,
                   total_telefonos: nuevoTotalTelefonos,
-                  total_general: nuevoTotalGeneral,
+                  total_general: data.total_accesorios + nuevoTotalTelefonos + data.total_chips,
                 });
               }}
             >
@@ -389,27 +386,24 @@ useEffect(() => {
             <TableCell>
               <IconButton
                 color="error"
-                onClick={() => {
-                  // 1. Quitar el registro de la lista
+                onClick={async () => {
+                  if (v.id) {
+                    try {
+                      await axios.delete(
+                        `${process.env.REACT_APP_API_URL}/ventas/eliminar_chip/${v.id}`,
+                        { headers: { Authorization: `Bearer ${token}` } }
+                      );
+                    } catch (err) {
+                      console.error("Error al eliminar chip:", err);
+                    }
+                  }
                   const nuevasVentas = data.ventas_chips.filter((_, idx) => idx !== i);
-
-                  // 2. Recalcular totales
-                  const nuevoTotalChips = nuevasVentas.reduce(
-                    (acc, chip) => acc + chip.comision,
-                    0
-                  );
-
-                  const nuevoTotalGeneral =
-                    data.total_accesorios +
-                    data.total_telefonos +
-                    nuevoTotalChips;
-
-                  // 3. Actualizar estado "data"
+                  const nuevoTotalChips = nuevasVentas.reduce((acc, chip) => acc + chip.comision, 0);
                   setData({
                     ...data,
                     ventas_chips: nuevasVentas,
                     total_chips: nuevoTotalChips,
-                    total_general: nuevoTotalGeneral,
+                    total_general: data.total_accesorios + data.total_telefonos + nuevoTotalChips,
                   });
                 }}
               >

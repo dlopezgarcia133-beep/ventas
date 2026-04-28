@@ -68,8 +68,11 @@ const traspasosFiltrados = traspasos.filter((t) => {
 });
 
   useEffect(() => {
-    cargarTraspasos()
-}, [buscarFolio])
+    const timer = setTimeout(() => {
+      cargarTraspasos();
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [buscarFolio]);
 
   return (
     <Container sx={{ mt: 4 }}>
