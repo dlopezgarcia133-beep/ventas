@@ -60,7 +60,7 @@ const CLineasPage = () => {
       if (!sb) throw new Error("Configura REACT_APP_SUPABASE_URL y REACT_APP_SUPABASE_ANON_KEY");
 
       const [{ data: telcelData, error }, chipsRes] = await Promise.all([
-        sb.from("comisiones_telcel").select("numero, comision_telcel, fecha, cadena"),
+        sb.from("comisiones_telcel").select("numero, comision_telcel, fecha, cadena").range(0, 9999),
         axios.get(`${process.env.REACT_APP_API_URL}/ventas/venta_chips/pendientes`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
