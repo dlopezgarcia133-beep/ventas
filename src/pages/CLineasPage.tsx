@@ -73,7 +73,8 @@ const CLineasPage = () => {
 
       const cruzadas: FilaCruzada[] = [];
       for (const chip of chipsRes.data) {
-        const t = mapTelcel.get(chip.numero_telefono);
+        const numeroLimpio = chip.numero_telefono.trim().replace(/\s+.*/, "");
+        const t = mapTelcel.get(numeroLimpio);
         if (!t) continue;
         cruzadas.push({
           numero: chip.numero_telefono,
