@@ -50,6 +50,7 @@ type EdicionEmpleado = {
   precio_hora_extra: number;
   sanciones: number;
   comisiones_pendientes: number;
+  horas_faltantes: number;
 };
 
 const Nomina = () => {
@@ -105,17 +106,19 @@ const Nomina = () => {
     precio_hora_extra:     e.precio_hora_extra     ?? 0,
     sanciones:             e.sanciones             ?? 0,
     comisiones_pendientes: e.comisiones_pendientes ?? 0,
+    horas_faltantes:       0,
   });
 
   const calcularTotalFila = (e: NominaEmpleado): number => {
-    const ed     = edicion[e.usuario_id];
-    const sueldo = ed?.sueldo_base           ?? e.sueldo_base           ?? 0;
-    const comis  = e.comisiones || 0;
-    const horas  = ed?.horas_extra           ?? e.horas_extra           ?? 0;
-    const precio = ed?.precio_hora_extra     ?? e.precio_hora_extra     ?? 0;
-    const sanc   = ed?.sanciones             ?? e.sanciones             ?? 0;
-    const comP   = ed?.comisiones_pendientes ?? e.comisiones_pendientes ?? 0;
-    return sueldo + comis + horas * precio + comP - sanc;
+    const ed       = edicion[e.usuario_id];
+    const sueldo   = ed?.sueldo_base           ?? e.sueldo_base           ?? 0;
+    const comis    = e.comisiones || 0;
+    const horas    = ed?.horas_extra           ?? e.horas_extra           ?? 0;
+    const precio   = ed?.precio_hora_extra     ?? e.precio_hora_extra     ?? 0;
+    const sanc     = ed?.sanciones             ?? e.sanciones             ?? 0;
+    const comP     = ed?.comisiones_pendientes ?? e.comisiones_pendientes ?? 0;
+    const hFalt    = ed?.horas_faltantes       ?? 0;
+    return sueldo + comis + horas * precio + comP - sanc - hFalt * precio;
   };
 
   // ── API ───────────────────────────────────────────────────────────────────
@@ -169,6 +172,7 @@ const Nomina = () => {
               precio_hora_extra:     h.precio_hora_extra     ?? 0,
               sanciones:             h.sanciones             ?? 0,
               comisiones_pendientes: h.comisiones_pendientes ?? 0,
+              horas_faltantes:       h.horas_faltantes       ?? 0,
             };
           }
           // Empleados sin registro en historial usan valores actuales
@@ -295,6 +299,7 @@ const Nomina = () => {
         const sueldo = ed.sueldo_base;
         const sanc   = ed.sanciones;
         const comP   = ed.comisiones_pendientes;
+        const hFalt  = ed.horas_faltantes;
         return {
           usuario_id:            e.usuario_id,
           username:              e.username,
@@ -309,6 +314,7 @@ const Nomina = () => {
           pago_horas_extra:      horas * precio,
           sanciones:             sanc,
           comisiones_pendientes: comP,
+          horas_faltantes:       hFalt,
           total_pagar:           calcularTotalFila(e),
         };
       });
@@ -370,6 +376,7 @@ const Nomina = () => {
             <TableCell align="right">Pago horas</TableCell>
             <TableCell align="right">Sanciones</TableCell>
             <TableCell align="right">Com. pendientes</TableCell>
+            <TableCell align="right">Hrs faltantes</TableCell>
             <TableCell align="right">Total</TableCell>
           </TableRow>
         </TableHead>
@@ -440,6 +447,17 @@ const Nomina = () => {
                   ) : (e.comisiones_pendientes ?? 0)}
                 </TableCell>
 
+                {/* Horas faltantes */}
+                <TableCell align="right">
+                  {esAdmin && !soloLectura ? (
+                    <TextField size="small" type="number" sx={{ width: 80 }}
+                      value={ed?.horas_faltantes ?? 0}
+                      onClick={ev => ev.stopPropagation()}
+                      onChange={ev => setEd(e.usuario_id, "horas_faltantes", Number(ev.target.value))}
+                    />
+                  ) : (ed?.horas_faltantes ?? 0)}
+                </TableCell>
+
                 <TableCell align="right">
                   <strong>${calcularTotalFila(e).toFixed(2)}</strong>
                 </TableCell>
@@ -464,24 +482,33 @@ const Nomina = () => {
             <TableCell align="right">Pago horas</TableCell>
             <TableCell align="right">Sanciones</TableCell>
             <TableCell align="right">Com. pendientes</TableCell>
+            <TableCell align="right">Hrs faltantes</TableCell>
+            <TableCell align="right">Desc. hrs falt.</TableCell>
             <TableCell align="right">Total</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {data.map(e => (
-            <TableRow key={e.id ?? e.usuario_id}>
-              <TableCell>{e.username}</TableCell>
-              <TableCell align="right">${e.comisiones_total}</TableCell>
-              <TableCell align="right">${e.sueldo_base}</TableCell>
-              <TableCell align="right">{e.horas_extra}</TableCell>
-              <TableCell align="right">${e.pago_horas_extra}</TableCell>
-              <TableCell align="right">${e.sanciones}</TableCell>
-              <TableCell align="right">${e.comisiones_pendientes}</TableCell>
-              <TableCell align="right">
-                <strong>${Number(e.total_pagar).toFixed(2)}</strong>
-              </TableCell>
-            </TableRow>
-          ))}
+          {data.map(e => {
+            const descFalt = (e.horas_faltantes ?? 0) * (e.precio_hora_extra ?? 0);
+            return (
+              <TableRow key={e.id ?? e.usuario_id}>
+                <TableCell>{e.username}</TableCell>
+                <TableCell align="right">${e.comisiones_total}</TableCell>
+                <TableCell align="right">${e.sueldo_base}</TableCell>
+                <TableCell align="right">{e.horas_extra}</TableCell>
+                <TableCell align="right">${e.pago_horas_extra}</TableCell>
+                <TableCell align="right">${e.sanciones}</TableCell>
+                <TableCell align="right">${e.comisiones_pendientes}</TableCell>
+                <TableCell align="right">{e.horas_faltantes ?? 0}</TableCell>
+                <TableCell align="right" sx={{ color: "error.main" }}>
+                  {descFalt > 0 ? `-$${descFalt.toFixed(2)}` : "-"}
+                </TableCell>
+                <TableCell align="right">
+                  <strong>${Number(e.total_pagar).toFixed(2)}</strong>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </Paper>
@@ -554,11 +581,12 @@ const Nomina = () => {
               </Typography>
 
               {[
-                { label: "Sueldo base",            campo: "sueldo_base"           as keyof EdicionEmpleado },
+                { label: "Sueldo base",             campo: "sueldo_base"           as keyof EdicionEmpleado },
                 { label: "Horas extra",             campo: "horas_extra"           as keyof EdicionEmpleado },
                 { label: "Precio por hora extra",   campo: "precio_hora_extra"     as keyof EdicionEmpleado },
                 { label: "Sanciones (−)",           campo: "sanciones"             as keyof EdicionEmpleado },
                 { label: "Comisiones pendientes (+)",campo: "comisiones_pendientes" as keyof EdicionEmpleado },
+                { label: "Horas faltantes (−)",     campo: "horas_faltantes"       as keyof EdicionEmpleado },
               ].map(({ label, campo }) => (
                 <TextField
                   key={campo}
