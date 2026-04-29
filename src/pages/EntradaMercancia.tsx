@@ -339,7 +339,7 @@ const EntradaMercancia = () => {
 
       {/* 📋 TABLA */}
       {entradaLista.length > 0 && (
-        <Box mt={4}>
+        <Box mt={4} id="area-impresion">
           <Typography><strong>Productos agregados:</strong></Typography>
 
           <Table size="small">

@@ -13,3 +13,22 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #area-impresion,
+  #area-impresion * {
+    visibility: visible;
+  }
+
+  #area-impresion {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+}
