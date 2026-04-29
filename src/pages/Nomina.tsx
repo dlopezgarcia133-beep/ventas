@@ -242,20 +242,19 @@ const Nomina = () => {
   };
 
   const descargarNominaExcel = async () => {
-    if (!periodo) return;
     try {
       const res = await axios.get(
         `${process.env.REACT_APP_API_URL}/nomina/descargar`,
         {
           headers: { Authorization: `Bearer ${token}` },
-          params: { periodo_id: periodo.id },
+          params: { semana_inicio: inicioA },
           responseType: "blob",
         }
       );
       const url  = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
       link.href  = url;
-      link.setAttribute("download", "nomina.xlsx");
+      link.setAttribute("download", `nomina_${inicioA}.xlsx`);
       document.body.appendChild(link);
       link.click();
       link.remove();
