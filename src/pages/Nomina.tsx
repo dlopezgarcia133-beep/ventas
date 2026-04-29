@@ -745,39 +745,31 @@ const Nomina = () => {
                   <Button variant="outlined" onClick={descargarNominaExcel}>
                     Descargar Excel
                   </Button>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    disabled={guardando}
+                    onClick={guardarNomina}
+                    sx={{
+                      bgcolor: "#F57C00",
+                      "&:hover": { bgcolor: "#E65100" },
+                      "&:disabled": { bgcolor: "#FFCC80", color: "#fff" },
+                      color: "#fff",
+                      fontWeight: "bold",
+                      fontSize: 16,
+                      px: 4,
+                    }}
+                  >
+                    {guardando ? "Guardando..." : "GUARDAR NÓMINA"}
+                  </Button>
                 </Box>
-              </>
-            )}
-
-            {/* GUARDAR NÓMINA — fuera de las pestañas, siempre visible */}
-            {nomina.length > 0 && !loading && (
-              <Box mt={3}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  disabled={guardando}
-                  onClick={guardarNomina}
-                  sx={{
-                    bgcolor: "#F57C00",
-                    "&:hover": { bgcolor: "#E65100" },
-                    "&:disabled": { bgcolor: "#FFCC80", color: "#fff" },
-                    color: "#fff",
-                    fontWeight: "bold",
-                    fontSize: 18,
-                    py: 1.8,
-                    letterSpacing: 1,
-                  }}
-                >
-                  {guardando ? "Guardando..." : "GUARDAR NÓMINA"}
-                </Button>
 
                 {alerta && (
                   <Alert severity={alerta.tipo} sx={{ mt: 2 }} onClose={() => setAlerta(null)}>
                     {alerta.texto}
                   </Alert>
                 )}
-              </Box>
+              </>
             )}
           </>
         )}
