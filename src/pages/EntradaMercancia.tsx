@@ -52,6 +52,7 @@ const EntradaMercancia = () => {
   const [existenciaActual, setExistenciaActual] = useState<number>(0);
 
   const inputCantidadRef = useRef<HTMLInputElement>(null);
+  const inputBusquedaRef = useRef<HTMLInputElement>(null);
 
   // 📥 CARGAR MODULOS
   const cargarModulos = async () => {
@@ -263,21 +264,41 @@ const EntradaMercancia = () => {
           `${option.clave} - ${option.producto}`
         }
         renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Buscar producto"
-            fullWidth
-            InputProps={{
-              ...params.InputProps,
-              endAdornment: (
-                <>
-                  {loadingBusqueda && <CircularProgress size={20} />}
-                  {params.InputProps.endAdornment}
-                </>
-              ),
-            }}
-          />
-        )}
+  <TextField
+    {...params}
+    label="Buscar producto"
+    fullWidth
+    inputRef={inputBusquedaRef}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" && opcionesProductos.length > 0) {
+        e.preventDefault();
+
+        const primero = opcionesProductos[0];
+
+        setProductoEntrada(primero);
+
+        // cargar existencia
+        obtenerExistenciaModulo(primero.clave).then((existencia) => {
+          setExistenciaActual(existencia);
+        });
+
+        // mover foco a cantidad
+        setTimeout(() => {
+          inputCantidadRef.current?.focus();
+        }, 100);
+      }
+    }}
+    InputProps={{
+      ...params.InputProps,
+      endAdornment: (
+        <>
+          {loadingBusqueda && <CircularProgress size={20} />}
+          {params.InputProps.endAdornment}
+        </>
+      ),
+    }}
+  />
+)}
       />
 
       {/* ➕ AGREGAR */}
@@ -297,6 +318,12 @@ const EntradaMercancia = () => {
             value={cantidadEntrada}
             inputRef={inputCantidadRef}
             onChange={(e) => setCantidadEntrada(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                agregarEntrada();
+              }
+            }}
             sx={{ mt: 2, width: 200 }}
           />
 
@@ -355,6 +382,15 @@ const EntradaMercancia = () => {
               disabled={guardandoEntrada}
             >
               Guardar entrada
+            </Button>
+          </Box>
+          <Box mt={2}>
+            <Button
+              variant="outlined"
+              sx={{ ml: 2 }}
+              onClick={() => window.print()}
+            >
+              Imprimir
             </Button>
           </Box>
         </Box>
