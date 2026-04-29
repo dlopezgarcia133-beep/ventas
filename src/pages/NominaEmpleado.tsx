@@ -13,6 +13,13 @@ const lunesDeHoy = (): string => {
 
 const fmt = (n: number) => `$${Number(n).toFixed(2)}`;
 
+const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+
+const fmtFecha = (iso: string): string => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${d} ${MESES[m - 1]} ${y}`;
+};
+
 export default function NominaEmpleado() {
   const [data,      setData]      = useState<MiNominaResponse | null>(null);
   const [historial, setHistorial] = useState<any | null>(null);
@@ -68,6 +75,9 @@ export default function NominaEmpleado() {
 
   const nombre  = historial?.username ?? data?.empleado?.username ?? "";
   const periodo = data ? `${data.periodo.inicio} → ${data.periodo.fin}` : "";
+  const rangoComisiones = (historial?.comisiones_inicio && historial?.comisiones_fin)
+    ? `Comisiones del ${fmtFecha(historial.comisiones_inicio)} – ${fmtFecha(historial.comisiones_fin)}`
+    : null;
 
   // Fila normal
   const Fila = ({ label, value, color, bold }: {
@@ -90,8 +100,13 @@ export default function NominaEmpleado() {
       </Typography>
 
       {nombre && (
-        <Typography align="center" color="text.secondary" mb={2.5}>
+        <Typography align="center" color="text.secondary" mb={rangoComisiones ? 0.5 : 2.5}>
           {nombre}{periodo ? ` · ${periodo}` : ""}
+        </Typography>
+      )}
+      {rangoComisiones && (
+        <Typography align="center" variant="body2" color="text.secondary" mb={2.5}>
+          {rangoComisiones}
         </Typography>
       )}
 
