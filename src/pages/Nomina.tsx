@@ -377,12 +377,16 @@ const Nomina = () => {
             <TableCell align="right">Sanciones</TableCell>
             <TableCell align="right">Com. pendientes</TableCell>
             <TableCell align="right">Hrs faltantes</TableCell>
+            <TableCell align="right">Desc. hrs falt.</TableCell>
             <TableCell align="right">Total</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {data.map(e => {
-            const ed = edicion[e.usuario_id];
+            const ed      = edicion[e.usuario_id];
+            const hFalt   = ed?.horas_faltantes ?? 0;
+            const precioH = ed?.precio_hora_extra ?? e.precio_hora_extra ?? 0;
+            const descFalt = hFalt * precioH;
             return (
               <TableRow
                 key={e.usuario_id}
@@ -398,7 +402,7 @@ const Nomina = () => {
                 {/* Comisiones — solo lectura */}
                 <TableCell align="right">${e.comisiones}</TableCell>
 
-                {/* Sueldo base */}
+                {/* Sueldo base — editable */}
                 <TableCell align="right">
                   {esAdmin && !soloLectura ? (
                     <TextField size="small" type="number" sx={{ width: 90 }}
@@ -409,7 +413,7 @@ const Nomina = () => {
                   ) : (`$${e.sueldo_base}`)}
                 </TableCell>
 
-                {/* Horas extra */}
+                {/* Horas extra — editable */}
                 <TableCell align="right">
                   {esAdmin && !soloLectura ? (
                     <TextField size="small" type="number" sx={{ width: 80 }}
@@ -420,12 +424,12 @@ const Nomina = () => {
                   ) : (e.horas_extra)}
                 </TableCell>
 
-                {/* Pago horas — calculado */}
+                {/* Pago horas — calculado, solo lectura */}
                 <TableCell align="right">
-                  ${((ed?.horas_extra ?? e.horas_extra ?? 0) * (ed?.precio_hora_extra ?? e.precio_hora_extra ?? 0)).toFixed(2)}
+                  ${((ed?.horas_extra ?? e.horas_extra ?? 0) * precioH).toFixed(2)}
                 </TableCell>
 
-                {/* Sanciones */}
+                {/* Sanciones — editable */}
                 <TableCell align="right">
                   {esAdmin && !soloLectura ? (
                     <TextField size="small" type="number" sx={{ width: 80 }}
@@ -436,7 +440,7 @@ const Nomina = () => {
                   ) : (e.sanciones ?? 0)}
                 </TableCell>
 
-                {/* Com. pendientes */}
+                {/* Com. pendientes — editable */}
                 <TableCell align="right">
                   {esAdmin && !soloLectura ? (
                     <TextField size="small" type="number" sx={{ width: 80 }}
@@ -447,15 +451,20 @@ const Nomina = () => {
                   ) : (e.comisiones_pendientes ?? 0)}
                 </TableCell>
 
-                {/* Horas faltantes */}
+                {/* Hrs faltantes — editable */}
                 <TableCell align="right">
                   {esAdmin && !soloLectura ? (
                     <TextField size="small" type="number" sx={{ width: 80 }}
-                      value={ed?.horas_faltantes ?? 0}
+                      value={hFalt}
                       onClick={ev => ev.stopPropagation()}
                       onChange={ev => setEd(e.usuario_id, "horas_faltantes", Number(ev.target.value))}
                     />
-                  ) : (ed?.horas_faltantes ?? 0)}
+                  ) : hFalt}
+                </TableCell>
+
+                {/* Desc. hrs falt. — solo lectura */}
+                <TableCell align="right" sx={{ color: descFalt > 0 ? "error.main" : "text.secondary" }}>
+                  {descFalt > 0 ? `-$${descFalt.toFixed(2)}` : "$0.00"}
                 </TableCell>
 
                 <TableCell align="right">
