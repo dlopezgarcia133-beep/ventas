@@ -404,7 +404,7 @@ const Nomina = () => {
 
                 {/* Sueldo base — editable */}
                 <TableCell align="right">
-                  {esAdmin && !soloLectura ? (
+                  {!soloLectura ? (
                     <TextField size="small" type="number" sx={{ width: 90 }}
                       value={ed?.sueldo_base ?? e.sueldo_base ?? 0}
                       onClick={ev => ev.stopPropagation()}
@@ -415,7 +415,7 @@ const Nomina = () => {
 
                 {/* Horas extra — editable */}
                 <TableCell align="right">
-                  {esAdmin && !soloLectura ? (
+                  {!soloLectura ? (
                     <TextField size="small" type="number" sx={{ width: 80 }}
                       value={ed?.horas_extra ?? 0}
                       onClick={ev => ev.stopPropagation()}
@@ -431,7 +431,7 @@ const Nomina = () => {
 
                 {/* Sanciones — editable */}
                 <TableCell align="right">
-                  {esAdmin && !soloLectura ? (
+                  {!soloLectura ? (
                     <TextField size="small" type="number" sx={{ width: 80 }}
                       value={ed?.sanciones ?? e.sanciones ?? 0}
                       onClick={ev => ev.stopPropagation()}
@@ -442,7 +442,7 @@ const Nomina = () => {
 
                 {/* Com. pendientes — editable */}
                 <TableCell align="right">
-                  {esAdmin && !soloLectura ? (
+                  {!soloLectura ? (
                     <TextField size="small" type="number" sx={{ width: 80 }}
                       value={ed?.comisiones_pendientes ?? e.comisiones_pendientes ?? 0}
                       onClick={ev => ev.stopPropagation()}
@@ -453,7 +453,7 @@ const Nomina = () => {
 
                 {/* Hrs faltantes — editable */}
                 <TableCell align="right">
-                  {esAdmin && !soloLectura ? (
+                  {!soloLectura ? (
                     <TextField size="small" type="number" sx={{ width: 80 }}
                       value={hFalt}
                       onClick={ev => ev.stopPropagation()}
@@ -738,21 +738,19 @@ const Nomina = () => {
                 {tabActiva === 0 && renderTabla("Asesores (A)", asesores)}
                 {tabActiva === 1 && renderTabla("Encargados (C)", encargados)}
 
-                {esAdmin && (
-                  <Box display="flex" gap={2} mt={2} flexWrap="wrap" alignItems="center">
-                    <Button variant="contained" color="error" onClick={cerrarNomina}>
-                      Cerrar nómina
-                    </Button>
-                    <Button variant="outlined" onClick={descargarNominaExcel}>
-                      Descargar Excel
-                    </Button>
-                  </Box>
-                )}
+                <Box display="flex" gap={2} mt={2} flexWrap="wrap" alignItems="center">
+                  <Button variant="contained" color="error" onClick={cerrarNomina}>
+                    Cerrar nómina
+                  </Button>
+                  <Button variant="outlined" onClick={descargarNominaExcel}>
+                    Descargar Excel
+                  </Button>
+                </Box>
               </>
             )}
 
-            {/* GUARDAR NÓMINA — fuera de las pestañas, siempre visible para admin */}
-            {esAdmin && nomina.length > 0 && !loading && (
+            {/* GUARDAR NÓMINA — fuera de las pestañas, siempre visible */}
+            {nomina.length > 0 && !loading && (
               <Box mt={3}>
                 <Button
                   variant="contained"
