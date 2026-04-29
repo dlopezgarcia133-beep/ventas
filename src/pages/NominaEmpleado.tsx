@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Box, CircularProgress, Divider, Paper, Table, TableBody, TableCell, TableRow, Typography } from "@mui/material";
 import { MiNominaResponse } from "../Types";
+import { obtenerRolDesdeToken } from "../components/Token";
 
 const FECHA_PAGO_FIJA = "miércoles, 29 de abril de 2026";
 
@@ -17,7 +18,8 @@ export default function NominaEmpleado() {
   const [data,      setData]      = useState<MiNominaResponse | null>(null);
   const [historial, setHistorial] = useState<any | null>(null);
   const [loading,   setLoading]   = useState(true);
-  const token = localStorage.getItem("token");
+  const token    = localStorage.getItem("token");
+  const esAsesor = obtenerRolDesdeToken() === "asesor";
 
   useEffect(() => {
     const cargar = async () => {
@@ -119,10 +121,10 @@ export default function NominaEmpleado() {
 
             <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
 
-            {/* 3. Horas extra */}
-            <Fila label={`Horas extra (${horasExtra} hrs × $${precioHora})`} value={fmt(pagoHoras)} />
+            {/* 3. Horas extra — solo asesores */}
+            {esAsesor && <Fila label={`Horas extra (${horasExtra} hrs × $${precioHora})`} value={fmt(pagoHoras)} />}
 
-            <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
+            {esAsesor && <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>}
 
             {/* 4. Comisiones planes tarifarios / Bono Cheking */}
             <Fila label={nombre.startsWith("C") ? "Bono Cheking" : "Comisiones planes tarifarios"} value={fmt(comisPlanes)} />
@@ -136,19 +138,23 @@ export default function NominaEmpleado() {
               color={sanciones > 0 ? "error" : undefined}
             />
 
-            {/* 6. Horas faltantes */}
-            <Fila
-              label="Horas faltantes"
-              value={`${horasFaltantes} hrs`}
-              color={horasFaltantes > 0 ? "error" : undefined}
-            />
+            {/* 6. Horas faltantes — solo asesores */}
+            {esAsesor && (
+              <Fila
+                label="Horas faltantes"
+                value={`${horasFaltantes} hrs`}
+                color={horasFaltantes > 0 ? "error" : undefined}
+              />
+            )}
 
-            {/* 7. Descuento hrs faltantes */}
-            <Fila
-              label="Descuento hrs faltantes"
-              value={descuentoFalt > 0 ? `-${fmt(descuentoFalt)}` : fmt(0)}
-              color={descuentoFalt > 0 ? "error" : undefined}
-            />
+            {/* 7. Descuento hrs faltantes — solo asesores */}
+            {esAsesor && (
+              <Fila
+                label="Descuento hrs faltantes"
+                value={descuentoFalt > 0 ? `-${fmt(descuentoFalt)}` : fmt(0)}
+                color={descuentoFalt > 0 ? "error" : undefined}
+              />
+            )}
 
             {/* 8. Total a pagar */}
             <TableRow sx={{ bgcolor: "#f97316" }}>
