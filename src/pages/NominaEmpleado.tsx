@@ -112,9 +112,9 @@ export default function NominaEmpleado() {
             <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
 
             {/* 2. Comisiones */}
-            <Fila label="Comisiones accesorios" value={fmt(comisAcc)} />
-            <Fila label="Comisiones teléfonos"  value={fmt(comisTel)} />
-            <Fila label="Comisiones chips"       value={fmt(comisChips)} />
+            {!nombre.startsWith("C") && <Fila label="Comisiones accesorios" value={fmt(comisAcc)} />}
+            {!nombre.startsWith("C") && <Fila label="Comisiones teléfonos"  value={fmt(comisTel)} />}
+            <Fila label={nombre.startsWith("C") ? "Comisión por activaciones" : "Comisiones chips"} value={fmt(comisChips)} />
             <Fila label="Total comisiones"       value={fmt(comisTotal)} bold />
 
             <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
