@@ -4,13 +4,6 @@ import { MiNominaResponse } from "../Types";
 
 const FECHA_PAGO_FIJA = "miércoles, 29 de abril de 2026";
 
-const lunesDeHoy = (): string => {
-  const hoy = new Date();
-  const offset = (hoy.getDay() + 6) % 7;
-  hoy.setDate(hoy.getDate() - offset);
-  return hoy.toISOString().split("T")[0];
-};
-
 const fmt = (n: number) => `$${Number(n).toFixed(2)}`;
 
 const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
@@ -36,9 +29,8 @@ export default function NominaEmpleado() {
       } catch (_) {}
 
       try {
-        const semana = lunesDeHoy();
         const res = await fetch(
-          `${process.env.REACT_APP_API_URL}/nomina/mi-historial?semana_inicio=${semana}`,
+          `${process.env.REACT_APP_API_URL}/nomina/mi-historial`,
           { headers }
         );
         if (res.ok) {

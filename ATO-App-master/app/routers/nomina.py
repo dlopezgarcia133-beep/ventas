@@ -616,3 +616,19 @@ def guardar_historial_nomina(
 
     db.commit()
     return {"ok": True, "guardados": len(data.empleados)}
+
+
+@router.get("/mi-historial", response_model=Optional[NominaHistorialResponse])
+def obtener_mi_historial(
+    semana_inicio: Optional[date] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    query = db.query(NominaHistorial).filter(
+        NominaHistorial.usuario_id == current_user.id
+    )
+    if semana_inicio:
+        query = query.filter(NominaHistorial.semana_inicio == semana_inicio)
+    else:
+        query = query.order_by(NominaHistorial.semana_inicio.desc())
+    return query.first()
