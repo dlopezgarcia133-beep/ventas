@@ -300,13 +300,21 @@ const Nomina = () => {
         const sanc   = ed.sanciones;
         const comP   = ed.comisiones_pendientes;
         const hFalt  = ed.horas_faltantes;
+
+        // Si el desglose llega todo en 0 pero el total es correcto,
+        // asignar el total a comisiones_chips (fallback para Grupo C solo-chips)
+        const acc   = e.comisiones_accesorios ?? 0;
+        const tel   = e.comisiones_telefonos  ?? 0;
+        const chips = e.comisiones_chips       ?? 0;
+        const sinDesglose = acc === 0 && tel === 0 && chips === 0 && e.comisiones > 0;
+
         return {
           usuario_id:            e.usuario_id,
           username:              e.username,
           grupo:                 e.username.startsWith("A") ? "A" : "C",
-          comisiones_accesorios: e.comisiones_accesorios,
-          comisiones_telefonos:  e.comisiones_telefonos,
-          comisiones_chips:      e.comisiones_chips,
+          comisiones_accesorios: acc,
+          comisiones_telefonos:  tel,
+          comisiones_chips:      sinDesglose ? e.comisiones : chips,
           comisiones_total:      e.comisiones,
           sueldo_base:           sueldo,
           horas_extra:           horas,
