@@ -124,8 +124,8 @@ export default function NominaEmpleado() {
 
             <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
 
-            {/* 4. Comisiones planes tarifarios */}
-            <Fila label="Comisiones planes tarifarios" value={fmt(comisPlanes)} />
+            {/* 4. Comisiones planes tarifarios / Bono Cheking */}
+            <Fila label={nombre.startsWith("C") ? "Bono Cheking" : "Comisiones planes tarifarios"} value={fmt(comisPlanes)} />
 
             <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
 
