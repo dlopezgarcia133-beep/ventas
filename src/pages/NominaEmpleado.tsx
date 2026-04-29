@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import { Box, Paper, Typography, Divider, CircularProgress, Alert } from "@mui/material";
+import { Box, CircularProgress, Divider, Paper, Table, TableBody, TableCell, TableRow, Typography } from "@mui/material";
 import { MiNominaResponse } from "../Types";
 
-const CICLO_INICIO   = "11 Abr 2026";
-const CICLO_FIN      = "17 Abr 2026";
 const FECHA_PAGO_FIJA = "miércoles, 29 de abril de 2026";
 
 const lunesDeHoy = (): string => {
@@ -12,6 +10,8 @@ const lunesDeHoy = (): string => {
   hoy.setDate(hoy.getDate() - offset);
   return hoy.toISOString().split("T")[0];
 };
+
+const fmt = (n: number) => `$${Number(n).toFixed(2)}`;
 
 export default function NominaEmpleado() {
   const [data,      setData]      = useState<MiNominaResponse | null>(null);
@@ -23,16 +23,11 @@ export default function NominaEmpleado() {
     const cargar = async () => {
       const headers = { Authorization: `Bearer ${token}` };
 
-      // Resumen del periodo activo
       try {
-        const res = await fetch(
-          `${process.env.REACT_APP_API_URL}/nomina/mi-resumen`,
-          { headers }
-        );
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/nomina/mi-resumen`, { headers });
         if (res.ok) setData(await res.json());
       } catch (_) {}
 
-      // Historial de la semana actual (para horas_faltantes y valores guardados)
       try {
         const semana = lunesDeHoy();
         const res = await fetch(
@@ -56,100 +51,120 @@ export default function NominaEmpleado() {
     </Box>
   );
 
-  const Row = ({ label, value, color }: { label: string; value: string | number; color?: string }) => (
-    <Box display="flex" justifyContent="space-between" mb={0.75}>
-      <Typography color={color}>{label}</Typography>
-      <Typography fontWeight="bold" color={color}>{value}</Typography>
-    </Box>
+  // Valores — prioridad historial, fallback a data
+  const sueldoBase     = historial?.sueldo_base             ?? data?.sueldo?.base                  ?? 0;
+  const comisAcc       = historial?.comisiones_accesorios   ?? data?.comisiones?.accesorios         ?? 0;
+  const comisTel       = historial?.comisiones_telefonos    ?? data?.comisiones?.telefonos           ?? 0;
+  const comisChips     = historial?.comisiones_chips        ?? data?.comisiones?.chips               ?? 0;
+  const comisTotal     = historial?.comisiones_total        ?? data?.comisiones?.total               ?? 0;
+  const horasExtra     = historial?.horas_extra             ?? data?.sueldo?.horas_extra             ?? 0;
+  const precioHora     = historial?.precio_hora_extra       ?? 0;
+  const pagoHoras      = historial?.pago_horas_extra        ?? data?.sueldo?.pago_horas_extra        ?? 0;
+  const comisPlanes    = historial?.comisiones_pendientes   ?? data?.sueldo?.comisiones_pendientes   ?? 0;
+  const sanciones      = historial?.sanciones               ?? data?.sueldo?.sanciones               ?? 0;
+  const horasFaltantes = historial?.horas_faltantes         ?? 0;
+  const descuentoFalt  = horasFaltantes * precioHora;
+  const totalPagar     = historial?.total_pagar             ?? data?.total_pagar                     ?? 0;
+
+  const nombre  = historial?.username ?? data?.empleado?.username ?? "";
+  const periodo = data ? `${data.periodo.inicio} → ${data.periodo.fin}` : "";
+
+  // Fila normal
+  const Fila = ({ label, value, color, bold }: {
+    label: string; value: string; color?: string; bold?: boolean;
+  }) => (
+    <TableRow>
+      <TableCell sx={{ color, fontWeight: bold ? "bold" : "normal", border: 0, py: 1 }}>
+        {label}
+      </TableCell>
+      <TableCell align="right" sx={{ color, fontWeight: bold ? "bold" : "normal", border: 0, py: 1 }}>
+        {value}
+      </TableCell>
+    </TableRow>
   );
 
-  // Usar valores del historial si existen, si no los del resumen activo
-  const horasFaltantes   = historial?.horas_faltantes   ?? 0;
-  const precioHora       = historial?.precio_hora_extra  ?? data?.sueldo?.pago_horas_extra ?? 0;
-  const descuentoFalt    = horasFaltantes * (historial?.precio_hora_extra ?? 0);
-
   return (
-    <Box maxWidth={600} mx="auto" p={2.5}>
-      <Typography variant="h5" align="center" gutterBottom>
-        💰 Mi Nómina
+    <Box maxWidth={520} mx="auto" p={2.5}>
+      <Typography variant="h5" align="center" fontWeight="bold" gutterBottom>
+        Mi Nómina
       </Typography>
 
-      {/* EMPLEADO / PERIODO */}
-      <Paper sx={{ p: 2.5, mb: 2.5, borderRadius: 3 }}>
-        <Typography variant="h6" gutterBottom>👤 Empleado</Typography>
-        {data ? (
-          <>
-            <Typography fontWeight="bold">{data.empleado.username}</Typography>
-            <Typography variant="body2" color="text.secondary">
-              Periodo: {data.periodo.inicio} → {data.periodo.fin}
-            </Typography>
-          </>
-        ) : (
-          <Typography variant="body2" color="text.secondary">
-            Periodo: {CICLO_INICIO} → {CICLO_FIN}
-          </Typography>
-        )}
-      </Paper>
-
-      {/* COMISIONES */}
-      {data ? (
-        <Paper sx={{ p: 2.5, mb: 2.5, borderRadius: 3 }}>
-          <Typography variant="h6" gutterBottom>📊 Comisiones</Typography>
-          <Row label="Accesorios"  value={`$${data.comisiones.accesorios}`} />
-          <Row label="Teléfonos"   value={`$${data.comisiones.telefonos}`} />
-          <Row label="Chips"       value={`$${data.comisiones.chips}`} />
-          <Divider sx={{ my: 1 }} />
-          <Box display="flex" justifyContent="space-between">
-            <Typography fontWeight="bold" fontSize={16}>Total comisiones</Typography>
-            <Typography fontWeight="bold" fontSize={16}>${data.comisiones.total}</Typography>
-          </Box>
-        </Paper>
-      ) : (
-        <Alert severity="info" sx={{ mb: 2.5 }}>
-          Las comisiones se mostrarán cuando administración confirme el período.
-        </Alert>
-      )}
-
-      {/* SUELDO */}
-      {data && (
-        <Paper sx={{ p: 2.5, mb: 2.5, borderRadius: 3 }}>
-          <Typography variant="h6" gutterBottom>💼 Sueldo</Typography>
-          <Row label="Sueldo base"           value={`$${historial?.sueldo_base ?? data.sueldo.base}`} />
-          <Row label="Horas extra"           value={historial?.horas_extra ?? data.sueldo.horas_extra} />
-          <Row label="Pago horas extra"      value={`$${historial?.pago_horas_extra ?? data.sueldo.pago_horas_extra}`} />
-          <Row label="Comisiones pendientes" value={`$${historial?.comisiones_pendientes ?? data.sueldo.comisiones_pendientes ?? 0}`} />
-          <Row label="Sanciones"             value={`-$${historial?.sanciones ?? data.sueldo.sanciones ?? 0}`} />
-
-          {horasFaltantes > 0 && (
-            <>
-              <Divider sx={{ my: 1 }} />
-              <Row
-                label={`Horas faltantes (${horasFaltantes} hrs)`}
-                value={`-$${descuentoFalt.toFixed(2)}`}
-                color="error.main"
-              />
-            </>
-          )}
-        </Paper>
-      )}
-
-      {/* TOTAL */}
-      {data && (
-        <Paper sx={{ p: 2.5, mb: 2.5, borderRadius: 3, bgcolor: "#f97316", color: "white", textAlign: "center" }}>
-          <Typography variant="h6">Total a pagar</Typography>
-          <Typography variant="h4" fontWeight="bold">
-            ${historial?.total_pagar ?? data.total_pagar}
-          </Typography>
-        </Paper>
-      )}
-
-      {/* FECHA DE PAGO */}
-      <Paper sx={{ p: 2, borderRadius: 3, bgcolor: "#fff7ed", border: "1px solid rgba(249,115,22,0.25)", textAlign: "center" }}>
-        <Typography>
-          📅 <strong>Fecha de pago</strong>
-          <br />
-          {FECHA_PAGO_FIJA}
+      {nombre && (
+        <Typography align="center" color="text.secondary" mb={2.5}>
+          {nombre}{periodo ? ` · ${periodo}` : ""}
         </Typography>
+      )}
+
+      <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
+        <Table size="small">
+          <TableBody>
+
+            {/* 1. Sueldo base */}
+            <Fila label="Sueldo base" value={fmt(sueldoBase)} />
+
+            <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
+
+            {/* 2. Comisiones */}
+            <Fila label="Comisiones accesorios" value={fmt(comisAcc)} />
+            <Fila label="Comisiones teléfonos"  value={fmt(comisTel)} />
+            <Fila label="Comisiones chips"       value={fmt(comisChips)} />
+            <Fila label="Total comisiones"       value={fmt(comisTotal)} bold />
+
+            <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
+
+            {/* 3. Horas extra */}
+            <Fila label={`Horas extra (${horasExtra} hrs × $${precioHora})`} value={fmt(pagoHoras)} />
+
+            <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
+
+            {/* 4. Comisiones planes tarifarios */}
+            <Fila label="Comisiones planes tarifarios" value={fmt(comisPlanes)} />
+
+            <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
+
+            {/* 5. Sanciones */}
+            <Fila
+              label="Sanciones"
+              value={sanciones > 0 ? `-${fmt(sanciones)}` : fmt(0)}
+              color={sanciones > 0 ? "error" : undefined}
+            />
+
+            {/* 6. Horas faltantes */}
+            <Fila
+              label="Horas faltantes"
+              value={`${horasFaltantes} hrs`}
+              color={horasFaltantes > 0 ? "error" : undefined}
+            />
+
+            {/* 7. Descuento hrs faltantes */}
+            <Fila
+              label="Descuento hrs faltantes"
+              value={descuentoFalt > 0 ? `-${fmt(descuentoFalt)}` : fmt(0)}
+              color={descuentoFalt > 0 ? "error" : undefined}
+            />
+
+            {/* 8. Total a pagar */}
+            <TableRow sx={{ bgcolor: "#f97316" }}>
+              <TableCell sx={{ color: "#fff", fontWeight: "bold", fontSize: 16, py: 1.5, border: 0 }}>
+                Total a pagar
+              </TableCell>
+              <TableCell align="right" sx={{ color: "#fff", fontWeight: "bold", fontSize: 16, py: 1.5, border: 0 }}>
+                {fmt(totalPagar)}
+              </TableCell>
+            </TableRow>
+
+            {/* 9. Fecha de pago */}
+            <TableRow>
+              <TableCell sx={{ color: "text.secondary", border: 0, py: 1 }}>
+                📅 Fecha de pago
+              </TableCell>
+              <TableCell align="right" sx={{ fontWeight: "bold", border: 0, py: 1 }}>
+                {FECHA_PAGO_FIJA}
+              </TableCell>
+            </TableRow>
+
+          </TableBody>
+        </Table>
       </Paper>
     </Box>
   );
