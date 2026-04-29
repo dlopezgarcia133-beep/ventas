@@ -307,12 +307,11 @@ const Nomina = () => {
         const comP   = ed.comisiones_pendientes;
         const hFalt  = ed.horas_faltantes;
 
-        // Si el desglose llega todo en 0 pero el total es correcto,
-        // asignar el total a comisiones_chips (fallback para Grupo C solo-chips)
-        const acc   = e.comisiones_accesorios ?? 0;
-        const tel   = e.comisiones_telefonos  ?? 0;
-        const chips = e.comisiones_chips       ?? 0;
-        const sinDesglose = acc === 0 && tel === 0 && chips === 0 && e.comisiones > 0;
+        const acc             = e.comisiones_accesorios ?? 0;
+        const tel             = e.comisiones_telefonos  ?? 0;
+        const chips           = e.comisiones_chips       ?? 0;
+        const comisiones_total = e.comisiones ?? 0;
+        const sinDesglose     = (acc + tel + chips) === 0 && comisiones_total > 0;
 
         return {
           usuario_id:            e.usuario_id,
@@ -320,8 +319,8 @@ const Nomina = () => {
           grupo:                 e.username.startsWith("A") ? "A" : "C",
           comisiones_accesorios: acc,
           comisiones_telefonos:  tel,
-          comisiones_chips:      sinDesglose ? e.comisiones : chips,
-          comisiones_total:      e.comisiones,
+          comisiones_chips:      sinDesglose ? comisiones_total : chips,
+          comisiones_total,
           sueldo_base:           sueldo,
           horas_extra:           horas,
           precio_hora_extra:     precio,
@@ -332,6 +331,9 @@ const Nomina = () => {
           total_pagar:           calcularTotalFila(e),
         };
       });
+
+      const pascual = empleados.find(e => e.username === "C18-PASCUAL");
+      if (pascual) console.log("[guardarNomina] payload C18-PASCUAL:", JSON.stringify(pascual, null, 2));
 
       await axios.post(
         `${process.env.REACT_APP_API_URL}/nomina/historial`,
