@@ -363,7 +363,7 @@ const Nomina = () => {
   const setEd = (uid: number, campo: keyof EdicionEmpleado, valor: number) =>
     setEdicion(prev => ({ ...prev, [uid]: { ...prev[uid], [campo]: valor } }));
 
-  const renderTabla = (titulo: string, data: NominaEmpleado[], soloLectura = false) => (
+  const renderTabla = (titulo: string, data: NominaEmpleado[], soloLectura = false, labelComPendientes = "Com. pendientes") => (
     <Paper sx={{ p: 2, mb: 4 }}>
       <Typography variant="h6" mb={2}>{titulo}</Typography>
       <Table size="small">
@@ -375,7 +375,7 @@ const Nomina = () => {
             <TableCell align="right">Horas extra</TableCell>
             <TableCell align="right">Pago horas</TableCell>
             <TableCell align="right">Sanciones</TableCell>
-            <TableCell align="right">Com. pendientes</TableCell>
+            <TableCell align="right">{labelComPendientes}</TableCell>
             <TableCell align="right">Hrs faltantes</TableCell>
             <TableCell align="right">Desc. hrs falt.</TableCell>
             <TableCell align="right">Total</TableCell>
@@ -735,7 +735,7 @@ const Nomina = () => {
                   <Tab label="Encargados (C)" />
                 </Tabs>
 
-                {tabActiva === 0 && renderTabla("Asesores (A)", asesores)}
+                {tabActiva === 0 && renderTabla("Asesores (A)", asesores, false, "Comisiones planes tarifarios")}
                 {tabActiva === 1 && renderTabla("Encargados (C)", encargados)}
 
                 <Box display="flex" gap={2} mt={2} flexWrap="wrap" alignItems="center">
