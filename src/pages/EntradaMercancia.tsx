@@ -256,7 +256,7 @@ const EntradaMercancia = () => {
 
           setTimeout(() => {
             inputCantidadRef.current?.focus();
-            inputBusquedaRef.current?.click();
+            
           }, 100);
         }}
         onInputChange={(e, value) => {
