@@ -167,8 +167,9 @@ const EntradaMercancia = () => {
     setBusquedaEntrada("");
 
     setTimeout(() => {
-      inputCantidadRef.current?.blur();
-    }, 100);
+  inputBusquedaRef.current?.focus();
+   inputBusquedaRef.current.click();
+}, 100);
   };
 
   // 💾 GUARDAR EN BD
@@ -255,6 +256,7 @@ const EntradaMercancia = () => {
 
           setTimeout(() => {
             inputCantidadRef.current?.focus();
+            inputBusquedaRef.current.click();
           }, 100);
         }}
         onInputChange={(e, value) => {
