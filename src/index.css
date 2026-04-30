@@ -16,19 +16,18 @@ code {
 
 
 @media print {
-  body * {
-    visibility: hidden;
-  }
-
-  #area-impresion,
-  #area-impresion * {
-    visibility: visible;
-  }
-
   #area-impresion {
-    position: absolute;
-    top: 0;
-    left: 0;
+    width: 250px; 
+    font-size: 10px;
+  }
+
+  table {
     width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    border-bottom: 1px dashed #000;
+    text-align: left;
   }
 }
