@@ -16,18 +16,51 @@ code {
 
 
 @media print {
-  #area-impresion {
-    width: 250px; 
-    font-size: 10px;
+  @page {
+    size: 10cm 10cm;
+    margin: 0;
   }
 
-  table {
+  body {
+    margin: 0;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #area-impresion,
+  #area-impresion * {
+    visibility: visible;
+  }
+
+  #area-impresion {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 10cm;
+    height: 10cm;
+    padding: 8px;
+    box-sizing: border-box;
+    font-size: 11px;
+  }
+
+  #area-impresion table {
     width: 100%;
     border-collapse: collapse;
   }
 
-  th, td {
-    border-bottom: 1px dashed #000;
-    text-align: left;
+  #area-impresion th,
+  #area-impresion td {
+    padding: 2px;
+    font-size: 10px;
+  }
+
+  hr {
+    margin: 5px 0;
+  }
+
+  button {
+    display: none;
   }
 }
