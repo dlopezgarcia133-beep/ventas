@@ -32,7 +32,7 @@ const Kardex = () => {
   const [moduloId, setModuloId] = useState("");
   const [tipoMovimiento, setTipoMovimiento] = useState("");
 
-  const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+  // const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
   const rolToken = obtenerRolDesdeToken();
   const [pagina, setPagina] = useState(0);
   const filasPorPagina = 20;
