@@ -1,25 +1,107 @@
 import { useEffect, useState } from "react";
-import { Box, CircularProgress, Divider, Paper, Table, TableBody, TableCell, TableRow, Typography } from "@mui/material";
+import { Box, CircularProgress, Divider, MenuItem, Paper, Table, TableBody, TableCell, TableRow, TextField, Typography } from "@mui/material";
 import { MiNominaResponse } from "../Types";
 import { obtenerRolDesdeToken } from "../components/Token";
 
-const FECHA_PAGO_FIJA = "miércoles, 29 de abril de 2026";
-
 const fmt = (n: number) => `$${Number(n).toFixed(2)}`;
 
-const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const MESES_CORTOS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const MESES_LARGOS = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const DIAS        = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
 
 const fmtFecha = (iso: string): string => {
   const [y, m, d] = iso.split("-").map(Number);
-  return `${d} ${MESES[m - 1]} ${y}`;
+  return `${d} ${MESES_CORTOS[m - 1]} ${y}`;
 };
 
+// ── Semanas para grupo A (lunes–domingo, pago el miércoles siguiente) ────────
+// Semanas va de lunes a domingo; pago = domingo + 3 días = miércoles.
+// semana_inicio (lunes) + 9 días = miércoles de pago (coincide con el cutoff del backend).
+const ANCHOR_LUNES_A = new Date(2026, 3, 20); // lunes 20 Abr 2026
+
+interface Semana {
+  inicio: Date;   // lunes
+  fin:    Date;   // domingo
+  pago:   Date;   // miércoles
+  inicioISO: string;
+}
+
+function toISO(d: Date): string {
+  return d.toLocaleDateString("en-CA");
+}
+
+function fmtDia(d: Date): string {
+  return `${d.getDate()} ${MESES_CORTOS[d.getMonth()]}`;
+}
+
+function getSemanasPagadasA(): Semana[] {
+  const semanas: Semana[] = [];
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
+  const cursor = new Date(ANCHOR_LUNES_A);
+
+  while (true) {
+    const inicio = new Date(cursor);
+    const fin    = new Date(cursor);
+    fin.setDate(fin.getDate() + 6);       // domingo
+    const pago = new Date(fin);
+    pago.setDate(pago.getDate() + 3);     // miércoles siguiente
+
+    if (pago > hoy) break;               // semana aún no pagada
+
+    semanas.push({ inicio, fin, pago, inicioISO: toISO(inicio) });
+    cursor.setDate(cursor.getDate() + 7);
+  }
+
+  return semanas.reverse(); // más reciente primero
+}
+
+function labelSemana(s: Semana): string {
+  const año = s.fin.getFullYear();
+  return `${fmtDia(s.inicio)} – ${fmtDia(s.fin)} ${año}  ·  Pago: ${fmtDia(s.pago)}`;
+}
+
+function fmtFechaPago(d: Date): string {
+  return `${DIAS[d.getDay()]}, ${d.getDate()} de ${MESES_LARGOS[d.getMonth()]} de ${d.getFullYear()}`;
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+const FECHA_PAGO_FIJA_C = "miércoles, 29 de abril de 2026";
+
 export default function NominaEmpleado() {
-  const [data,      setData]      = useState<MiNominaResponse | null>(null);
-  const [historial, setHistorial] = useState<any | null>(null);
-  const [loading,   setLoading]   = useState(true);
+  const [data,             setData]             = useState<MiNominaResponse | null>(null);
+  const [historial,        setHistorial]        = useState<any | null>(null);
+  const [loading,          setLoading]          = useState(true);
+  const [loadingHistorial, setLoadingHistorial] = useState(false);
+
   const token    = localStorage.getItem("token");
+  const username = localStorage.getItem("usuario") || "";
   const esAsesor = obtenerRolDesdeToken() === "asesor";
+  const esGrupoA = username.toUpperCase().startsWith("A");
+
+  const semanasA = esGrupoA ? getSemanasPagadasA() : [];
+  const [semanaIdx, setSemanaIdx] = useState(0);
+  const semanaSeleccionada = semanasA[semanaIdx] ?? null;
+
+  const fetchHistorial = async (semanaInicio?: string) => {
+    const headers = { Authorization: `Bearer ${token}` };
+    const url = semanaInicio
+      ? `${process.env.REACT_APP_API_URL}/nomina/mi-historial?semana_inicio=${semanaInicio}`
+      : `${process.env.REACT_APP_API_URL}/nomina/mi-historial`;
+    try {
+      const res = await fetch(url, { headers });
+      if (res.ok) {
+        const json = await res.json();
+        if (json) setHistorial(json);
+        else setHistorial(null);
+      } else {
+        setHistorial(null);
+      }
+    } catch (_) {
+      setHistorial(null);
+    }
+  };
 
   useEffect(() => {
     const cargar = async () => {
@@ -30,21 +112,23 @@ export default function NominaEmpleado() {
         if (res.ok) setData(await res.json());
       } catch (_) {}
 
-      try {
-        const res = await fetch(
-          `${process.env.REACT_APP_API_URL}/nomina/mi-historial`,
-          { headers }
-        );
-        if (res.ok) {
-          const json = await res.json();
-          if (json) setHistorial(json);
-        }
-      } catch (_) {}
+      if (esGrupoA && semanasA.length > 0) {
+        await fetchHistorial(semanasA[0].inicioISO);
+      } else {
+        await fetchHistorial();
+      }
 
       setLoading(false);
     };
     cargar();
   }, []); // eslint-disable-line
+
+  const handleSemanaChange = async (idx: number) => {
+    setSemanaIdx(idx);
+    setLoadingHistorial(true);
+    await fetchHistorial(semanasA[idx]?.inicioISO);
+    setLoadingHistorial(false);
+  };
 
   if (loading) return (
     <Box display="flex" justifyContent="center" mt={4}>
@@ -73,7 +157,10 @@ export default function NominaEmpleado() {
     ? `Comisiones del ${fmtFecha(historial.comisiones_inicio)} – ${fmtFecha(historial.comisiones_fin)}`
     : null;
 
-  // Fila normal
+  const fechaPago = esGrupoA && semanaSeleccionada
+    ? fmtFechaPago(semanaSeleccionada.pago)
+    : FECHA_PAGO_FIJA_C;
+
   const Fila = ({ label, value, color, bold }: {
     label: string; value: string; color?: string; bold?: boolean;
   }) => (
@@ -95,7 +182,7 @@ export default function NominaEmpleado() {
 
       {nombre && (
         <Typography align="center" color="text.secondary" mb={rangoComisiones ? 0.5 : 2.5}>
-          {nombre}{periodo ? ` · ${periodo}` : ""}
+          {nombre}{!esGrupoA && periodo ? ` · ${periodo}` : ""}
         </Typography>
       )}
       {rangoComisiones && (
@@ -104,81 +191,109 @@ export default function NominaEmpleado() {
         </Typography>
       )}
 
-      <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
-        <Table size="small">
-          <TableBody>
+      {/* Selector de semana — solo grupo A */}
+      {esGrupoA && semanasA.length > 0 && (
+        <TextField
+          select fullWidth size="small" label="Semana"
+          value={semanaIdx}
+          onChange={(e) => handleSemanaChange(Number(e.target.value))}
+          sx={{ mb: 2.5 }}
+        >
+          {semanasA.map((s, i) => (
+            <MenuItem key={s.inicioISO} value={i}>
+              {labelSemana(s)}
+            </MenuItem>
+          ))}
+        </TextField>
+      )}
 
-            {/* 1. Sueldo base */}
-            <Fila label="Sueldo base" value={fmt(sueldoBase)} />
+      {esGrupoA && semanasA.length === 0 && (
+        <Typography align="center" variant="body2" color="text.secondary" mb={2.5}>
+          No hay semanas pagadas disponibles aún.
+        </Typography>
+      )}
 
-            <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
+      {loadingHistorial ? (
+        <Box display="flex" justifyContent="center" py={4}>
+          <CircularProgress size={28} />
+        </Box>
+      ) : (
+        <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
+          <Table size="small">
+            <TableBody>
 
-            {/* 2. Comisiones */}
-            {!nombre.startsWith("C") && <Fila label="Comisiones accesorios" value={fmt(comisAcc)} />}
-            {!nombre.startsWith("C") && <Fila label="Comisiones teléfonos"  value={fmt(comisTel)} />}
-            <Fila label={nombre.startsWith("C") ? "Comisión por activaciones" : "Comisiones chips"} value={fmt(comisChips)} />
-            <Fila label="Total comisiones"       value={fmt(comisTotal)} bold />
+              {/* 1. Sueldo base */}
+              <Fila label="Sueldo base" value={fmt(sueldoBase)} />
 
-            <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
 
-            {/* 3. Horas extra — solo asesores */}
-            {esAsesor && <Fila label={`Horas extra (${horasExtra} hrs × $${precioHora})`} value={fmt(pagoHoras)} />}
+              {/* 2. Comisiones */}
+              {!nombre.startsWith("C") && <Fila label="Comisiones accesorios" value={fmt(comisAcc)} />}
+              {!nombre.startsWith("C") && <Fila label="Comisiones teléfonos"  value={fmt(comisTel)} />}
+              <Fila label={nombre.startsWith("C") ? "Comisión por activaciones" : "Comisiones chips"} value={fmt(comisChips)} />
+              <Fila label="Total comisiones" value={fmt(comisTotal)} bold />
 
-            {esAsesor && <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>}
+              <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
 
-            {/* 4. Comisiones planes tarifarios / Bono Cheking */}
-            <Fila label={nombre.startsWith("C") ? "Bono Cheking" : "Comisiones planes tarifarios"} value={fmt(comisPlanes)} />
+              {/* 3. Horas extra — solo asesores */}
+              {esAsesor && <Fila label={`Horas extra (${horasExtra} hrs × $${precioHora})`} value={fmt(pagoHoras)} />}
 
-            <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
+              {esAsesor && <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>}
 
-            {/* 5. Sanciones */}
-            <Fila
-              label="Sanciones"
-              value={sanciones > 0 ? `-${fmt(sanciones)}` : fmt(0)}
-              color={sanciones > 0 ? "error" : undefined}
-            />
+              {/* 4. Comisiones planes tarifarios / Bono Cheking */}
+              <Fila label={nombre.startsWith("C") ? "Bono Cheking" : "Comisiones planes tarifarios"} value={fmt(comisPlanes)} />
 
-            {/* 6. Horas faltantes — solo asesores */}
-            {esAsesor && (
+              <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
+
+              {/* 5. Sanciones */}
               <Fila
-                label="Horas faltantes"
-                value={`${horasFaltantes} hrs`}
-                color={horasFaltantes > 0 ? "error" : undefined}
+                label="Sanciones"
+                value={sanciones > 0 ? `-${fmt(sanciones)}` : fmt(0)}
+                color={sanciones > 0 ? "error" : undefined}
               />
-            )}
 
-            {/* 7. Descuento hrs faltantes — solo asesores */}
-            {esAsesor && (
-              <Fila
-                label="Descuento hrs faltantes"
-                value={descuentoFalt > 0 ? `-${fmt(descuentoFalt)}` : fmt(0)}
-                color={descuentoFalt > 0 ? "error" : undefined}
-              />
-            )}
+              {/* 6. Horas faltantes — solo asesores */}
+              {esAsesor && (
+                <Fila
+                  label="Horas faltantes"
+                  value={`${horasFaltantes} hrs`}
+                  color={horasFaltantes > 0 ? "error" : undefined}
+                />
+              )}
 
-            {/* 8. Total a pagar */}
-            <TableRow sx={{ bgcolor: "#f97316" }}>
-              <TableCell sx={{ color: "#fff", fontWeight: "bold", fontSize: 16, py: 1.5, border: 0 }}>
-                Total a pagar
-              </TableCell>
-              <TableCell align="right" sx={{ color: "#fff", fontWeight: "bold", fontSize: 16, py: 1.5, border: 0 }}>
-                {fmt(totalPagar)}
-              </TableCell>
-            </TableRow>
+              {/* 7. Descuento hrs faltantes — solo asesores */}
+              {esAsesor && (
+                <Fila
+                  label="Descuento hrs faltantes"
+                  value={descuentoFalt > 0 ? `-${fmt(descuentoFalt)}` : fmt(0)}
+                  color={descuentoFalt > 0 ? "error" : undefined}
+                />
+              )}
 
-            {/* 9. Fecha de pago */}
-            <TableRow>
-              <TableCell sx={{ color: "text.secondary", border: 0, py: 1 }}>
-                📅 Fecha de pago
-              </TableCell>
-              <TableCell align="right" sx={{ fontWeight: "bold", border: 0, py: 1 }}>
-                {FECHA_PAGO_FIJA}
-              </TableCell>
-            </TableRow>
+              {/* 8. Total a pagar */}
+              <TableRow sx={{ bgcolor: "#f97316" }}>
+                <TableCell sx={{ color: "#fff", fontWeight: "bold", fontSize: 16, py: 1.5, border: 0 }}>
+                  Total a pagar
+                </TableCell>
+                <TableCell align="right" sx={{ color: "#fff", fontWeight: "bold", fontSize: 16, py: 1.5, border: 0 }}>
+                  {fmt(totalPagar)}
+                </TableCell>
+              </TableRow>
 
-          </TableBody>
-        </Table>
-      </Paper>
+              {/* 9. Fecha de pago */}
+              <TableRow>
+                <TableCell sx={{ color: "text.secondary", border: 0, py: 1 }}>
+                  📅 Fecha de pago
+                </TableCell>
+                <TableCell align="right" sx={{ fontWeight: "bold", border: 0, py: 1 }}>
+                  {fechaPago}
+                </TableCell>
+              </TableRow>
+
+            </TableBody>
+          </Table>
+        </Paper>
+      )}
     </Box>
   );
 }
