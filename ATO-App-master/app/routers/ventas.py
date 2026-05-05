@@ -781,8 +781,12 @@ def validar_chip(
             ],
             
             "Porta Otras cadenas": [
-                ((0, 500), 50), 
-            ]            
+                ((0, 500), 50),
+            ],
+
+            "Tarjetas PayJoy": [
+                ((0, 9999), 50),
+            ],
 
         }
 
@@ -899,8 +903,12 @@ def validar_chip_incubadora(
             ((0, 500), 25),
         ],
         "Porta Otras cadenas": [
-            ((0, 500), 50), 
-        ]
+            ((0, 500), 50),
+        ],
+
+        "Tarjetas PayJoy": [
+            ((0, 9999), 50),
+        ],
     }
 
     # 🔥 CASO ESPECIAL: ACTIVACION
