@@ -18,7 +18,7 @@ const fmtFecha = (iso: string): string => {
 const ANCHOR_LUNES_A = new Date(2026, 3, 20); // lunes 20 Abr 2026
 
 // ── Semanas para grupo C (lunes–domingo, misma lógica, anchor distinto) ──────
-const ANCHOR_LUNES_C = new Date(2026, 3, 18); // lunes 18 Abr 2026
+const ANCHOR_LUNES_C = new Date(2026, 3, 20); // lunes 20 Abr 2026
 
 interface Semana {
   inicio: Date;
