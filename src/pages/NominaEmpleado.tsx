@@ -48,7 +48,9 @@ function getSemanasPagadasA(): Semana[] {
     const pago = new Date(fin);
     pago.setDate(pago.getDate() + 3);     // miércoles siguiente
 
-    if (pago > hoy) break;               // semana aún no pagada
+    const lunesSiguiente = new Date(cursor);
+    lunesSiguiente.setDate(lunesSiguiente.getDate() + 7);
+    if (lunesSiguiente > hoy) break;     // semana en curso, aún no cerrada
 
     semanas.push({ inicio, fin, pago, inicioISO: toISO(inicio) });
     cursor.setDate(cursor.getDate() + 7);
