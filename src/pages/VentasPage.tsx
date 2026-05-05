@@ -178,6 +178,7 @@ const CHIP_OPCIONES_TODAS = [
   { value: 'Chip Equipo',         label: 'Chip Equipo / Promo / ATO' },
   { value: 'Chip Express',        label: 'Chip Express / ATO' },
   { value: 'Portabilidad',        label: 'Portabilidad / ATO' },
+  { value: 'Tarjetas PayJoy',     label: 'Tarjetas PayJoy / ATO' },
   { value: 'Chip Cero/Libre',     label: 'Chip Cero / Libre / EKT' },
   { value: 'Chip Preactivado',    label: 'Chip Preactivado / Otras Cadenas' },
   { value: 'Chip Coppel',         label: 'Chip Express Coppel' },
@@ -311,6 +312,7 @@ const FormularioVentaMultiple = () => {
   const [numeroDuplicado, setNumeroDuplicado] = useState(false);
   const [verificandoNumero, setVerificandoNumero] = useState(false);
   const [recarga, setRecarga] = useState('');
+  const [tadDevice, setTadDevice] = useState('');
 
   const [telefonoMarca, setTelefonoMarca] = useState('');
   const [telefonoModelo, setTelefonoModelo] = useState('');
@@ -623,14 +625,21 @@ const FormularioVentaMultiple = () => {
   };
 
   const handleSubmit = async () => {
+    const esPayJoy = tipoChip === 'Tarjetas PayJoy';
     try {
       await axios.post(
         `${process.env.REACT_APP_API_URL}/ventas/venta_chips`,
-        { tipo_chip: tipoChip, numero_telefono: numero, monto_recarga: parseFloat(recarga), telefono_cliente: telefono || null, cvip },
+        {
+          tipo_chip: tipoChip,
+          numero_telefono: esPayJoy ? tadDevice : numero,
+          monto_recarga: esPayJoy ? 0 : parseFloat(recarga),
+          telefono_cliente: telefono || null,
+          cvip: esPayJoy ? false : cvip,
+        },
         { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } },
       );
       setMensaje({ tipo: 'success', texto: 'Venta de chip registrada correctamente' });
-      setTipoChip(''); setNumero(''); setRecarga(''); settelefono('');
+      setTipoChip(''); setNumero(''); setRecarga(''); settelefono(''); setTadDevice('');
       if (rol === 'asesor') { fetchVentas(); fetchComisionesHoy(); fetchChipsDelDia(); }
     } catch (err: any) {
       setMensaje({ tipo: 'error', texto: err?.response?.data?.detail || 'Error al registrar la venta' });
@@ -752,37 +761,52 @@ const FormularioVentaMultiple = () => {
       {/* ── Chip ── */}
       {(esCadenas || tipoVenta === 'chip') && (
         <>
-          <TextField select label="Chip" value={tipoChip} onChange={(e) => setTipoChip(e.target.value)} fullWidth margin="normal">
-            {(esCadenas
-              ? CHIP_OPCIONES_POR_CADENA[sessionStorage.getItem('cadena_seleccionada') || ''] ?? CHIP_OPCIONES_TODAS
-              : CHIP_OPCIONES_TODAS
+          <TextField select label="Chip" value={tipoChip} onChange={(e) => { setTipoChip(e.target.value); setTadDevice(''); }} fullWidth margin="normal">
+            {(rol === null
+              ? []
+              : (rol === 'asesor' || rol === 'encargado')
+                ? CHIP_OPCIONES_TODAS.filter((op) => op.label.endsWith('/ ATO'))
+                : esCadenas
+                  ? CHIP_OPCIONES_POR_CADENA[sessionStorage.getItem('cadena_seleccionada') || ''] ?? CHIP_OPCIONES_TODAS
+                  : CHIP_OPCIONES_TODAS
             ).map((op) => (
               <MenuItem key={op.value} value={op.value}>{op.label}</MenuItem>
             ))}
           </TextField>
-          <TextField
-            label="Número" type="tel" value={numero} fullWidth margin="normal"
-            onChange={(e) => { setNumero(e.target.value); setNumeroDuplicado(false); }}
-            onBlur={() => verificarNumero(numero)}
-            error={numeroDuplicado}
-            helperText={
-              numeroDuplicado
-                ? 'Este número ya fue registrado'
-                : verificandoNumero
-                ? 'Verificando…'
-                : ''
-            }
-            InputProps={{ endAdornment: verificandoNumero ? <InputAdornment position="end"><CircularProgress size={16} /></InputAdornment> : undefined }}
-          />
-          <TextField label="Recarga" type="number" value={recarga} onChange={(e) => setRecarga(e.target.value)} fullWidth margin="normal" />
-          <FormControl sx={{ mt: 1 }}>
-            <FormLabel>Cliente VIP</FormLabel>
-            <RadioGroup row value={cvip} onChange={(e) => setcvip(e.target.value === 'true')}>
-              <FormControlLabel value="true" control={<Radio />} label="Sí" />
-              <FormControlLabel value="false" control={<Radio />} label="No" />
-            </RadioGroup>
-          </FormControl>
-          <Button variant="contained" fullWidth onClick={handleSubmit} disabled={!tipoChip || !numero || !recarga || numeroDuplicado || verificandoNumero} sx={{ mt: 2 }}>Registrar Venta de Chip</Button>
+          {tipoChip !== 'Tarjetas PayJoy' && (
+            <>
+              <TextField
+                label="Número" type="tel" value={numero} fullWidth margin="normal"
+                onChange={(e) => { setNumero(e.target.value); setNumeroDuplicado(false); }}
+                onBlur={() => verificarNumero(numero)}
+                error={numeroDuplicado}
+                helperText={
+                  numeroDuplicado
+                    ? 'Este número ya fue registrado'
+                    : verificandoNumero
+                    ? 'Verificando…'
+                    : ''
+                }
+                InputProps={{ endAdornment: verificandoNumero ? <InputAdornment position="end"><CircularProgress size={16} /></InputAdornment> : undefined }}
+              />
+              <TextField label="Recarga" type="number" value={recarga} onChange={(e) => setRecarga(e.target.value)} fullWidth margin="normal" />
+              <FormControl sx={{ mt: 1 }}>
+                <FormLabel>Cliente VIP</FormLabel>
+                <RadioGroup row value={cvip} onChange={(e) => setcvip(e.target.value === 'true')}>
+                  <FormControlLabel value="true" control={<Radio />} label="Sí" />
+                  <FormControlLabel value="false" control={<Radio />} label="No" />
+                </RadioGroup>
+              </FormControl>
+            </>
+          )}
+          {tipoChip === 'Tarjetas PayJoy' && (
+            <TextField label="TAD DEVICE" value={tadDevice} onChange={(e) => setTadDevice(e.target.value)} fullWidth margin="normal" />
+          )}
+          <Button
+            variant="contained" fullWidth onClick={handleSubmit}
+            disabled={!tipoChip || (tipoChip === 'Tarjetas PayJoy' ? !tadDevice : (!numero || !recarga || numeroDuplicado || verificandoNumero))}
+            sx={{ mt: 2 }}
+          >Registrar Venta de Chip</Button>
         </>
       )}
 
