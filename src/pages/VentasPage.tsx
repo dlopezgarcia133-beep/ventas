@@ -185,6 +185,7 @@ const CHIP_OPCIONES_TODAS = [
   { value: 'Portabilidad Coppel', label: 'Portabilidad Coppel' },
   { value: 'Porta Otras cadenas', label: 'Portabilidad / EKT / Otras Cadenas' },
   { value: 'Activacion',          label: 'Telefono Activado de Cadenas' },
+  { value: 'Tarjetas PayJoy',     label: 'Tarjetas PayJoy / ATO' },
 ];
 
 const CHIP_OPCIONES_EKT = [
@@ -768,7 +769,7 @@ const FormularioVentaMultiple = () => {
               : (rol === 'asesor' || rol === 'encargado')
                 ? CHIP_OPCIONES_TODAS.filter((op) => op.label.endsWith('/ ATO'))
                 : esCadenas
-                  ? CHIP_OPCIONES_POR_CADENA[sessionStorage.getItem('cadena_seleccionada') || ''] ?? CHIP_OPCIONES_TODAS
+                  ? CHIP_OPCIONES_POR_CADENA[sessionStorage.getItem('cadena_seleccionada') || ''] ?? []
                   : CHIP_OPCIONES_TODAS
             ).map((op) => (
               <MenuItem key={op.value} value={op.value}>{op.label}</MenuItem>
