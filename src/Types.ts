@@ -127,6 +127,7 @@ export interface VentaChip {
   fecha: string;
   hora: string;
   validado: boolean;
+  comision_pagada: boolean;
   comision: number;
   comision_manual: number;
   cvip: boolean;
@@ -216,6 +217,9 @@ export interface NominaEmpleado {
 
   rol: "asesor" | "encargado";
   comisiones: number;
+  comisiones_accesorios: number;
+  comisiones_telefonos: number;
+  comisiones_chips: number;
   sueldo_base: number;
   horas_extra: number;
   pago_horas_extra: number;

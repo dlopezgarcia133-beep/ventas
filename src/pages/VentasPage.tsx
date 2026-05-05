@@ -4,6 +4,7 @@ import {
   TableContainer, MenuItem, FormControlLabel, FormControl, FormLabel,
   RadioGroup, Radio, TablePagination, Table, TableHead, TableRow,
   TableCell, TableBody, Divider, Chip, IconButton, Tabs, Tab, useMediaQuery,
+  CircularProgress, InputAdornment,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
@@ -177,6 +178,7 @@ const CHIP_OPCIONES_TODAS = [
   { value: 'Chip Equipo',         label: 'Chip Equipo / Promo / ATO' },
   { value: 'Chip Express',        label: 'Chip Express / ATO' },
   { value: 'Portabilidad',        label: 'Portabilidad / ATO' },
+  { value: 'Tarjetas PayJoy',     label: 'Tarjetas PayJoy / ATO' },
   { value: 'Chip Cero/Libre',     label: 'Chip Cero / Libre / EKT' },
   { value: 'Chip Preactivado',    label: 'Chip Preactivado / Otras Cadenas' },
   { value: 'Chip Coppel',         label: 'Chip Express Coppel' },
@@ -307,7 +309,10 @@ const FormularioVentaMultiple = () => {
   const [tipoVenta, setTipoVenta] = useState<'accesorio' | 'chip' | 'telefono'>(esCadenas ? 'chip' : 'accesorio');
   const [tipoChip, setTipoChip] = useState('');
   const [numero, setNumero] = useState('');
+  const [numeroDuplicado, setNumeroDuplicado] = useState(false);
+  const [verificandoNumero, setVerificandoNumero] = useState(false);
   const [recarga, setRecarga] = useState('');
+  const [tadDevice, setTadDevice] = useState('');
 
   const [telefonoMarca, setTelefonoMarca] = useState('');
   const [telefonoModelo, setTelefonoModelo] = useState('');
@@ -601,15 +606,40 @@ const FormularioVentaMultiple = () => {
     }
   };
 
+  const verificarNumero = async (num: string) => {
+    if (!num.trim()) return;
+    setVerificandoNumero(true);
+    setNumeroDuplicado(false);
+    const url = `${process.env.REACT_APP_API_URL}/ventas/venta_chips/verificar_numero/${encodeURIComponent(num)}`;
+    console.log("[verificarNumero] URL:", url);
+    try {
+      const res = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
+      console.log("[verificarNumero] respuesta:", res.data);
+      setNumeroDuplicado(res.data.duplicado === true);
+    } catch (err) {
+      console.error("[verificarNumero] error:", err);
+      setNumeroDuplicado(false);
+    } finally {
+      setVerificandoNumero(false);
+    }
+  };
+
   const handleSubmit = async () => {
+    const esPayJoy = tipoChip === 'Tarjetas PayJoy';
     try {
       await axios.post(
         `${process.env.REACT_APP_API_URL}/ventas/venta_chips`,
-        { tipo_chip: tipoChip, numero_telefono: numero, monto_recarga: parseFloat(recarga), telefono_cliente: telefono || null, cvip },
+        {
+          tipo_chip: tipoChip,
+          numero_telefono: esPayJoy ? tadDevice : numero,
+          monto_recarga: esPayJoy ? 0 : parseFloat(recarga),
+          telefono_cliente: telefono || null,
+          cvip: esPayJoy ? false : cvip,
+        },
         { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } },
       );
       setMensaje({ tipo: 'success', texto: 'Venta de chip registrada correctamente' });
-      setTipoChip(''); setNumero(''); setRecarga(''); settelefono('');
+      setTipoChip(''); setNumero(''); setRecarga(''); settelefono(''); setTadDevice('');
       if (rol === 'asesor') { fetchVentas(); fetchComisionesHoy(); fetchChipsDelDia(); }
     } catch (err: any) {
       setMensaje({ tipo: 'error', texto: err?.response?.data?.detail || 'Error al registrar la venta' });
@@ -731,24 +761,52 @@ const FormularioVentaMultiple = () => {
       {/* ── Chip ── */}
       {(esCadenas || tipoVenta === 'chip') && (
         <>
-          <TextField select label="Chip" value={tipoChip} onChange={(e) => setTipoChip(e.target.value)} fullWidth margin="normal">
-            {(esCadenas
-              ? CHIP_OPCIONES_POR_CADENA[sessionStorage.getItem('cadena_seleccionada') || ''] ?? CHIP_OPCIONES_TODAS
-              : CHIP_OPCIONES_TODAS
+          <TextField select label="Chip" value={tipoChip} onChange={(e) => { setTipoChip(e.target.value); setTadDevice(''); }} fullWidth margin="normal">
+            {(rol === null
+              ? []
+              : (rol === 'asesor' || rol === 'encargado')
+                ? CHIP_OPCIONES_TODAS.filter((op) => op.label.endsWith('/ ATO'))
+                : esCadenas
+                  ? CHIP_OPCIONES_POR_CADENA[sessionStorage.getItem('cadena_seleccionada') || ''] ?? CHIP_OPCIONES_TODAS
+                  : CHIP_OPCIONES_TODAS
             ).map((op) => (
               <MenuItem key={op.value} value={op.value}>{op.label}</MenuItem>
             ))}
           </TextField>
-          <TextField label="Número" type="tel" value={numero} onChange={(e) => setNumero(e.target.value)} fullWidth margin="normal" />
-          <TextField label="Recarga" type="number" value={recarga} onChange={(e) => setRecarga(e.target.value)} fullWidth margin="normal" />
-          <FormControl sx={{ mt: 1 }}>
-            <FormLabel>Cliente VIP</FormLabel>
-            <RadioGroup row value={cvip} onChange={(e) => setcvip(e.target.value === 'true')}>
-              <FormControlLabel value="true" control={<Radio />} label="Sí" />
-              <FormControlLabel value="false" control={<Radio />} label="No" />
-            </RadioGroup>
-          </FormControl>
-          <Button variant="contained" fullWidth onClick={handleSubmit} disabled={!tipoChip || !numero || !recarga} sx={{ mt: 2 }}>Registrar Venta de Chip</Button>
+          {tipoChip !== 'Tarjetas PayJoy' && (
+            <>
+              <TextField
+                label="Número" type="tel" value={numero} fullWidth margin="normal"
+                onChange={(e) => { setNumero(e.target.value); setNumeroDuplicado(false); }}
+                onBlur={() => verificarNumero(numero)}
+                error={numeroDuplicado}
+                helperText={
+                  numeroDuplicado
+                    ? 'Este número ya fue registrado'
+                    : verificandoNumero
+                    ? 'Verificando…'
+                    : ''
+                }
+                InputProps={{ endAdornment: verificandoNumero ? <InputAdornment position="end"><CircularProgress size={16} /></InputAdornment> : undefined }}
+              />
+              <TextField label="Recarga" type="number" value={recarga} onChange={(e) => setRecarga(e.target.value)} fullWidth margin="normal" />
+              <FormControl sx={{ mt: 1 }}>
+                <FormLabel>Cliente VIP</FormLabel>
+                <RadioGroup row value={cvip} onChange={(e) => setcvip(e.target.value === 'true')}>
+                  <FormControlLabel value="true" control={<Radio />} label="Sí" />
+                  <FormControlLabel value="false" control={<Radio />} label="No" />
+                </RadioGroup>
+              </FormControl>
+            </>
+          )}
+          {tipoChip === 'Tarjetas PayJoy' && (
+            <TextField label="TAD DEVICE" value={tadDevice} onChange={(e) => setTadDevice(e.target.value)} fullWidth margin="normal" />
+          )}
+          <Button
+            variant="contained" fullWidth onClick={handleSubmit}
+            disabled={!tipoChip || (tipoChip === 'Tarjetas PayJoy' ? !tadDevice : (!numero || !recarga || numeroDuplicado || verificandoNumero))}
+            sx={{ mt: 2 }}
+          >Registrar Venta de Chip</Button>
         </>
       )}
 
@@ -979,14 +1037,14 @@ const FormularioVentaMultiple = () => {
         {tabAsesor === 0 && (
           <Grid container spacing={2}>
             {/* Columna izquierda: formulario (oculto para admin) */}
-            {rol !== 'admin' && (
+            {(rol as string) !== 'admin' && (
               <Grid item xs={12} md={6}>
                 {formulario}
               </Grid>
             )}
 
             {/* Columna derecha: tabla del día + comisiones */}
-            <Grid item xs={12} md={rol === 'admin' ? 12 : 6}>
+            <Grid item xs={12} md={(rol as string) === 'admin' ? 12 : 6}>
 
           {esCadenas ? (
             /* ── Activaciones del día (Cadenas C.) ── */
@@ -1554,7 +1612,7 @@ const FormularioVentaMultiple = () => {
   // ════════════════════════════════════════════════════════════════════════════
   return (
     <Grid container spacing={2} sx={{ mt: 2 }}>
-      {rol !== 'admin' && (
+      {(rol as string) !== 'admin' && (
         <Grid item xs={12} md={6}>
           {formulario}
         </Grid>

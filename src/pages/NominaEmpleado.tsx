@@ -1,186 +1,341 @@
 import { useEffect, useState } from "react";
-import { Box, Paper, Typography, Divider, CircularProgress, Alert, TextField, MenuItem } from "@mui/material";
+import { Box, CircularProgress, Divider, MenuItem, Paper, Table, TableBody, TableCell, TableRow, TextField, Typography } from "@mui/material";
 import { MiNominaResponse } from "../Types";
+import { obtenerRolDesdeToken } from "../components/Token";
 
-// ─── Helpers de ciclos de nómina (Grupo C) ───────────────────────────────────
+const fmt = (n: number) => `$${Number(n).toFixed(2)}`;
 
-const ANCHOR_C = new Date(2026, 3, 18); // 18 Abr 2026
-const MESES_CORTOS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MESES_CORTOS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const MESES_LARGOS = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const DIAS        = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
 
-interface Ciclo { inicio: Date; fin: Date; pago: Date; }
+const fmtFecha = (iso: string): string => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${d} ${MESES_CORTOS[m - 1]} ${y}`;
+};
 
-function getCiclosC(): Ciclo[] {
-  const ciclos: Ciclo[] = [];
-  const current = new Date(ANCHOR_C);
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
+// ── Semanas para grupo A (lunes–domingo, pago el miércoles siguiente) ────────
+const ANCHOR_LUNES_A = new Date(2026, 3, 20); // lunes 20 Abr 2026
 
-  while (true) {
-    const inicio = new Date(current);
-    const fin = new Date(current);
-    fin.setDate(fin.getDate() + 6);
-    const pago = new Date(fin);
-    pago.setDate(pago.getDate() + 12);
+// ── Semanas para grupo C (lunes–domingo, misma lógica, anchor distinto) ──────
+const ANCHOR_LUNES_C = new Date(2026, 3, 18); // lunes 18 Abr 2026
 
-    const apareceDesde = new Date(inicio);
-    apareceDesde.setDate(apareceDesde.getDate() + 7);
-
-    if (apareceDesde > hoy) {
-      if (ciclos.length === 0) ciclos.push({ inicio, fin, pago }); // siempre al menos el primero
-      break;
-    }
-
-    ciclos.push({ inicio, fin, pago });
-    current.setDate(current.getDate() + 7);
-  }
-
-  return ciclos.reverse();
+interface Semana {
+  inicio: Date;
+  fin:    Date;
+  pago:   Date;
+  inicioISO: string;
 }
 
-function fmtDiaMes(d: Date): string {
+function toISO(d: Date): string {
+  return d.toLocaleDateString("en-CA");
+}
+
+function fmtDia(d: Date): string {
   return `${d.getDate()} ${MESES_CORTOS[d.getMonth()]}`;
 }
 
-function labelCicloC(c: Ciclo): string {
-  return `${fmtDiaMes(c.inicio)} – ${fmtDiaMes(c.fin)} ${c.fin.getFullYear()} · Pago: ${fmtDiaMes(c.pago)}`;
+function getSemanasPagadas(anchor: Date): Semana[] {
+  const semanas: Semana[] = [];
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
+  const cursor = new Date(anchor);
+
+  while (true) {
+    const inicio = new Date(cursor);
+    const fin    = new Date(cursor);
+    fin.setDate(fin.getDate() + 6);       // domingo
+    const pago = new Date(fin);
+    pago.setDate(pago.getDate() + 3);     // miércoles siguiente
+
+    const lunesSiguiente = new Date(cursor);
+    lunesSiguiente.setDate(lunesSiguiente.getDate() + 7);
+    if (lunesSiguiente > hoy) break;     // semana en curso, aún no cerrada
+
+    semanas.push({ inicio, fin, pago, inicioISO: toISO(inicio) });
+    cursor.setDate(cursor.getDate() + 7);
+  }
+
+  return semanas.reverse(); // más reciente primero
+}
+
+function labelSemana(s: Semana): string {
+  const año = s.fin.getFullYear();
+  return `${fmtDia(s.inicio)} – ${fmtDia(s.fin)} ${año}  ·  Pago: ${fmtDia(s.pago)}`;
 }
 
 function fmtFechaPago(d: Date): string {
-  return d.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  return `${DIAS[d.getDay()]}, ${d.getDate()} de ${MESES_LARGOS[d.getMonth()]} de ${d.getFullYear()}`;
 }
-
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function NominaEmpleado() {
-  const [data, setData] = useState<MiNominaResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [cicloIdx, setCicloIdx] = useState(0);
-  const token = localStorage.getItem("token");
+  const [data,             setData]             = useState<MiNominaResponse | null>(null);
+  const [historial,        setHistorial]        = useState<any | null>(null);
+  const [loading,          setLoading]          = useState(true);
+  const [loadingHistorial, setLoadingHistorial] = useState(false);
 
-  const ciclos = getCiclosC();
-  const cicloActual = ciclos[cicloIdx] ?? ciclos[0];
+  const token    = localStorage.getItem("token");
+  const username = localStorage.getItem("usuario") || "";
+  const esAsesor = obtenerRolDesdeToken() === "asesor";
+  const esGrupoA = username.toUpperCase().startsWith("A");
+  const esGrupoC = username.toUpperCase().startsWith("C");
+
+  const semanasA = esGrupoA ? getSemanasPagadas(ANCHOR_LUNES_A) : [];
+  const semanasC = esGrupoC ? getSemanasPagadas(ANCHOR_LUNES_C) : [];
+
+  const [semanaIdx,  setSemanaIdx]  = useState(0);
+  const [semanaIdxC, setSemanaIdxC] = useState(0);
+
+  const semanaSeleccionada  = semanasA[semanaIdx]  ?? null;
+  const semanaSeleccionadaC = semanasC[semanaIdxC] ?? null;
+
+  const fetchHistorial = async (semanaInicio?: string) => {
+    const headers = { Authorization: `Bearer ${token}` };
+    const url = semanaInicio
+      ? `${process.env.REACT_APP_API_URL}/nomina/mi-historial?semana_inicio=${semanaInicio}`
+      : `${process.env.REACT_APP_API_URL}/nomina/mi-historial`;
+    try {
+      const res = await fetch(url, { headers });
+      if (res.ok) {
+        const json = await res.json();
+        if (json) setHistorial(json);
+        else setHistorial(null);
+      } else {
+        setHistorial(null);
+      }
+    } catch (_) {
+      setHistorial(null);
+    }
+  };
 
   useEffect(() => {
-    const cargarNomina = async () => {
-      setLoading(true);
-      setData(null);
-      try {
-        const params = new URLSearchParams({
-          fecha_inicio: cicloActual.inicio.toLocaleDateString('en-CA'),
-          fecha_fin: cicloActual.fin.toLocaleDateString('en-CA'),
-        });
-        const res = await fetch(
-          `${process.env.REACT_APP_API_URL}/nomina/mi-resumen?${params}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        if (res.ok) {
-          const json = await res.json();
-          setData(json);
-        }
-      } catch (_) {
-        // Sin datos: se mostrará la alerta
-      } finally {
-        setLoading(false);
-      }
-    };
-    cargarNomina();
-  }, [cicloIdx]);
+    const cargar = async () => {
+      const headers = { Authorization: `Bearer ${token}` };
 
-  const Row = ({ label, value }: { label: string; value: string | number }) => (
-    <Box display="flex" justifyContent="space-between" mb={0.75}>
-      <Typography>{label}</Typography>
-      <Typography fontWeight="bold">{value}</Typography>
+      try {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/nomina/mi-resumen`, { headers });
+        if (res.ok) setData(await res.json());
+      } catch (_) {}
+
+      if (esGrupoA && semanasA.length > 0) {
+        await fetchHistorial(semanasA[0].inicioISO);
+      } else if (esGrupoC && semanasC.length > 0) {
+        await fetchHistorial(semanasC[0].inicioISO);
+      } else {
+        await fetchHistorial();
+      }
+
+      setLoading(false);
+    };
+    cargar();
+  }, []); // eslint-disable-line
+
+  const handleSemanaChange = async (idx: number) => {
+    setSemanaIdx(idx);
+    setLoadingHistorial(true);
+    await fetchHistorial(semanasA[idx]?.inicioISO);
+    setLoadingHistorial(false);
+  };
+
+  const handleSemanaChangeC = async (idx: number) => {
+    setSemanaIdxC(idx);
+    setLoadingHistorial(true);
+    await fetchHistorial(semanasC[idx]?.inicioISO);
+    setLoadingHistorial(false);
+  };
+
+  if (loading) return (
+    <Box display="flex" justifyContent="center" mt={4}>
+      <CircularProgress />
     </Box>
   );
 
+  // Valores — prioridad historial, fallback a data
+  const sueldoBase     = historial?.sueldo_base             ?? data?.sueldo?.base                  ?? 0;
+  const comisAcc       = historial?.comisiones_accesorios   ?? data?.comisiones?.accesorios         ?? 0;
+  const comisTel       = historial?.comisiones_telefonos    ?? data?.comisiones?.telefonos           ?? 0;
+  const comisChips     = historial?.comisiones_chips        ?? data?.comisiones?.chips               ?? 0;
+  const comisTotal     = historial?.comisiones_total        ?? data?.comisiones?.total               ?? 0;
+  const horasExtra     = historial?.horas_extra             ?? data?.sueldo?.horas_extra             ?? 0;
+  const precioHora     = historial?.precio_hora_extra       ?? 0;
+  const pagoHoras      = historial?.pago_horas_extra        ?? data?.sueldo?.pago_horas_extra        ?? 0;
+  const comisPlanes    = historial?.comisiones_pendientes   ?? data?.sueldo?.comisiones_pendientes   ?? 0;
+  const sanciones      = historial?.sanciones               ?? data?.sueldo?.sanciones               ?? 0;
+  const horasFaltantes = historial?.horas_faltantes         ?? 0;
+  const descuentoFalt  = horasFaltantes * precioHora;
+  const totalPagar     = historial?.total_pagar             ?? data?.total_pagar                     ?? 0;
+
+  const nombre  = historial?.username ?? data?.empleado?.username ?? "";
+  const periodo = data ? `${data.periodo.inicio} → ${data.periodo.fin}` : "";
+  const rangoComisiones = (historial?.comisiones_inicio && historial?.comisiones_fin)
+    ? `Comisiones del ${fmtFecha(historial.comisiones_inicio)} – ${fmtFecha(historial.comisiones_fin)}`
+    : null;
+
+  const fechaPago = esGrupoA && semanaSeleccionada
+    ? fmtFechaPago(semanaSeleccionada.pago)
+    : esGrupoC && semanaSeleccionadaC
+      ? fmtFechaPago(semanaSeleccionadaC.pago)
+      : "";
+
+  const Fila = ({ label, value, color, bold }: {
+    label: string; value: string; color?: string; bold?: boolean;
+  }) => (
+    <TableRow>
+      <TableCell sx={{ color, fontWeight: bold ? "bold" : "normal", border: 0, py: 1 }}>
+        {label}
+      </TableCell>
+      <TableCell align="right" sx={{ color, fontWeight: bold ? "bold" : "normal", border: 0, py: 1 }}>
+        {value}
+      </TableCell>
+    </TableRow>
+  );
+
   return (
-    <Box maxWidth={600} mx="auto" p={2.5}>
-      <Typography variant="h5" align="center" gutterBottom>
-        💰 Mi Nómina
+    <Box maxWidth={520} mx="auto" p={2.5}>
+      <Typography variant="h5" align="center" fontWeight="bold" gutterBottom>
+        Mi Nómina
       </Typography>
 
-      {/* Selector de semana */}
-      <TextField
-        select
-        size="small"
-        label="Semana"
-        value={cicloIdx}
-        onChange={(e) => setCicloIdx(Number(e.target.value))}
-        sx={{ mb: 2.5, minWidth: { xs: '100%', sm: 360 } }}
-      >
-        {ciclos.map((c, i) => (
-          <MenuItem key={i} value={i}>{labelCicloC(c)}</MenuItem>
-        ))}
-      </TextField>
-
-      {/* EMPLEADO / PERIODO */}
-      <Paper sx={{ p: 2.5, mb: 2.5, borderRadius: 3 }}>
-        <Typography variant="h6" gutterBottom>👤 Empleado</Typography>
-        {data ? (
-          <>
-            <Typography fontWeight="bold">{data.empleado.username}</Typography>
-            <Typography variant="body2" color="text.secondary">
-              Periodo: {fmtDiaMes(cicloActual.inicio)} → {fmtDiaMes(cicloActual.fin)} {cicloActual.fin.getFullYear()}
-            </Typography>
-          </>
-        ) : loading ? (
-          <Box display="flex" justifyContent="center" mt={1}><CircularProgress size={24} /></Box>
-        ) : (
-          <Typography variant="body2" color="text.secondary">
-            Periodo: {fmtDiaMes(cicloActual.inicio)} → {fmtDiaMes(cicloActual.fin)} {cicloActual.fin.getFullYear()}
-          </Typography>
-        )}
-      </Paper>
-
-      {/* COMISIONES */}
-      {!loading && (
-        data ? (
-          <Paper sx={{ p: 2.5, mb: 2.5, borderRadius: 3 }}>
-            <Typography variant="h6" gutterBottom>📊 Comisiones</Typography>
-            <Row label="Accesorios" value={`$${data.comisiones.accesorios}`} />
-            <Row label="Teléfonos" value={`$${data.comisiones.telefonos}`} />
-            <Row label="Chips" value={`$${data.comisiones.chips}`} />
-            <Divider sx={{ my: 1 }} />
-            <Box display="flex" justifyContent="space-between">
-              <Typography fontWeight="bold" fontSize={16}>Total comisiones</Typography>
-              <Typography fontWeight="bold" fontSize={16}>${data.comisiones.total}</Typography>
-            </Box>
-          </Paper>
-        ) : (
-          <Alert severity="info" sx={{ mb: 2.5 }}>
-            Las comisiones se mostrarán cuando administración confirme el período.
-          </Alert>
-        )
-      )}
-
-      {/* SUELDO */}
-      {!loading && data && (
-        <Paper sx={{ p: 2.5, mb: 2.5, borderRadius: 3 }}>
-          <Typography variant="h6" gutterBottom>💼 Sueldo</Typography>
-          <Row label="Sueldo base" value={`$${data.sueldo.base}`} />
-          <Row label="Horas extra" value={data.sueldo.horas_extra} />
-          <Row label="Pago horas extra" value={`$${data.sueldo.pago_horas_extra}`} />
-          <Row label="Sanciones" value={`-$${data.sueldo?.sanciones ?? 0}`} />
-          <Row label="Comisiones pendientes" value={`$${data.sueldo?.comisiones_pendientes ?? 0}`} />
-        </Paper>
-      )}
-
-      {/* TOTAL */}
-      {!loading && data && (
-        <Paper sx={{ p: 2.5, mb: 2.5, borderRadius: 3, bgcolor: "#f97316", color: "white", textAlign: "center" }}>
-          <Typography variant="h6">Total a pagar</Typography>
-          <Typography variant="h4" fontWeight="bold">${data.total_pagar}</Typography>
-        </Paper>
-      )}
-
-      {/* FECHA DE PAGO — dinámica según el ciclo seleccionado */}
-      <Paper sx={{ p: 2, borderRadius: 3, bgcolor: "#fff7ed", border: "1px solid rgba(249,115,22,0.25)", textAlign: "center" }}>
-        <Typography>
-          📅 <strong>Fecha de pago</strong>
-          <br />
-          {fmtFechaPago(cicloActual.pago)}
+      {nombre && (
+        <Typography align="center" color="text.secondary" mb={rangoComisiones ? 0.5 : 2.5}>
+          {nombre}{!esGrupoA && !esGrupoC && periodo ? ` · ${periodo}` : ""}
         </Typography>
-      </Paper>
+      )}
+      {rangoComisiones && (
+        <Typography align="center" variant="body2" color="text.secondary" mb={2.5}>
+          {rangoComisiones}
+        </Typography>
+      )}
+
+      {/* Selector de semana — grupo A */}
+      {esGrupoA && semanasA.length > 0 && (
+        <TextField
+          select fullWidth size="small" label="Semana"
+          value={semanaIdx}
+          onChange={(e) => handleSemanaChange(Number(e.target.value))}
+          sx={{ mb: 2.5 }}
+        >
+          {semanasA.map((s, i) => (
+            <MenuItem key={s.inicioISO} value={i}>
+              {labelSemana(s)}
+            </MenuItem>
+          ))}
+        </TextField>
+      )}
+
+      {esGrupoA && semanasA.length === 0 && (
+        <Typography align="center" variant="body2" color="text.secondary" mb={2.5}>
+          No hay semanas pagadas disponibles aún.
+        </Typography>
+      )}
+
+      {/* Selector de semana — grupo C */}
+      {esGrupoC && semanasC.length > 0 && (
+        <TextField
+          select fullWidth size="small" label="Semana"
+          value={semanaIdxC}
+          onChange={(e) => handleSemanaChangeC(Number(e.target.value))}
+          sx={{ mb: 2.5 }}
+        >
+          {semanasC.map((s, i) => (
+            <MenuItem key={s.inicioISO} value={i}>
+              {labelSemana(s)}
+            </MenuItem>
+          ))}
+        </TextField>
+      )}
+
+      {esGrupoC && semanasC.length === 0 && (
+        <Typography align="center" variant="body2" color="text.secondary" mb={2.5}>
+          No hay semanas pagadas disponibles aún.
+        </Typography>
+      )}
+
+      {loadingHistorial ? (
+        <Box display="flex" justifyContent="center" py={4}>
+          <CircularProgress size={28} />
+        </Box>
+      ) : (
+        <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
+          <Table size="small">
+            <TableBody>
+
+              {/* 1. Sueldo base */}
+              <Fila label="Sueldo base" value={fmt(sueldoBase)} />
+
+              <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
+
+              {/* 2. Comisiones */}
+              {!nombre.startsWith("C") && <Fila label="Comisiones accesorios" value={fmt(comisAcc)} />}
+              {!nombre.startsWith("C") && <Fila label="Comisiones teléfonos"  value={fmt(comisTel)} />}
+              <Fila label={nombre.startsWith("C") ? "Comisión por activaciones" : "Comisiones chips"} value={fmt(comisChips)} />
+              <Fila label="Total comisiones" value={fmt(comisTotal)} bold />
+
+              <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
+
+              {/* 3. Horas extra — solo asesores */}
+              {esAsesor && <Fila label={`Horas extra (${horasExtra} hrs × $${precioHora})`} value={fmt(pagoHoras)} />}
+
+              {esAsesor && <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>}
+
+              {/* 4. Comisiones planes tarifarios / Bono Cheking */}
+              <Fila label={nombre.startsWith("C") ? "Bono Cheking" : "Comisiones planes tarifarios"} value={fmt(comisPlanes)} />
+
+              <TableRow><TableCell colSpan={2} sx={{ p: 0 }}><Divider /></TableCell></TableRow>
+
+              {/* 5. Sanciones */}
+              <Fila
+                label="Sanciones"
+                value={sanciones > 0 ? `-${fmt(sanciones)}` : fmt(0)}
+                color={sanciones > 0 ? "error" : undefined}
+              />
+
+              {/* 6. Horas faltantes — solo asesores */}
+              {esAsesor && (
+                <Fila
+                  label="Horas faltantes"
+                  value={`${horasFaltantes} hrs`}
+                  color={horasFaltantes > 0 ? "error" : undefined}
+                />
+              )}
+
+              {/* 7. Descuento hrs faltantes — solo asesores */}
+              {esAsesor && (
+                <Fila
+                  label="Descuento hrs faltantes"
+                  value={descuentoFalt > 0 ? `-${fmt(descuentoFalt)}` : fmt(0)}
+                  color={descuentoFalt > 0 ? "error" : undefined}
+                />
+              )}
+
+              {/* 8. Total a pagar */}
+              <TableRow sx={{ bgcolor: "#f97316" }}>
+                <TableCell sx={{ color: "#fff", fontWeight: "bold", fontSize: 16, py: 1.5, border: 0 }}>
+                  Total a pagar
+                </TableCell>
+                <TableCell align="right" sx={{ color: "#fff", fontWeight: "bold", fontSize: 16, py: 1.5, border: 0 }}>
+                  {fmt(totalPagar)}
+                </TableCell>
+              </TableRow>
+
+              {/* 9. Fecha de pago */}
+              {fechaPago && (
+                <TableRow>
+                  <TableCell sx={{ color: "text.secondary", border: 0, py: 1 }}>
+                    📅 Fecha de pago
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontWeight: "bold", border: 0, py: 1 }}>
+                    {fechaPago}
+                  </TableCell>
+                </TableRow>
+              )}
+
+            </TableBody>
+          </Table>
+        </Paper>
+      )}
     </Box>
   );
 }

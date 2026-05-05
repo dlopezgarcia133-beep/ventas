@@ -1,10 +1,10 @@
+import axios from "axios";
 import {
   Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, Typography,
   TextField, Button, Box, MenuItem, FormControl, InputLabel, Select, TablePagination
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { obtenerRolDesdeToken } from "../components/Token";
 
 interface Kardex {
@@ -32,7 +32,7 @@ const Kardex = () => {
   const [moduloId, setModuloId] = useState("");
   const [tipoMovimiento, setTipoMovimiento] = useState("");
 
-  const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+  // const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
   const rolToken = obtenerRolDesdeToken();
   const [pagina, setPagina] = useState(0);
   const filasPorPagina = 20;

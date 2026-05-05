@@ -128,6 +128,7 @@ const Navbar = () => {
                 onClose={() => closeMenu(setAnchorInventario)}
               >
                 <MenuItem component={Link} to="/inventario">Inventario</MenuItem>
+                <MenuItem component={Link} to="/entrada-mercancia">Entrada de Mercancia</MenuItem>
                 <MenuItem component={Link} to="/traspasos/admin">Traspasos</MenuItem>
                 <MenuItem component={Link} to="/kardex">Kardex</MenuItem>
               </Menu>
@@ -145,6 +146,13 @@ const Navbar = () => {
                 <MenuItem component={Link} to="/comisiones">Comisiones</MenuItem>
                 <MenuItem component={Link} to="/metricas">Métricas</MenuItem>
               </Menu>
+
+              <Button sx={navBtnSx} component={Link} to="/telcel">
+                TELCEL
+              </Button>
+              <Button sx={navBtnSx} component={Link} to="/clineas">
+                C LÍNEAS
+              </Button>
             </>
           )}
 

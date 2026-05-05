@@ -12,7 +12,8 @@ const ChipsRechazados = () => {
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<number | null>(null);
   const token = localStorage.getItem("token");
 
-  const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+  const usuarioRaw = localStorage.getItem("usuario") || "{}";
+  const usuario = usuarioRaw.startsWith("{") ? JSON.parse(usuarioRaw) : { nombre: usuarioRaw };
   const rolToken = obtenerRolDesdeToken();
 
   const fetchRechazados = async () => {
@@ -23,7 +24,7 @@ const ChipsRechazados = () => {
       }
 
       const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/ventas/ventas/chips_rechazados`,
+        `${process.env.REACT_APP_API_URL}/ventas/chips_rechazados`,
         {
           headers: { Authorization: `Bearer ${token}` },
           params, 
