@@ -1867,6 +1867,93 @@ const FormularioVentaMultiple = () => {
       {(rol as string) !== 'admin' && (
         <Grid item xs={12} md={6}>
           {formulario}
+
+          {/* ── Ventas del día + Comisiones (encargado) ── */}
+          {(rol as string) === 'encargado' && (
+            <>
+              <Paper sx={{ p: 2, mb: 2, mt: 2 }}>
+                <Typography variant="h6" fontWeight={700} gutterBottom>Ventas del día</Typography>
+                <Box sx={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        <th style={thStyle}>Tipo</th>
+                        <th style={thStyle}>Descripción</th>
+                        <th style={thStyle}>Precio</th>
+                        <th style={thStyle}>Comisión</th>
+                        <th style={thStyle}></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ventasHoyAcc.map((v) => (
+                        <tr key={`enc-acc-${v.id}`}>
+                          <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
+                          <td style={tdStyle}>{v.producto}</td>
+                          <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                          <td style={tdStyle}>${fmt(calcComision(v))}</td>
+                          <td style={tdStyle}>
+                            <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </td>
+                        </tr>
+                      ))}
+                      {ventasHoyTel.map((v) => (
+                        <tr key={`enc-tel-${v.id}`}>
+                          <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
+                          <td style={tdStyle}>{v.producto}</td>
+                          <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                          <td style={tdStyle}>${fmt(calcComision(v))}</td>
+                          <td style={tdStyle}>
+                            <IconButton size="small" color="error" disabled={v.cancelada} onClick={() => cancelarVenta(v.id)}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </td>
+                        </tr>
+                      ))}
+                      {ventasHoyAcc.length === 0 && ventasHoyTel.length === 0 && (
+                        <tr>
+                          <td colSpan={5} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
+                            Sin ventas registradas hoy
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </Box>
+                <Box display="flex" justifyContent="flex-start" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Accesorios: <strong>{ventasHoyAcc.length}</strong> | <strong>${fmt(totalPesosAcc)}</strong>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Teléfonos: <strong>{ventasHoyTel.length}</strong> | <strong>${fmt(totalPesosTel)}</strong>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Comisión total: <strong>${fmt(totalComisionHoy)}</strong>
+                  </Typography>
+                </Box>
+              </Paper>
+
+              <Paper sx={{ p: 2.5, bgcolor: '#f97316', color: 'white', border: 'none' }}>
+                <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>Comisiones del día</Typography>
+                <Box display="flex" flexDirection="column" gap={1}>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="body2" sx={{ opacity: 0.85 }}>Accesorios</Typography>
+                    <Typography variant="body2" fontWeight={600}>${comisionAccHoy.toFixed(2)}</Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="body2" sx={{ opacity: 0.85 }}>Teléfonos</Typography>
+                    <Typography variant="body2" fontWeight={600}>${comisionTelHoy.toFixed(2)}</Typography>
+                  </Box>
+                </Box>
+                <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.35)' }} />
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="body1" fontWeight={700}>Total comisionado</Typography>
+                  <Typography variant="h5" fontWeight={800}>${totalComisionHoy.toFixed(2)}</Typography>
+                </Box>
+              </Paper>
+            </>
+          )}
         </Grid>
       )}
 
