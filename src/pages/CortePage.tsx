@@ -386,6 +386,10 @@ const CortePage = () => {
 
   const chipsHoy = chips.filter((c) => c.fecha === HOY && !c.cancelada);
   const chipsTotal = chipsHoy.reduce((s: number, c: any) => s + (c.monto_recarga || 0), 0);
+  const chipsPorTipo = chipsHoy.reduce((acc: Record<string, number>, c: any) => {
+    acc[c.tipo_chip] = (acc[c.tipo_chip] || 0) + 1;
+    return acc;
+  }, {});
 
   // ── fetch ventas for right column ─────────────────────────────────────────
   const fetchVentasDerecha = async (fecha: string) => {
@@ -590,7 +594,7 @@ const CortePage = () => {
                     {ventasDerechaAcc.length > 0 ? ventasDerechaAcc.length : '—'}
                   </td>
                   <td style={tdR}>
-                    <strong>${(resumen?.ventas_productos?.total ?? 0).toFixed(2)}</strong>
+                    <strong>${subtotalDerechaAcc.toFixed(2)}</strong>
                   </td>
                 </tr>
                 <tr>
@@ -603,18 +607,32 @@ const CortePage = () => {
                     {ventasDerechaTel.length > 0 ? ventasDerechaTel.length : '—'}
                   </td>
                   <td style={tdR}>
-                    <strong>${(resumen?.ventas_telefonos?.total ?? 0).toFixed(2)}</strong>
+                    <strong>${subtotalDerechaTel.toFixed(2)}</strong>
                   </td>
                 </tr>
-                <tr>
-                  <td style={tdStyle}>
-                    <Chip label="Chip" size="small"
-                      sx={{ bgcolor: '#f0fdf4', color: '#15803d', fontWeight: 700, fontSize: 11 }} />
-                    &nbsp; Chips
-                  </td>
-                  <td style={tdR}>{chipsHoy.length > 0 ? chipsHoy.length : '—'}</td>
-                  <td style={tdR}><strong>${chipsTotal.toFixed(2)}</strong></td>
-                </tr>
+                {chipsHoy.length === 0 ? (
+                  <tr>
+                    <td style={tdStyle}>
+                      <Chip label="Chip" size="small"
+                        sx={{ bgcolor: '#f0fdf4', color: '#15803d', fontWeight: 700, fontSize: 11 }} />
+                      &nbsp; Chips
+                    </td>
+                    <td style={tdR}>—</td>
+                    <td style={tdR}>—</td>
+                  </tr>
+                ) : (
+                  Object.entries(chipsPorTipo).map(([tipo, cantidad]) => (
+                    <tr key={tipo}>
+                      <td style={tdStyle}>
+                        <Chip label="Chip" size="small"
+                          sx={{ bgcolor: '#f0fdf4', color: '#15803d', fontWeight: 700, fontSize: 11 }} />
+                        &nbsp; {tipo}
+                      </td>
+                      <td style={tdR}>{cantidad as number}</td>
+                      <td style={tdR}>—</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </Box>
           </Paper>
