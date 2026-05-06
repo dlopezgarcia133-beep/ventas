@@ -722,10 +722,14 @@ def obtener_ventas_chips(
     elif current_user.rol == "encargado":
         from sqlalchemy.orm import aliased
         EmpleadoUser = aliased(models.Usuario)
+        ModuloAlias = aliased(models.Modulo)
+        EncargadoModulo = aliased(models.Modulo)
         return (
             db.query(models.VentaChip)
             .join(EmpleadoUser, models.VentaChip.empleado_id == EmpleadoUser.id)
-            .filter(EmpleadoUser.modulo_id == current_user.modulo_id)
+            .join(ModuloAlias, EmpleadoUser.modulo_id == ModuloAlias.id)
+            .join(EncargadoModulo, EncargadoModulo.id == current_user.modulo_id)
+            .filter(ModuloAlias.nombre == EncargadoModulo.nombre)
             .all()
         )
     else:
