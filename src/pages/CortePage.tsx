@@ -384,7 +384,7 @@ const CortePage = () => {
   const subtotal_efectivo = ef_acc + ef_tel + totalAdicional;
   const total_efectivo_final = subtotal_efectivo - sal;
 
-  console.log('CHIPS 05/05:', JSON.stringify(chips.filter((c: any) => c.fecha === '2026-05-05')));
+  console.log('MODULOS EN CHIPS:', [...new Set(chips.map((c: any) => JSON.stringify({id: c.empleado?.modulo?.id, nombre: c.empleado?.modulo?.nombre, user: c.empleado?.username})))]);
   const chipsHoy = chips.filter((c) => {
     const fecha = c.fecha ? String(c.fecha).slice(0, 10) : '';
     return fecha === fechaDerecha && !c.cancelada;
