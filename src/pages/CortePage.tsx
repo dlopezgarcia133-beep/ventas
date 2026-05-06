@@ -384,6 +384,7 @@ const CortePage = () => {
   const subtotal_efectivo = ef_acc + ef_tel + totalAdicional;
   const total_efectivo_final = subtotal_efectivo - sal;
 
+  console.log('CHIPS RAW COUNT:', chips.length, 'FECHA FILTRO:', fechaDerecha);
   const chipsHoy = chips.filter((c) => {
     const fecha = c.fecha ? String(c.fecha).slice(0, 10) : '';
     return fecha === fechaDerecha && !c.cancelada;
