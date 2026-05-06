@@ -357,23 +357,6 @@ const CortePage = () => {
   const midnightRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bloqueado = corteHoy?.enviado === true;
 
-  // ── derived: left column (always today) ──────────────────────────────────
-  const ef_acc = resumen?.ventas_productos?.efectivo ?? 0;
-  const ta_acc = resumen?.ventas_productos?.tarjeta ?? 0;
-  const ef_tel = resumen?.ventas_telefonos?.efectivo ?? 0;
-  const ta_tel = resumen?.ventas_telefonos?.tarjeta ?? 0;
-  const rec = parseFloat(recargas || '0');
-  const trans = parseFloat(transporte || '0');
-  const otr = parseFloat(otros || '0');
-  const totalAdicional = rec + trans + otr;
-  const sal = parseFloat(salidaEfectivo || '0');
-  const total_tarjeta = ta_acc + ta_tel;
-  const subtotal_efectivo = ef_acc + ef_tel + totalAdicional;
-  const total_efectivo_final = subtotal_efectivo - sal;
-
-  const chipsHoy = chips.filter((c) => c.fecha === HOY && !c.cancelada);
-  const chipsTotal = chipsHoy.reduce((s: number, c: any) => s + (c.monto_recarga || 0), 0);
-
   // ── derived: right column ────────────────────────────────────────────────
   const ventasDerechaAcc = ventasDerecha.filter(
     (v) => v.tipo_producto === 'accesorios' && !v.cancelada,
@@ -386,6 +369,23 @@ const CortePage = () => {
   const subtotalDerechaTel = ventasDerechaTel.reduce((s, v) => s + getTotal(v), 0);
   const comisionDerechaAcc = ventasDerechaAcc.reduce((s, v) => s + calcComision(v), 0);
   const comisionDerechaTel = ventasDerechaTel.reduce((s, v) => s + calcComision(v), 0);
+
+  // ── derived: left column (desglose calculado desde ventasDerecha) ─────────
+  const ef_acc = ventasDerechaAcc.filter((v) => v.metodo_pago?.toLowerCase() === 'efectivo').reduce((s, v) => s + getTotal(v), 0);
+  const ta_acc = ventasDerechaAcc.filter((v) => v.metodo_pago?.toLowerCase() === 'tarjeta').reduce((s, v) => s + getTotal(v), 0);
+  const ef_tel = ventasDerechaTel.filter((v) => v.metodo_pago?.toLowerCase() === 'efectivo').reduce((s, v) => s + getTotal(v), 0);
+  const ta_tel = ventasDerechaTel.filter((v) => v.metodo_pago?.toLowerCase() === 'tarjeta').reduce((s, v) => s + getTotal(v), 0);
+  const rec = parseFloat(recargas || '0');
+  const trans = parseFloat(transporte || '0');
+  const otr = parseFloat(otros || '0');
+  const totalAdicional = rec + trans + otr;
+  const sal = parseFloat(salidaEfectivo || '0');
+  const total_tarjeta = ta_acc + ta_tel;
+  const subtotal_efectivo = ef_acc + ef_tel + totalAdicional;
+  const total_efectivo_final = subtotal_efectivo - sal;
+
+  const chipsHoy = chips.filter((c) => c.fecha === HOY && !c.cancelada);
+  const chipsTotal = chipsHoy.reduce((s: number, c: any) => s + (c.monto_recarga || 0), 0);
 
   // ── fetch ventas for right column ─────────────────────────────────────────
   const fetchVentasDerecha = async (fecha: string) => {
@@ -404,22 +404,12 @@ const CortePage = () => {
   useEffect(() => {
     if (rolToken !== 'encargado') return;
     const cargar = async () => {
-      const [resRes, corteRes, chipsRes] = await Promise.all([
+      const [resRes, chipsRes] = await Promise.all([
         axios.get(`${API}/ventas/corte-general`, config).catch(() => ({ data: null })),
-        axios.get(`${API}/ventas/cortes/hoy`, config).catch(() => ({ data: null })),
         axios.get(`${API}/ventas/venta_chips`, config).catch(() => ({ data: [] })),
       ]);
       setResumen(resRes.data);
       setChips(chipsRes.data ?? []);
-      const c = corteRes.data;
-      if (c) {
-        setCorteHoy(c);
-        setRecargas(c.adicional_recargas ? String(c.adicional_recargas) : '');
-        setTransporte(c.adicional_transporte ? String(c.adicional_transporte) : '');
-        setOtros(c.adicional_otros ? String(c.adicional_otros) : '');
-        setSalidaEfectivo(c.salida_efectivo ? String(c.salida_efectivo) : '');
-        setNotaSalida(c.nota_salida || '');
-      }
     };
     cargar();
     fetchVentasDerecha(HOY);

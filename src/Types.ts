@@ -20,6 +20,7 @@ export interface Venta {
   cancelada: boolean;
   tipo_producto:"accesorios" | "telefono";
   chip_casado: string;
+  metodo_pago?: string;
   empleado?: {
     username: string;
   };
