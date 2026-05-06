@@ -542,7 +542,7 @@ const FormularioVentaMultiple = () => {
   }, [fecha, moduloId, user]);
 
   useEffect(() => {
-    if (rol === 'asesor' && tabAsesor === 1) {
+    if ((rol === 'asesor' || rol === 'encargado') && tabAsesor === 1) {
       if (esCadenas) {
         fetchMisActivaciones(misVentasFecha);
       } else {
@@ -553,7 +553,7 @@ const FormularioVentaMultiple = () => {
   }, [tabAsesor, misVentasFecha, rol]);
 
   useEffect(() => {
-    if (rol === 'asesor' && tabAsesor === 2) fetchCatalogoComisiones();
+    if ((rol === 'asesor' || rol === 'encargado') && tabAsesor === 2) fetchCatalogoComisiones();
   }, [tabAsesor, rol]);
 
   useEffect(() => {
@@ -1861,8 +1861,51 @@ const FormularioVentaMultiple = () => {
     </Box>
   );
 
+  // ── Variables para pestañas MIS VENTAS / COMISIONES del encargado ─────────
+  const usuarioActualEnc = localStorage.getItem('usuario') || '';
+  const misVentasAccEnc  = misVentasData.filter((v) => v.tipo_producto === 'accesorios' && v.empleado?.username === usuarioActualEnc);
+  const misVentasTelEnc  = misVentasData.filter((v) => v.tipo_producto === 'telefono'   && v.empleado?.username === usuarioActualEnc);
+  const totalMisVentasPesosEnc     = [...misVentasAccEnc, ...misVentasTelEnc].filter((v) => !v.cancelada).reduce((s, v) => s + v.precio_unitario * v.cantidad, 0);
+  const totalMisVentasComisionEnc  = [...misVentasAccEnc, ...misVentasTelEnc].filter((v) => !v.cancelada).reduce((s, v) => s + calcComision(v), 0);
+  const tablaComisionesItemsEnc = [
+    ...catalogoComisiones.map((c) => ({ nombre: c.producto, comision: c.cantidad, esTelefono: c.producto.toUpperCase().startsWith('TELEFONO') })),
+    { nombre: 'Contado',  comision: 10,  esTelefono: true },
+    { nombre: 'Paguitos', comision: 110, esTelefono: true },
+    { nombre: 'Pajoy',    comision: 100, esTelefono: true },
+  ].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
   return (
-    <Grid container spacing={2} sx={{ mt: 2 }}>
+    <Box sx={{ mt: { xs: 1, sm: 2 }, px: { xs: 1, sm: 2 } }}>
+      {/* ── Pestañas superiores (encargado) ── */}
+      <Tabs
+        value={tabAsesor}
+        onChange={(_, v) => setTabAsesor(v)}
+        variant="scrollable"
+        scrollButtons="auto"
+        sx={{ mb: 2, borderBottom: '1px solid #e2e8f0', minHeight: 44 }}
+        TabIndicatorProps={{ style: { backgroundColor: '#f97316' } }}
+      >
+        <Tab
+          icon={<ConfirmationNumberIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />}
+          iconPosition="start"
+          label="TICKET"
+          sx={{ fontWeight: 700, minHeight: 44, fontSize: { xs: 11, sm: 13 }, px: { xs: 1, sm: 2 }, '&.Mui-selected': { color: '#f97316' } }}
+        />
+        <Tab
+          label="MIS VENTAS"
+          sx={{ fontWeight: 700, minHeight: 44, fontSize: { xs: 11, sm: 13 }, px: { xs: 1, sm: 2 }, '&.Mui-selected': { color: '#f97316' } }}
+        />
+        <Tab
+          icon={<MonetizationOnIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />}
+          iconPosition="start"
+          label="COMISIONES"
+          sx={{ fontWeight: 700, minHeight: 44, fontSize: { xs: 11, sm: 13 }, px: { xs: 1, sm: 2 }, '&.Mui-selected': { color: '#f97316' } }}
+        />
+      </Tabs>
+
+    {/* ── Tab TICKET ── */}
+    {tabAsesor === 0 && (
+    <Grid container spacing={2} sx={{ mt: 0 }}>
       {/* ── Columna izquierda: Registrar Venta (sin cambios) ── */}
       {(rol as string) !== 'admin' && (
         <Grid item xs={12} md={6}>
@@ -1989,6 +2032,134 @@ const FormularioVentaMultiple = () => {
         </Box>
       </Grid>
     </Grid>
+    )} {/* fin Tab TICKET */}
+
+    {/* ── Tab MIS VENTAS (encargado) ── */}
+    {tabAsesor === 1 && (
+      <Box>
+        <Box sx={{ mb: 2 }}>
+          <TextField
+            type="date" size="small" label="Fecha"
+            value={misVentasFecha}
+            onChange={(e) => setMisVentasFecha(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+        </Box>
+        <Paper sx={{ p: 2 }}>
+          <Box sx={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>Tipo</th>
+                  <th style={thStyle}>Descripción</th>
+                  <th style={thStyle}>Precio</th>
+                  <th style={thStyle}>Comisión</th>
+                  <th style={thStyle}>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {misVentasAccEnc.map((v) => (
+                  <tr key={`enc-mv-acc-${v.id}`}>
+                    <td style={tdStyle}><Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} /></td>
+                    <td style={tdStyle}>{v.producto}</td>
+                    <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                    <td style={tdStyle}>${fmt(calcComision(v))}</td>
+                    <td style={tdStyle}>
+                      <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
+                        {v.cancelada ? 'Cancelada' : 'Activa'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+                {misVentasTelEnc.map((v) => (
+                  <tr key={`enc-mv-tel-${v.id}`}>
+                    <td style={tdStyle}><Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} /></td>
+                    <td style={tdStyle}>{v.producto}</td>
+                    <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
+                    <td style={tdStyle}>${fmt(calcComision(v))}</td>
+                    <td style={tdStyle}>
+                      <span style={{ color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600, fontSize: 12 }}>
+                        {v.cancelada ? 'Cancelada' : 'Activa'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+                {misVentasAccEnc.length === 0 && misVentasTelEnc.length === 0 && (
+                  <tr>
+                    <td colSpan={5} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 20 }}>
+                      Sin ventas para esta fecha
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </Box>
+          <Box display="flex" justifyContent="flex-start" gap={3} mt={1.5} pt={1} sx={{ borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
+            <Typography variant="body2" color="text.secondary">
+              Accesorios: <strong>{misVentasAccEnc.filter((v) => !v.cancelada).length}</strong>
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Teléfonos: <strong>{misVentasTelEnc.filter((v) => !v.cancelada).length}</strong>
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Total vendido: <strong>${fmt(totalMisVentasPesosEnc)}</strong>
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Comisión: <strong>${fmt(totalMisVentasComisionEnc)}</strong>
+            </Typography>
+          </Box>
+        </Paper>
+      </Box>
+    )}
+
+    {/* ── Tab COMISIONES (encargado) ── */}
+    {tabAsesor === 2 && (
+      <Box sx={{ maxWidth: { xs: '100%', sm: 680 } }}>
+        <Paper sx={{ overflow: 'hidden' }}>
+          <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid #e2e8f0' }}>
+            <Typography variant="subtitle1" fontWeight={700}>Tasas de comisión configuradas</Typography>
+            <Typography variant="body2" color="text.secondary">Estas son las comisiones que se aplican a cada venta registrada.</Typography>
+          </Box>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={{ ...thStyle, width: '50%' }}>Producto / Tipo de venta</th>
+                <th style={{ ...thStyle, width: '25%' }}>Comisión</th>
+                <th style={{ ...thStyle, width: '25%' }}>Tipo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tablaComisionesItemsEnc.map((item) => (
+                <tr key={item.nombre}>
+                  <td style={tdStyle}>{item.nombre}</td>
+                  <td style={{ ...tdStyle, fontWeight: 600, color: '#16a34a' }}>${fmt(item.comision)}</td>
+                  <td style={tdStyle}>
+                    {item.esTelefono
+                      ? <Chip label="Teléfono"  size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
+                      : <Chip label="Accesorio" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
+                    }
+                  </td>
+                </tr>
+              ))}
+              {tablaComisionesItemsEnc.length === 0 && (
+                <tr>
+                  <td colSpan={3} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8', padding: 24 }}>
+                    Sin comisiones configuradas
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+          <Box sx={{ px: 2.5, py: 1.5, borderTop: '1px solid #e2e8f0', bgcolor: '#f8fafc' }}>
+            <Typography variant="body2" color="text.secondary">
+              {tablaComisionesItemsEnc.filter((i) => !i.esTelefono).length} accesorios · {tablaComisionesItemsEnc.filter((i) => i.esTelefono).length} teléfonos
+            </Typography>
+          </Box>
+        </Paper>
+      </Box>
+    )}
+
+    </Box>
   );
 };
 
