@@ -601,26 +601,28 @@ const CortePage = () => {
             <Typography variant="body2" color="text.secondary">Sin chips para esta fecha</Typography>
           </Box>
         ) : (
-          <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Empleado</th>
-                <th style={thStyle}>Tipo</th>
-                <th style={thStyle}>Número</th>
-                <th style={{ ...thStyle, textAlign: 'right' }}>Recarga</th>
-              </tr>
-            </thead>
-            <tbody>
-              {chipsHoy.map((c: any) => (
-                <tr key={c.id}>
-                  <td style={tdStyle}>{c.empleado?.username || '—'}</td>
-                  <td style={tdStyle}>{c.tipo_chip || '—'}</td>
-                  <td style={tdStyle}>{c.numero_telefono || '—'}</td>
-                  <td style={tdR}>${(c.monto_recarga || 0).toFixed(2)}</td>
+          <>
+            <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>Tipo</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Cantidad</th>
                 </tr>
-              ))}
-            </tbody>
-          </Box>
+              </thead>
+              <tbody>
+                {Object.entries(chipsPorTipo).map(([tipo, cantidad]) => (
+                  <tr key={tipo}>
+                    <td style={tdStyle}>{tipo}</td>
+                    <td style={tdR}>{cantidad as number}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Box>
+            <Box sx={{ px: 2, py: 1.5, bgcolor: '#f0fdf4', borderTop: '2px solid #bbf7d0', display: 'flex', justifyContent: 'space-between' }}>
+              <Typography variant="body2" fontWeight={700} color="#15803d">Total chips</Typography>
+              <Typography variant="body2" fontWeight={700} color="#15803d">{chipsHoy.length}</Typography>
+            </Box>
+          </>
         )}
       </Paper>
 
@@ -638,24 +640,30 @@ const CortePage = () => {
             <Typography variant="body2" color="text.secondary">Sin teléfonos para esta fecha</Typography>
           </Box>
         ) : (
-          <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Empleado</th>
-                <th style={thStyle}>Modelo</th>
-                <th style={{ ...thStyle, textAlign: 'right' }}>Tipo de pago</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ventasDerechaTel.map((v) => (
-                <tr key={v.id}>
-                  <td style={tdStyle}>{v.empleado?.username || '—'}</td>
-                  <td style={{ ...tdStyle, maxWidth: 240 }}>{v.producto}</td>
-                  <td style={tdR}>{capitalize(v.tipo_venta || '')}</td>
+          <>
+            <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>Modelo</th>
+                  <th style={thStyle}>Método de pago</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Precio</th>
                 </tr>
-              ))}
-            </tbody>
-          </Box>
+              </thead>
+              <tbody>
+                {ventasDerechaTel.map((v) => (
+                  <tr key={v.id}>
+                    <td style={{ ...tdStyle, maxWidth: 260 }}>{v.producto}</td>
+                    <td style={tdStyle}>{capitalize(v.tipo_venta || '')}</td>
+                    <td style={tdR}>${getTotal(v).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Box>
+            <Box sx={{ px: 2, py: 1.5, bgcolor: '#eff6ff', borderTop: '2px solid #bfdbfe', display: 'flex', justifyContent: 'space-between' }}>
+              <Typography variant="body2" fontWeight={700} color="#1d4ed8">Total teléfonos</Typography>
+              <Typography variant="body2" fontWeight={700} color="#1d4ed8">${subtotalDerechaTel.toFixed(2)}</Typography>
+            </Box>
+          </>
         )}
       </Paper>
 
@@ -673,26 +681,28 @@ const CortePage = () => {
             <Typography variant="body2" color="text.secondary">Sin accesorios para esta fecha</Typography>
           </Box>
         ) : (
-          <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Empleado</th>
-                <th style={thStyle}>Descripción</th>
-                <th style={{ ...thStyle, textAlign: 'right' }}>Precio</th>
-                <th style={{ ...thStyle, textAlign: 'right' }}>Método de pago</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ventasDerechaAcc.map((v) => (
-                <tr key={v.id}>
-                  <td style={tdStyle}>{v.empleado?.username || '—'}</td>
-                  <td style={{ ...tdStyle, maxWidth: 200 }}>{v.producto}</td>
-                  <td style={tdR}>${getTotal(v).toFixed(2)}</td>
-                  <td style={tdR}>{capitalize(v.metodo_pago || '')}</td>
+          <>
+            <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>Descripción</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Precio</th>
                 </tr>
-              ))}
-            </tbody>
-          </Box>
+              </thead>
+              <tbody>
+                {ventasDerechaAcc.map((v) => (
+                  <tr key={v.id}>
+                    <td style={{ ...tdStyle, maxWidth: 300 }}>{v.producto}</td>
+                    <td style={tdR}>${getTotal(v).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Box>
+            <Box sx={{ px: 2, py: 1.5, bgcolor: '#fff7ed', borderTop: '2px solid #fed7aa', display: 'flex', justifyContent: 'space-between' }}>
+              <Typography variant="body2" fontWeight={700} color="#c2410c">Total accesorios</Typography>
+              <Typography variant="body2" fontWeight={700} color="#c2410c">${subtotalDerechaAcc.toFixed(2)}</Typography>
+            </Box>
+          </>
         )}
       </Paper>
 
