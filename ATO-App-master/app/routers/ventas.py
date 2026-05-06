@@ -719,6 +719,13 @@ def obtener_ventas_chips(
         if empleado_id is not None:
             query = query.filter(models.VentaChip.empleado_id == empleado_id)
         return query.all()
+    elif current_user.rol == "encargado":
+        return (
+            db.query(models.VentaChip)
+            .join(models.Usuario, models.VentaChip.empleado_id == models.Usuario.id)
+            .filter(models.Usuario.modulo_id == current_user.modulo_id)
+            .all()
+        )
     else:
         return db.query(models.VentaChip).filter(models.VentaChip.empleado_id == current_user.id).all()
 
