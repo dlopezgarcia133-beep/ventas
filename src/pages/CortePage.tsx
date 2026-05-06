@@ -386,7 +386,7 @@ const CortePage = () => {
 
   const chipsHoy = chips.filter((c) => c.fecha === HOY && !c.cancelada);
   const chipsTotal = chipsHoy.reduce((s: number, c: any) => s + (c.monto_recarga || 0), 0);
-  console.log('CHIP SAMPLE:', chips.slice(0, 3).map(c => ({ fecha: c.fecha, fecha_venta: c.fecha_venta, date: c.date })));
+  console.log('CHIP FECHA:', chips[0]?.fecha, chips[0]?.fecha_venta, chips[0]?.created_at, JSON.stringify(chips[0]));
   const chipsPorTipo = chipsHoy.reduce((acc: Record<string, number>, c: any) => {
     acc[c.tipo_chip] = (acc[c.tipo_chip] || 0) + 1;
     return acc;
