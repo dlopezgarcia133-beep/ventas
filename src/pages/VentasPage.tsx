@@ -320,7 +320,7 @@ const FormularioVentaMultiple = () => {
   const [telefonoPrecio, setTelefonoPrecio] = useState('');
   const [Chip_casado, setChip_casado] = useState('');
 
-  const [fecha, setFecha] = useState('');
+  const [fecha, setFecha] = useState(HOY);
   const [opcionesTelefonos, setOpcionesTelefonos] = useState<any[]>([]);
   const [buscando, setBuscando] = useState(false);
   const [moduloId, setModuloId] = useState<number | null>(null);
@@ -1638,6 +1638,7 @@ const FormularioVentaMultiple = () => {
 
   const PanelDerechoResumen = () => (
     <Box>
+      <Typography variant="h6" fontWeight={700} mb={1}>Ventas del día de hoy</Typography>
       {/* Filtro de fecha */}
       <Box display="flex" gap={1} alignItems="center" mb={2} flexWrap="wrap">
         {user?.is_admin && modulos.length > 0 && (
@@ -1731,6 +1732,7 @@ const FormularioVentaMultiple = () => {
 
   const PanelDerechoHistorial = () => (
     <Box>
+      <Typography variant="h6" fontWeight={700} mb={1}>Ventas del día de hoy</Typography>
       {/* Filtro de fecha */}
       <Box display="flex" gap={1} alignItems="center" mb={2} flexWrap="wrap">
         {user?.is_admin && modulos.length > 0 && (
