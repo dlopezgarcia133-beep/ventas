@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Chip,
+  CircularProgress,
   Divider,
   FormControl,
   InputLabel,
@@ -18,7 +19,164 @@ import { Grid } from '@mui/material';
 import axios from 'axios';
 import { obtenerRolDesdeToken } from '../components/Token';
 
-// ─── CorteVisual (admin/contador) ─────────────────────────────────────────────
+const HOY = new Date().toLocaleDateString('en-CA');
+
+// ─── Style helpers ────────────────────────────────────────────────────────────
+const thStyle: React.CSSProperties = {
+  padding: 8,
+  borderBottom: '1px solid #e2e8f0',
+  color: '#f97316',
+  fontWeight: 700,
+  background: '#f8fafc',
+  textAlign: 'left',
+};
+const tdStyle: React.CSSProperties = { padding: '6px 8px', borderBottom: '1px solid #e2e8f0' };
+const tdR: React.CSSProperties = { ...tdStyle, textAlign: 'right' };
+
+// ─── Comision helpers (mirrored from VentasPage) ──────────────────────────────
+const ACC_KEYWORDS: [string, number][] = [
+  ['BOCINA', 20], ['CARGADOR', 20],
+  ['EX. SMART WATCH', 20], ['SMART WATCH', 20],
+  ['FUNDA DE BRAZO', 20], ['FUNDA DE IPAD', 20],
+  ['TABLET $2499', 200], ['TABLET', 100],
+  ['MANOS LIBRES $749', 20], ['MANOS LIBRES $799', 20], ['MANOS LIBRES $849', 20],
+  ['MANOS LIBRES $899', 20], ['MANOS LIBRES $949', 20], ['MANOS LIBRES $999', 20],
+  ['MANOS LIBRES $1099', 20], ['MANOS LIBRES $1199', 20], ['MANOS LIBRES $1249', 20],
+  ['MANOS LIBRES $1299', 20], ['MANOS LIBRES $1399', 20], ['MANOS LIBRES $1449', 20],
+  ['MANOS LIBRES $1499', 20], ['MANOS LIBRES', 10],
+  ['FUNDA $160', 10], ['FUNDA', 20],
+  ['MICA DE HIDROGEL $399', 20], ['MICA DE HIDROGEL', 10],
+  ['MICA $40', 5], ['MICA $99', 5], ['MICA $120', 5], ['MICA', 10],
+  ['PROTECTOR $79', 5], ['PROTECTOR $99', 5], ['PROTECTOR $120', 5],
+  ['PROTECTOR $130', 5], ['PROTECTOR $149', 5], ['PROTECTOR $169', 5],
+  ['PROTECTOR $180', 5], ['PROTECTOR $199', 5],
+  ['PROTECTOR $249', 10], ['PROTECTOR $299', 10], ['PROTECTOR $349', 10],
+  ['PROTECTOR $399', 15], ['PROTECTOR', 20],
+  ['BASE PARA COCHE', 10], ['CABLE USB', 10],
+  ['CÁMARA', 10], ['CAMARA', 10],
+  ['GAMEBOY', 10], ['GAME BOY', 10],
+  ['POWER BANK', 10], ['WEBCAM', 10],
+];
+
+const TEL_EXACT_MAP: Record<string, number> = {
+  'TELEFONO LIBRE HONOR 200 LITE 256GB': 250,
+  'TELEFONO LIBRE HONOR MAGIC 5 LITE 128GB': 200,
+  'TELEFONO LIBRE HONOR MAGIC 5 LITE 256GB': 200,
+  'TELEFONO LIBRE HONOR X5': 200,
+  'TELEFONO LIBRE HONOR X6A 128GB': 200,
+  'TELEFONO LIBRE HONOR X6B PLUS 256GB': 200,
+  'TELEFONO LIBRE HONOR X7A': 250,
+  'TELEFONO LIBRE HONOR X7B 128GB': 100,
+  'TELEFONO LIBRE HONOR X7B 256GB': 100,
+  'TELEFONO LIBRE HONOR X7C 256GB': 100,
+  'TELEFONO LIBRE HONOR X8A 128GB': 200,
+  'TELEFONO LIBRE HONOR X9C 256GB': 200,
+  'TELEFONO LIBRE IPHONE 12 128GB': 100,
+  'TELEFONO LIBRE IPHONE 13 128GB': 100,
+  'TELEFONO LIBRE IPHONE 14 128GB': 100,
+  'TELEFONO LIBRE IPHONE 15 128GB': 100,
+  'TELEFONO LIBRE IPHONE 16 128GB': 100,
+  'TELEFONO LIBRE IPHONE 16 PLUS 128GB': 100,
+  'TELEFONO LIBRE IPHONE 16 PRO 128GB': 100,
+  'TELEFONO LIBRE IPHONE 16E 128GB': 100,
+  'TELEFONO LIBRE KODAK KD50': 100,
+  'TELEFONO LIBRE MOTOROLA G31 128GB': 100,
+  'TELEFONO LIBRE MOTOROLA G85 256GB': 100,
+  'TELEFONO LIBRE OPPO A18 128GB': 100,
+  'TELEFONO LIBRE OPPO A40 128GB': 100,
+  'TELEFONO LIBRE OPPO A78 128GB': 100,
+  'TELEFONO LIBRE REALME C11': 200,
+  'TELEFONO LIBRE REALME C51': 200,
+  'TELEFONO LIBRE RF IPHONE 11 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 11 64GB': 100,
+  'TELEFONO LIBRE RF IPHONE 12 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 12 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 12 PRO MAX 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 13 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 13 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 13 PRO MAX 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 13 PRO MAX 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 14 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 14 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 14 PRO 128GB': 100,
+  'TELEFONO LIBRE RF IPHONE 14 PRO MAX 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 15 PRO MAX 256GB': 100,
+  'TELEFONO LIBRE RF IPHONE 15 PROMAX 256GB': 100,
+  'TELEFONO LIBRE SAMSUNG A05S 128GB': 100,
+  'TELEFONO LIBRE SAMSUNG A06 128GB': 50,
+  'TELEFONO LIBRE SAMSUNG A06 64GB': 50,
+  'TELEFONO LIBRE SAMSUNG A16 128GB': 50,
+  'TELEFONO LIBRE SAMSUNG A16 256GB': 50,
+  'TELEFONO LIBRE SAMSUNG A23 128GB': 200,
+  'TELEFONO LIBRE SAMSUNG A25 5G 128GB': 200,
+  'TELEFONO LIBRE SAMSUNG A25 5G 256GB': 200,
+  'TELEFONO LIBRE SAMSUNG A26 128GB': 50,
+  'TELEFONO LIBRE SAMSUNG A35 128GB': 200,
+  'TELEFONO LIBRE SAMSUNG A35 256GB': 200,
+  'TELEFONO LIBRE SAMSUNG A55 256GB': 200,
+  'TELEFONO LIBRE VIVO Y01': 200,
+  'TELEFONO LIBRE WIKO T10': 200,
+  'TELEFONO LIBRE XIAOMI REDMI 10A 64GB': 100,
+  'TELEFONO LIBRE XIAOMI REDMI 13 128GB': 100,
+  'TELEFONO LIBRE XIAOMI REDMI 13C 128GB': 100,
+  'TELEFONO LIBRE XIAOMI REDMI NOTE 10 PRO 128GB': 200,
+  'TELEFONO LIBRE XIAOMI REDMI NOTE 12 PRO 128GB': 200,
+  'TELEFONO LIBRE XIAOMI REDMI NOTE 13 128GB': 100,
+  'TELEFONO LIBRE ZTE A31': 200,
+  'TELEFONO LIBRE ZTE A55': 100,
+  'TELEFONO LIBRE ZTE V60 SMART': 100,
+  'TELEFONO TELCEL ACER A62 ULTRA': 200,
+  'TELEFONO TELCEL HONOR X8A': 100,
+  'TELEFONO TELCEL IPHONE 11 64GB': 100,
+  'TELEFONO TELCEL IPHONE 12 128GB': 100,
+  'TELEFONO TELCEL IPHONE 13 128GB': 100,
+  'TELEFONO TELCEL IPHONE 14 128GB': 100,
+  'TELEFONO TELCEL IPHONE 15 128GB': 100,
+  'TELEFONO TELCEL MOTOROLA EDGE 30 128GB': 100,
+  'TELEFONO TELCEL MOTOROLA G24 256GB': 50,
+  'TELEFONO TELCEL MOTOROLA G32 128GB': 200,
+  'TELEFONO TELCEL MOTOROLA G53': 100,
+  'TELEFONO TELCEL NUBIA Z353': 100,
+  'TELEFONO TELCEL OPPO A5 256GB': 100,
+  'TELEFONO TELCEL OPPO A79 256GB': 100,
+  'TELEFONO TELCEL REALME NOTE 60 128GB': 200,
+  'TELEFONO TELCEL SAMSUNG A05S 64GB': 100,
+  'TELEFONO TELCEL SAMSUNG A06 64GB': 50,
+  'TELEFONO TELCEL SAMSUNG A16 128GB': 50,
+  'TELEFONO TELCEL SAMSUNG A25': 200,
+  'TELEFONO TELCEL SAMSUNG A25 128GB': 50,
+  'TELEFONO TELCEL SAMSUNG A35': 100,
+  'TELEFONO TELCEL SAMSUNG A35 128GB': 200,
+  'TELEFONO TELCEL ZTE A51': 200,
+  'TELEFONO TELCEL ZTE A55': 100,
+  'TELEFONO TELCEL ZTE V40 PRO': 100,
+  'TELEFONO TELCEL ZTE V40 VITA': 100,
+  'TELEFONO TELCEL ZTE V60 SMART': 100,
+};
+
+const calcComision = (v: any): number => {
+  const nombre = (v.producto || '').toUpperCase();
+  if (v.tipo_producto === 'telefono') {
+    const tipo = (v.tipo_venta || '').toLowerCase();
+    const base = TEL_EXACT_MAP[nombre];
+    const inMap = base !== undefined;
+    if (tipo === 'contado') return inMap ? base : 10;
+    if (tipo === 'pajoy') return inMap ? 100 + base : 100;
+    if (tipo === 'paguitos') return inMap ? 110 + base : 110;
+    return 0;
+  }
+  if (v.tipo_producto === 'accesorios') {
+    for (const [keyword, comision] of ACC_KEYWORDS) {
+      if (nombre.includes(keyword)) return comision;
+    }
+    return 0;
+  }
+  return 0;
+};
+
+const getTotal = (v: any) => v.total ?? (v.precio_unitario || 0) * (v.cantidad || 1);
+
+// ─── CorteVisual (admin / contador) ──────────────────────────────────────────
 const CorteVisual = ({ corte, ventas }: { corte: any; ventas: any[] }) => {
   const totalAdicional =
     (corte.adicional_recargas || 0) +
@@ -33,9 +191,7 @@ const CorteVisual = ({ corte, ventas }: { corte: any; ventas: any[] }) => {
     .reduce((s, v) => s + (v.total || 0), 0);
 
   const th = (label: string) => (
-    <th key={label} style={{ padding: 8, borderBottom: '1px solid #ccc', textAlign: 'left' }}>
-      {label}
-    </th>
+    <th key={label} style={thStyle}>{label}</th>
   );
 
   return (
@@ -77,9 +233,7 @@ const CorteVisual = ({ corte, ventas }: { corte: any; ventas: any[] }) => {
               </Typography>
             )}
             {corte.nota_salida && (
-              <Typography variant="body2" color="text.secondary">
-                Nota: {corte.nota_salida}
-              </Typography>
+              <Typography variant="body2" color="text.secondary">Nota: {corte.nota_salida}</Typography>
             )}
           </Paper>
         </Grid>
@@ -106,24 +260,18 @@ const CorteVisual = ({ corte, ventas }: { corte: any; ventas: any[] }) => {
               <tr>{['Nombre', 'Producto', 'Cantidad', 'Precio', 'Total', 'Fecha'].map(th)}</tr>
             </thead>
             <tbody>
-              {ventas
-                .filter((v) => v.tipo_producto === 'accesorios')
-                .map((v) => (
-                  <tr key={v.id}>
-                    <td style={{ padding: 8 }}>{v.empleado?.username}</td>
-                    <td style={{ padding: 8 }}>{v.producto}</td>
-                    <td style={{ padding: 8 }}>{v.cantidad}</td>
-                    <td style={{ padding: 8 }}>${v.precio_unitario?.toFixed(2)}</td>
-                    <td style={{ padding: 8 }}>${v.total?.toFixed(2)}</td>
-                    <td style={{ padding: 8 }}>{v.fecha}</td>
-                  </tr>
-                ))}
-              {ventas.filter((v) => v.tipo_producto === 'accesorios').length === 0 && (
-                <tr>
-                  <td colSpan={6} style={{ padding: 8, textAlign: 'center' }}>
-                    Sin ventas
-                  </td>
+              {ventas.filter((v) => v.tipo_producto === 'accesorios').map((v) => (
+                <tr key={v.id}>
+                  <td style={tdStyle}>{v.empleado?.username}</td>
+                  <td style={tdStyle}>{v.producto}</td>
+                  <td style={tdStyle}>{v.cantidad}</td>
+                  <td style={tdStyle}>${v.precio_unitario?.toFixed(2)}</td>
+                  <td style={tdStyle}>${v.total?.toFixed(2)}</td>
+                  <td style={tdStyle}>{v.fecha}</td>
                 </tr>
+              ))}
+              {ventas.filter((v) => v.tipo_producto === 'accesorios').length === 0 && (
+                <tr><td colSpan={6} style={{ ...tdStyle, textAlign: 'center' }}>Sin ventas</td></tr>
               )}
             </tbody>
           </Box>
@@ -143,23 +291,17 @@ const CorteVisual = ({ corte, ventas }: { corte: any; ventas: any[] }) => {
               <tr>{['Nombre', 'Producto', 'Tipo', 'Precio', 'Fecha'].map(th)}</tr>
             </thead>
             <tbody>
-              {ventas
-                .filter((v) => v.tipo_producto === 'telefono')
-                .map((v) => (
-                  <tr key={v.id}>
-                    <td style={{ padding: 8 }}>{v.empleado?.username}</td>
-                    <td style={{ padding: 8 }}>{v.producto}</td>
-                    <td style={{ padding: 8 }}>{v.tipo_venta}</td>
-                    <td style={{ padding: 8 }}>${v.precio_unitario?.toFixed(2)}</td>
-                    <td style={{ padding: 8 }}>{new Date(v.fecha).toLocaleDateString()}</td>
-                  </tr>
-                ))}
-              {ventas.filter((v) => v.tipo_producto === 'telefono').length === 0 && (
-                <tr>
-                  <td colSpan={5} style={{ padding: 8, textAlign: 'center' }}>
-                    Sin ventas
-                  </td>
+              {ventas.filter((v) => v.tipo_producto === 'telefono').map((v) => (
+                <tr key={v.id}>
+                  <td style={tdStyle}>{v.empleado?.username}</td>
+                  <td style={tdStyle}>{v.producto}</td>
+                  <td style={tdStyle}>{v.tipo_venta}</td>
+                  <td style={tdStyle}>${v.precio_unitario?.toFixed(2)}</td>
+                  <td style={tdStyle}>{new Date(v.fecha).toLocaleDateString()}</td>
                 </tr>
+              ))}
+              {ventas.filter((v) => v.tipo_producto === 'telefono').length === 0 && (
+                <tr><td colSpan={5} style={{ ...tdStyle, textAlign: 'center' }}>Sin ventas</td></tr>
               )}
             </tbody>
           </Box>
@@ -185,14 +327,15 @@ const CortePage = () => {
   const config = { headers: { Authorization: `Bearer ${token}` } };
   const API = process.env.REACT_APP_API_URL;
 
-  // ── admin / contador state
+  // ── admin / contador state ────────────────────────────────────────────────
   const [cortesGuardados, setCortesGuardados] = useState<any[]>([]);
   const [modulos, setModulos] = useState<any[]>([]);
   const [filtroModulo, setFiltroModulo] = useState('');
   const [filtroFecha, setFiltroFecha] = useState('');
 
-  // ── encargado state
+  // ── encargado left-column state ───────────────────────────────────────────
   const [resumen, setResumen] = useState<any>(null);
+  const [chips, setChips] = useState<any[]>([]);
   const [corteHoy, setCorteHoy] = useState<any>(null);
   const [recargas, setRecargas] = useState('');
   const [transporte, setTransporte] = useState('');
@@ -205,37 +348,85 @@ const CortePage = () => {
   const [loadingRecargas, setLoadingRecargas] = useState(false);
   const [loadingSalida, setLoadingSalida] = useState(false);
   const [loadingEnviar, setLoadingEnviar] = useState(false);
-  const midnightRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // ── encargado right-column state ──────────────────────────────────────────
+  const [fechaDerecha, setFechaDerecha] = useState(HOY);
+  const [ventasDerecha, setVentasDerecha] = useState<any[]>([]);
+  const [loadingVentas, setLoadingVentas] = useState(false);
+
+  const midnightRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bloqueado = corteHoy?.enviado === true;
 
-  // ── encargado: load on mount
+  // ── derived: left column (always today) ──────────────────────────────────
+  const ef_acc = resumen?.ventas_productos?.efectivo ?? 0;
+  const ta_acc = resumen?.ventas_productos?.tarjeta ?? 0;
+  const ef_tel = resumen?.ventas_telefonos?.efectivo ?? 0;
+  const ta_tel = resumen?.ventas_telefonos?.tarjeta ?? 0;
+  const rec = parseFloat(recargas || '0');
+  const trans = parseFloat(transporte || '0');
+  const otr = parseFloat(otros || '0');
+  const totalAdicional = rec + trans + otr;
+  const sal = parseFloat(salidaEfectivo || '0');
+  const total_tarjeta = ta_acc + ta_tel;
+  const subtotal_efectivo = ef_acc + ef_tel + totalAdicional;
+  const total_efectivo_final = subtotal_efectivo - sal;
+
+  const chipsHoy = chips.filter((c) => c.fecha === HOY && !c.cancelada);
+  const chipsTotal = chipsHoy.reduce((s: number, c: any) => s + (c.monto_recarga || 0), 0);
+
+  // ── derived: right column ────────────────────────────────────────────────
+  const ventasDerechaAcc = ventasDerecha.filter(
+    (v) => v.tipo_producto === 'accesorios' && !v.cancelada,
+  );
+  const ventasDerechaTel = ventasDerecha.filter(
+    (v) => v.tipo_producto === 'telefono' && !v.cancelada,
+  );
+  const todasVentas = [...ventasDerechaAcc, ...ventasDerechaTel];
+  const subtotalDerechaAcc = ventasDerechaAcc.reduce((s, v) => s + getTotal(v), 0);
+  const subtotalDerechaTel = ventasDerechaTel.reduce((s, v) => s + getTotal(v), 0);
+  const comisionDerechaAcc = ventasDerechaAcc.reduce((s, v) => s + calcComision(v), 0);
+  const comisionDerechaTel = ventasDerechaTel.reduce((s, v) => s + calcComision(v), 0);
+
+  // ── fetch ventas for right column ─────────────────────────────────────────
+  const fetchVentasDerecha = async (fecha: string) => {
+    setLoadingVentas(true);
+    try {
+      const res = await axios.get(`${API}/ventas/ventas`, { ...config, params: { fecha } });
+      setVentasDerecha(res.data);
+    } catch {
+      setVentasDerecha([]);
+    } finally {
+      setLoadingVentas(false);
+    }
+  };
+
+  // ── on mount: load all encargado data ─────────────────────────────────────
   useEffect(() => {
     if (rolToken !== 'encargado') return;
     const cargar = async () => {
-      try {
-        const [resRes, corteRes] = await Promise.all([
-          axios.get(`${API}/ventas/corte-general`, config),
-          axios.get(`${API}/ventas/cortes/hoy`, config),
-        ]);
-        setResumen(resRes.data);
-        const c = corteRes.data;
-        if (c) {
-          setCorteHoy(c);
-          setRecargas(c.adicional_recargas ? String(c.adicional_recargas) : '');
-          setTransporte(c.adicional_transporte ? String(c.adicional_transporte) : '');
-          setOtros(c.adicional_otros ? String(c.adicional_otros) : '');
-          setSalidaEfectivo(c.salida_efectivo ? String(c.salida_efectivo) : '');
-          setNotaSalida(c.nota_salida || '');
-        }
-      } catch (err) {
-        console.error('Error al cargar datos del corte', err);
+      const [resRes, corteRes, chipsRes] = await Promise.all([
+        axios.get(`${API}/ventas/corte-general`, config).catch(() => ({ data: null })),
+        axios.get(`${API}/ventas/cortes/hoy`, config).catch(() => ({ data: null })),
+        axios.get(`${API}/ventas/venta_chips`, config).catch(() => ({ data: [] })),
+      ]);
+      setResumen(resRes.data);
+      setChips(chipsRes.data ?? []);
+      const c = corteRes.data;
+      if (c) {
+        setCorteHoy(c);
+        setRecargas(c.adicional_recargas ? String(c.adicional_recargas) : '');
+        setTransporte(c.adicional_transporte ? String(c.adicional_transporte) : '');
+        setOtros(c.adicional_otros ? String(c.adicional_otros) : '');
+        setSalidaEfectivo(c.salida_efectivo ? String(c.salida_efectivo) : '');
+        setNotaSalida(c.nota_salida || '');
       }
     };
     cargar();
+    fetchVentasDerecha(HOY);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rolToken]);
 
-  // ── midnight auto-send
+  // ── midnight auto-send ────────────────────────────────────────────────────
   useEffect(() => {
     if (rolToken !== 'encargado' || bloqueado) return;
     const ahora = new Date();
@@ -248,10 +439,11 @@ const CortePage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bloqueado, rolToken]);
 
-  // ── admin/contador: modules + filtered cortes
+  // ── admin/contador: modules ───────────────────────────────────────────────
   useEffect(() => {
     if (rolToken !== 'contador' && rolToken !== 'admin') return;
     axios.get(`${API}/registro/modulos`, config).then((r) => setModulos(r.data)).catch(console.error);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -267,26 +459,23 @@ const CortePage = () => {
     } else {
       setCortesGuardados([]);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtroModulo, filtroFecha]);
 
-  // ── encargado actions
+  // ── encargado actions ─────────────────────────────────────────────────────
   const guardarRecargas = async () => {
     setLoadingRecargas(true);
     setMsgRecargas('');
     try {
       const res = await axios.patch(
         `${API}/ventas/cortes/hoy/recargas`,
-        {
-          adicional_recargas: parseFloat(recargas || '0'),
-          adicional_transporte: parseFloat(transporte || '0'),
-          adicional_otros: parseFloat(otros || '0'),
-        },
+        { adicional_recargas: rec, adicional_transporte: trans, adicional_otros: otr },
         config,
       );
       setCorteHoy(res.data);
-      setMsgRecargas('Recargas guardadas correctamente');
+      setMsgRecargas('Recargas guardadas');
     } catch (err: any) {
-      setMsgRecargas(err?.response?.data?.detail || 'Error al guardar recargas');
+      setMsgRecargas(err?.response?.data?.detail || 'Error al guardar');
     } finally {
       setLoadingRecargas(false);
     }
@@ -298,16 +487,13 @@ const CortePage = () => {
     try {
       const res = await axios.patch(
         `${API}/ventas/cortes/hoy/salida`,
-        {
-          salida_efectivo: parseFloat(salidaEfectivo || '0'),
-          nota_salida: notaSalida || null,
-        },
+        { salida_efectivo: sal, nota_salida: notaSalida || null },
         config,
       );
       setCorteHoy(res.data);
-      setMsgSalida('Salida guardada correctamente');
+      setMsgSalida('Salida guardada');
     } catch (err: any) {
-      setMsgSalida(err?.response?.data?.detail || 'Error al guardar salida');
+      setMsgSalida(err?.response?.data?.detail || 'Error al guardar');
     } finally {
       setLoadingSalida(false);
     }
@@ -319,37 +505,21 @@ const CortePage = () => {
     try {
       const res = await axios.post(`${API}/ventas/cortes/hoy/enviar`, {}, config);
       setCorteHoy(res.data);
-      setMsgEnviar(
-        automatico ? 'Corte enviado automáticamente a medianoche' : 'Corte enviado correctamente',
-      );
+      setMsgEnviar(automatico ? 'Corte enviado automáticamente' : 'Corte enviado correctamente');
     } catch (err: any) {
-      setMsgEnviar(err?.response?.data?.detail || 'Error al enviar el corte');
+      setMsgEnviar(err?.response?.data?.detail || 'Error al enviar');
     } finally {
       setLoadingEnviar(false);
     }
   };
 
-  // ── derived totals (encargado live view)
-  const totalAdicional =
-    parseFloat(recargas || '0') + parseFloat(transporte || '0') + parseFloat(otros || '0');
-  const totalSistema = resumen?.total_sistema || 0;
-  const totalGeneral = totalSistema + totalAdicional;
-  const totalEfectivo =
-    (resumen?.ventas_productos?.efectivo ?? 0) +
-    (resumen?.ventas_telefonos?.efectivo ?? 0) +
-    totalAdicional;
-  const totalTarjeta =
-    (resumen?.ventas_productos?.tarjeta ?? 0) + (resumen?.ventas_telefonos?.tarjeta ?? 0);
-
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
   // ADMIN / CONTADOR VIEW
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
   if (rolToken === 'contador' || rolToken === 'admin') {
     return (
       <Box sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Cortes Registrados
-        </Typography>
+        <Typography variant="h4" gutterBottom>Cortes Registrados</Typography>
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid item xs={12} md={6}>
             <FormControl fullWidth>
@@ -361,9 +531,7 @@ const CortePage = () => {
               >
                 <MenuItem value="">Todos</MenuItem>
                 {modulos.map((m: any) => (
-                  <MenuItem key={m.id} value={m.id}>
-                    {m.nombre}
-                  </MenuItem>
+                  <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -390,56 +558,128 @@ const CortePage = () => {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // ENCARGADO VIEW — two-column layout
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
+  // ENCARGADO VIEW
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <Box sx={{ p: { xs: 2, sm: 3 } }}>
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-        <Typography variant="h5" fontWeight={700}>
-          Corte del Día
-        </Typography>
+        <Typography variant="h5" fontWeight={700}>Corte del Día</Typography>
         {bloqueado && <Chip label="ENVIADO" color="success" />}
       </Stack>
 
-      <Grid container spacing={3}>
-        {/* ── Columna izquierda: Balance del Día ─────────────────────────── */}
+      <Grid container spacing={3} alignItems="flex-start">
+        {/* ══════════════════════════════════════════════════════════════════
+            COLUMNA IZQUIERDA — Balance
+        ══════════════════════════════════════════════════════════════════ */}
         <Grid item xs={12} md={6}>
-          {/* Recargas */}
-          <Paper sx={{ p: 3, mb: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Montos Adicionales
-            </Typography>
+
+          {/* ── Resumen General ── */}
+          <Paper sx={{ p: 2.5, mb: 2 }}>
+            <Typography variant="h6" fontWeight={700} gutterBottom>Resumen General</Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Box
+              component="table"
+              sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}
+            >
+              <thead>
+                <tr>
+                  <th style={thStyle}>Categoría</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Ventas</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={tdStyle}>
+                    <Chip label="Acc" size="small"
+                      sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
+                    &nbsp; Accesorios
+                  </td>
+                  <td style={tdR}>
+                    {ventasDerechaAcc.length > 0 ? ventasDerechaAcc.length : '—'}
+                  </td>
+                  <td style={tdR}>
+                    <strong>${(resumen?.ventas_productos?.total ?? 0).toFixed(2)}</strong>
+                  </td>
+                </tr>
+                <tr>
+                  <td style={tdStyle}>
+                    <Chip label="Tel" size="small"
+                      sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
+                    &nbsp; Teléfonos
+                  </td>
+                  <td style={tdR}>
+                    {ventasDerechaTel.length > 0 ? ventasDerechaTel.length : '—'}
+                  </td>
+                  <td style={tdR}>
+                    <strong>${(resumen?.ventas_telefonos?.total ?? 0).toFixed(2)}</strong>
+                  </td>
+                </tr>
+                <tr>
+                  <td style={tdStyle}>
+                    <Chip label="Chip" size="small"
+                      sx={{ bgcolor: '#f0fdf4', color: '#15803d', fontWeight: 700, fontSize: 11 }} />
+                    &nbsp; Chips
+                  </td>
+                  <td style={tdR}>{chipsHoy.length > 0 ? chipsHoy.length : '—'}</td>
+                  <td style={tdR}><strong>${chipsTotal.toFixed(2)}</strong></td>
+                </tr>
+              </tbody>
+            </Box>
+          </Paper>
+
+          {/* ── Desglose Efectivo / Tarjeta ── */}
+          <Paper sx={{ p: 2.5, mb: 2 }}>
+            <Typography variant="h6" fontWeight={700} gutterBottom>Desglose</Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Box
+              component="table"
+              sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}
+            >
+              <thead>
+                <tr>
+                  <th style={thStyle} />
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Efectivo</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Tarjeta</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={tdStyle}>Accesorios</td>
+                  <td style={tdR}>${ef_acc.toFixed(2)}</td>
+                  <td style={tdR}>${ta_acc.toFixed(2)}</td>
+                  <td style={tdR}><strong>${(ef_acc + ta_acc).toFixed(2)}</strong></td>
+                </tr>
+                <tr>
+                  <td style={tdStyle}>Teléfonos</td>
+                  <td style={tdR}>${ef_tel.toFixed(2)}</td>
+                  <td style={tdR}>${ta_tel.toFixed(2)}</td>
+                  <td style={tdR}><strong>${(ef_tel + ta_tel).toFixed(2)}</strong></td>
+                </tr>
+              </tbody>
+            </Box>
+          </Paper>
+
+          {/* ── Montos Adicionales ── */}
+          <Paper sx={{ p: 2.5, mb: 2 }}>
+            <Typography variant="h6" fontWeight={700} gutterBottom>Montos Adicionales</Typography>
             <Divider sx={{ mb: 1 }} />
             <TextField
-              label="Recargas Telcel"
-              type="number"
-              value={recargas}
+              label="Recargas Telcel" type="number" value={recargas}
               onChange={(e) => setRecargas(e.target.value)}
-              fullWidth
-              margin="normal"
-              disabled={bloqueado}
-              inputProps={{ min: 0 }}
+              fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }}
             />
             <TextField
-              label="Recargas YOVOY"
-              type="number"
-              value={transporte}
+              label="Recargas YOVOY" type="number" value={transporte}
               onChange={(e) => setTransporte(e.target.value)}
-              fullWidth
-              margin="normal"
-              disabled={bloqueado}
-              inputProps={{ min: 0 }}
+              fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }}
             />
             <TextField
-              label="Centro de Pagos"
-              type="number"
-              value={otros}
+              label="Centro de Pagos" type="number" value={otros}
               onChange={(e) => setOtros(e.target.value)}
-              fullWidth
-              margin="normal"
-              disabled={bloqueado}
-              inputProps={{ min: 0 }}
+              fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }}
             />
             {msgRecargas && (
               <Alert
@@ -451,42 +691,27 @@ const CortePage = () => {
             )}
             {!bloqueado && (
               <Button
-                variant="outlined"
-                onClick={guardarRecargas}
-                disabled={loadingRecargas}
-                fullWidth
-                sx={{ mt: 2 }}
+                variant="outlined" fullWidth sx={{ mt: 1.5 }}
+                onClick={guardarRecargas} disabled={loadingRecargas}
               >
                 {loadingRecargas ? 'Guardando...' : 'Guardar Recargas'}
               </Button>
             )}
           </Paper>
 
-          {/* Salida de efectivo */}
-          <Paper sx={{ p: 3, mb: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Salida de Efectivo
-            </Typography>
+          {/* ── Salida de Efectivo ── */}
+          <Paper sx={{ p: 2.5, mb: 2 }}>
+            <Typography variant="h6" fontWeight={700} gutterBottom>Salida de Efectivo</Typography>
             <Divider sx={{ mb: 1 }} />
             <TextField
-              label="Monto de salida"
-              type="number"
-              value={salidaEfectivo}
+              label="Monto de salida" type="number" value={salidaEfectivo}
               onChange={(e) => setSalidaEfectivo(e.target.value)}
-              fullWidth
-              margin="normal"
-              disabled={bloqueado}
-              inputProps={{ min: 0 }}
+              fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }}
             />
             <TextField
-              label="Nota"
-              value={notaSalida}
+              label="Nota" value={notaSalida}
               onChange={(e) => setNotaSalida(e.target.value)}
-              fullWidth
-              margin="normal"
-              multiline
-              rows={2}
-              disabled={bloqueado}
+              fullWidth margin="dense" size="small" multiline rows={2} disabled={bloqueado}
             />
             {msgSalida && (
               <Alert
@@ -498,94 +723,207 @@ const CortePage = () => {
             )}
             {!bloqueado && (
               <Button
-                variant="outlined"
-                onClick={guardarSalida}
-                disabled={loadingSalida}
-                fullWidth
-                sx={{ mt: 2 }}
+                variant="outlined" fullWidth sx={{ mt: 1.5 }}
+                onClick={guardarSalida} disabled={loadingSalida}
               >
                 {loadingSalida ? 'Guardando...' : 'Guardar Salida'}
               </Button>
             )}
           </Paper>
 
-          {/* Enviar corte */}
-          {!bloqueado && (
+          {/* ── Totales Finales ── */}
+          <Paper sx={{ p: 2.5, mb: 2 }}>
+            <Typography variant="h6" fontWeight={700} gutterBottom>Totales Finales</Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Box display="flex" justifyContent="space-between" mb={1}>
+              <Typography variant="body2" color="text.secondary">Total Tarjeta</Typography>
+              <Typography fontWeight={600}>${total_tarjeta.toFixed(2)}</Typography>
+            </Box>
+            <Box display="flex" justifyContent="space-between" mb={1}>
+              <Typography variant="body2" color="text.secondary">Subtotal Efectivo</Typography>
+              <Typography fontWeight={600}>${subtotal_efectivo.toFixed(2)}</Typography>
+            </Box>
+            {sal > 0 && (
+              <Box display="flex" justifyContent="space-between" mb={1}>
+                <Typography variant="body2" color="warning.main">Salida</Typography>
+                <Typography color="warning.main">-${sal.toFixed(2)}</Typography>
+              </Box>
+            )}
+            <Divider sx={{ my: 1.5 }} />
+            <Box display="flex" justifyContent="space-between">
+              <Typography fontWeight={700}>Total Efectivo Final</Typography>
+              <Typography fontWeight={700} color="success.main" fontSize={16}>
+                ${total_efectivo_final.toFixed(2)}
+              </Typography>
+            </Box>
+          </Paper>
+
+          {/* ── Enviar Corte ── */}
+          {!bloqueado ? (
             <Button
-              variant="contained"
-              color="error"
-              size="large"
-              fullWidth
-              onClick={() => enviarCorte(false)}
-              disabled={loadingEnviar}
-              sx={{ py: 2, fontWeight: 700, fontSize: '1rem' }}
+              variant="contained" size="large" fullWidth
+              sx={{ py: 2, fontWeight: 700, fontSize: '1rem', bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' } }}
+              onClick={() => enviarCorte(false)} disabled={loadingEnviar}
             >
               {loadingEnviar ? 'Enviando...' : 'ENVIAR CORTE DEL DÍA'}
             </Button>
+          ) : (
+            <Alert severity="success">Corte del día enviado y bloqueado.</Alert>
           )}
           {msgEnviar && (
             <Alert
               severity={msgEnviar.toLowerCase().includes('error') ? 'error' : 'success'}
-              sx={{ mt: 2 }}
+              sx={{ mt: 1.5 }}
             >
               {msgEnviar}
             </Alert>
           )}
         </Grid>
 
-        {/* ── Columna derecha: Resumen del Día ───────────────────────────── */}
+        {/* ══════════════════════════════════════════════════════════════════
+            COLUMNA DERECHA — Resumen completo del día
+        ══════════════════════════════════════════════════════════════════ */}
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, mb: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Ventas de Accesorios
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Typography>
-              Efectivo: ${(resumen?.ventas_productos?.efectivo ?? 0).toFixed(2)}
-            </Typography>
-            <Typography>
-              Tarjeta: ${(resumen?.ventas_productos?.tarjeta ?? 0).toFixed(2)}
-            </Typography>
-            <Typography fontWeight={600}>
-              Total: ${(resumen?.ventas_productos?.total ?? 0).toFixed(2)}
-            </Typography>
-          </Paper>
+          <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>
+            Resumen del Día
+          </Typography>
 
-          <Paper sx={{ p: 3, mb: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Ventas de Teléfonos
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Typography>
-              Efectivo: ${(resumen?.ventas_telefonos?.efectivo ?? 0).toFixed(2)}
-            </Typography>
-            <Typography>
-              Tarjeta: ${(resumen?.ventas_telefonos?.tarjeta ?? 0).toFixed(2)}
-            </Typography>
-            <Typography fontWeight={600}>
-              Total: ${(resumen?.ventas_telefonos?.total ?? 0).toFixed(2)}
-            </Typography>
-          </Paper>
+          {/* Filtro de fecha */}
+          <Box display="flex" gap={1} alignItems="center" sx={{ mb: 2 }}>
+            <TextField
+              type="date" size="small" value={fechaDerecha}
+              onChange={(e) => setFechaDerecha(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              sx={{ flex: 1 }}
+            />
+            <Button
+              variant="contained" size="small"
+              sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' } }}
+              onClick={() => fetchVentasDerecha(fechaDerecha)}
+            >
+              Buscar
+            </Button>
+          </Box>
 
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Resumen del Día
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Typography>Total Sistema: ${totalSistema.toFixed(2)}</Typography>
-            <Typography>Total Adicional: ${totalAdicional.toFixed(2)}</Typography>
-            <Divider sx={{ my: 1 }} />
-            <Typography>Efectivo: ${totalEfectivo.toFixed(2)}</Typography>
-            <Typography>Tarjeta: ${totalTarjeta.toFixed(2)}</Typography>
-            {parseFloat(salidaEfectivo || '0') > 0 && (
-              <Typography sx={{ mt: 1 }} color="warning.main">
-                Salida Efectivo: -${parseFloat(salidaEfectivo || '0').toFixed(2)}
-              </Typography>
-            )}
-            <Alert severity="info" sx={{ mt: 2 }}>
-              <strong>Total General: ${totalGeneral.toFixed(2)}</strong>
-            </Alert>
-          </Paper>
+          {loadingVentas ? (
+            <Box display="flex" justifyContent="center" py={4}>
+              <CircularProgress size={32} />
+            </Box>
+          ) : (
+            <>
+              {/* Tabla de ventas */}
+              <Paper
+                sx={{ borderRadius: 2, boxShadow: '0 1px 6px rgba(0,0,0,0.08)', mb: 2, overflow: 'hidden' }}
+              >
+                <Box sx={{ px: 2, py: 1.5, bgcolor: '#fff7ed', borderBottom: '1px solid #fed7aa' }}>
+                  <Typography fontWeight={700} fontSize={14} color="#c2410c">
+                    Ventas del {fechaDerecha === HOY ? 'día de hoy' : fechaDerecha}
+                    {fechaDerecha !== HOY && (
+                      <Chip label="Solo lectura" size="small" sx={{ ml: 1, fontSize: 11 }} />
+                    )}
+                  </Typography>
+                </Box>
+                {todasVentas.length === 0 ? (
+                  <Box px={2} py={3}>
+                    <Typography variant="body2" color="text.secondary">
+                      Sin ventas para esta fecha
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        <th style={thStyle}>Tipo</th>
+                        <th style={thStyle}>Descripción</th>
+                        <th style={{ ...thStyle, textAlign: 'right' }}>Precio</th>
+                        <th style={{ ...thStyle, textAlign: 'right' }}>Comisión</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {todasVentas.map((v) => (
+                        <tr key={v.id}>
+                          <td style={tdStyle}>
+                            {v.tipo_producto === 'accesorios' ? (
+                              <Chip label="Acc" size="small"
+                                sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
+                            ) : (
+                              <Chip label="Tel" size="small"
+                                sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
+                            )}
+                          </td>
+                          <td style={{ ...tdStyle, maxWidth: 180 }}>
+                            {v.producto}
+                            {v.tipo_venta && (
+                              <span style={{ color: '#64748b', fontWeight: 400 }}> — {v.tipo_venta}</span>
+                            )}
+                          </td>
+                          <td style={tdR}>${getTotal(v).toFixed(2)}</td>
+                          <td style={{ ...tdR, color: '#15803d', fontWeight: 600 }}>
+                            ${calcComision(v).toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Box>
+                )}
+
+                {/* Subtotales */}
+                {todasVentas.length > 0 && (
+                  <Box
+                    sx={{
+                      px: 2, py: 1.5,
+                      bgcolor: '#f8fafc',
+                      borderTop: '2px solid #e2e8f0',
+                      display: 'flex',
+                      gap: 3,
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <Typography variant="body2" color="text.secondary">
+                      Accesorios:{' '}
+                      <strong>{ventasDerechaAcc.length} ventas</strong>{' '}
+                      | <strong>${subtotalDerechaAcc.toFixed(2)}</strong>
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Teléfonos:{' '}
+                      <strong>{ventasDerechaTel.length} ventas</strong>{' '}
+                      | <strong>${subtotalDerechaTel.toFixed(2)}</strong>
+                    </Typography>
+                  </Box>
+                )}
+              </Paper>
+
+              {/* Comisiones del día */}
+              {todasVentas.length > 0 && (
+                <Paper
+                  sx={{ borderRadius: 2, boxShadow: '0 1px 6px rgba(0,0,0,0.08)', overflow: 'hidden' }}
+                >
+                  <Box sx={{ px: 2, py: 1.5, bgcolor: '#f0fdf4', borderBottom: '1px solid #bbf7d0' }}>
+                    <Typography fontWeight={700} fontSize={14} color="#15803d">
+                      Comisiones del Día
+                    </Typography>
+                  </Box>
+                  <Box sx={{ p: 2 }}>
+                    <Box display="flex" justifyContent="space-between" mb={0.5}>
+                      <Typography variant="body2" color="text.secondary">Accesorios</Typography>
+                      <Typography variant="body2" fontWeight={600}>${comisionDerechaAcc.toFixed(2)}</Typography>
+                    </Box>
+                    <Box display="flex" justifyContent="space-between" mb={0.5}>
+                      <Typography variant="body2" color="text.secondary">Teléfonos</Typography>
+                      <Typography variant="body2" fontWeight={600}>${comisionDerechaTel.toFixed(2)}</Typography>
+                    </Box>
+                    <Divider sx={{ my: 1 }} />
+                    <Box display="flex" justifyContent="space-between">
+                      <Typography fontWeight={700}>Total Comisionado</Typography>
+                      <Typography fontWeight={700} color="success.main">
+                        ${(comisionDerechaAcc + comisionDerechaTel).toFixed(2)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Paper>
+              )}
+            </>
+          )}
         </Grid>
       </Grid>
     </Box>
