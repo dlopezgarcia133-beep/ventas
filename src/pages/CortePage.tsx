@@ -559,6 +559,8 @@ const CortePage = () => {
   // ─────────────────────────────────────────────────────────────────────────
   // ENCARGADO VIEW — una sola columna
   // ─────────────────────────────────────────────────────────────────────────
+  const capitalize = (s: string) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '—';
+
   return (
     <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 720, mx: 'auto' }}>
 
@@ -587,145 +589,110 @@ const CortePage = () => {
         </Box>
       </Paper>
 
-      {/* 2 ── Resumen General ───────────────────────────────────────────── */}
-      <Paper sx={{ p: 2.5, mb: 2 }}>
-        <Typography variant="h6" fontWeight={700} gutterBottom>Resumen General</Typography>
-        <Divider sx={{ mb: 2 }} />
-        <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-          <thead>
-            <tr>
-              <th style={thStyle}>Categoría</th>
-              <th style={{ ...thStyle, textAlign: 'right' }}>Ventas</th>
-              <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style={tdStyle}>
-                <Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
-                &nbsp; Accesorios
-              </td>
-              <td style={tdR}>{ventasDerechaAcc.length > 0 ? ventasDerechaAcc.length : '—'}</td>
-              <td style={tdR}><strong>${subtotalDerechaAcc.toFixed(2)}</strong></td>
-            </tr>
-            <tr>
-              <td style={tdStyle}>
-                <Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
-                &nbsp; Teléfonos
-              </td>
-              <td style={tdR}>{ventasDerechaTel.length > 0 ? ventasDerechaTel.length : '—'}</td>
-              <td style={tdR}><strong>${subtotalDerechaTel.toFixed(2)}</strong></td>
-            </tr>
-            {chipsHoy.length === 0 ? (
-              <tr>
-                <td style={tdStyle}>
-                  <Chip label="Chip" size="small" sx={{ bgcolor: '#f0fdf4', color: '#15803d', fontWeight: 700, fontSize: 11 }} />
-                  &nbsp; Chips
-                </td>
-                <td style={tdR}>—</td>
-                <td style={tdR}>—</td>
-              </tr>
-            ) : (
-              Object.entries(chipsPorTipo).map(([tipo, cantidad]) => (
-                <tr key={tipo}>
-                  <td style={tdStyle}>
-                    <Chip label="Chip" size="small" sx={{ bgcolor: '#f0fdf4', color: '#15803d', fontWeight: 700, fontSize: 11 }} />
-                    &nbsp; {tipo}
-                  </td>
-                  <td style={tdR}>{cantidad as number}</td>
-                  <td style={tdR}>—</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </Box>
-      </Paper>
-
-      {/* 3 ── Desglose Efectivo / Tarjeta ──────────────────────────────── */}
-      <Paper sx={{ p: 2.5, mb: 2 }}>
-        <Typography variant="h6" fontWeight={700} gutterBottom>Desglose</Typography>
-        <Divider sx={{ mb: 2 }} />
-        <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-          <thead>
-            <tr>
-              <th style={thStyle} />
-              <th style={{ ...thStyle, textAlign: 'right' }}>Efectivo</th>
-              <th style={{ ...thStyle, textAlign: 'right' }}>Tarjeta</th>
-              <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style={tdStyle}>Accesorios</td>
-              <td style={tdR}>${ef_acc.toFixed(2)}</td>
-              <td style={tdR}>${ta_acc.toFixed(2)}</td>
-              <td style={tdR}><strong>${(ef_acc + ta_acc).toFixed(2)}</strong></td>
-            </tr>
-            <tr>
-              <td style={tdStyle}>Teléfonos</td>
-              <td style={tdR}>${ef_tel.toFixed(2)}</td>
-              <td style={tdR}>${ta_tel.toFixed(2)}</td>
-              <td style={tdR}><strong>${(ef_tel + ta_tel).toFixed(2)}</strong></td>
-            </tr>
-          </tbody>
-        </Box>
-      </Paper>
-
-      {/* 4 ── Tabla de ventas del día ───────────────────────────────────── */}
+      {/* 2 ── Card de Chips ─────────────────────────────────────────────── */}
       <Paper sx={{ mb: 2, overflow: 'hidden' }}>
-        <Box sx={{ px: 2, py: 1.5, bgcolor: '#fff7ed', borderBottom: '1px solid #fed7aa' }}>
-          <Typography fontWeight={700} fontSize={14} color="#c2410c">
-            Ventas del {fechaDerecha === HOY ? 'día de hoy' : fechaDerecha}
+        <Box sx={{ px: 2, py: 1.5, bgcolor: '#f0fdf4', borderBottom: '1px solid #bbf7d0' }}>
+          <Typography fontWeight={700} fontSize={14} color="#15803d">
+            Chips del día ({chipsHoy.length})
+          </Typography>
+        </Box>
+        {chipsHoy.length === 0 ? (
+          <Box px={2} py={2}>
+            <Typography variant="body2" color="text.secondary">Sin chips para esta fecha</Typography>
+          </Box>
+        ) : (
+          <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Empleado</th>
+                <th style={thStyle}>Tipo</th>
+                <th style={thStyle}>Número</th>
+                <th style={{ ...thStyle, textAlign: 'right' }}>Recarga</th>
+              </tr>
+            </thead>
+            <tbody>
+              {chipsHoy.map((c: any) => (
+                <tr key={c.id}>
+                  <td style={tdStyle}>{c.empleado?.username || '—'}</td>
+                  <td style={tdStyle}>{c.tipo_chip || '—'}</td>
+                  <td style={tdStyle}>{c.numero_telefono || '—'}</td>
+                  <td style={tdR}>${(c.monto_recarga || 0).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Box>
+        )}
+      </Paper>
+
+      {/* 3 ── Card de Teléfonos ─────────────────────────────────────────── */}
+      <Paper sx={{ mb: 2, overflow: 'hidden' }}>
+        <Box sx={{ px: 2, py: 1.5, bgcolor: '#eff6ff', borderBottom: '1px solid #bfdbfe' }}>
+          <Typography fontWeight={700} fontSize={14} color="#1d4ed8">
+            Teléfonos del día ({ventasDerechaTel.length})
           </Typography>
         </Box>
         {loadingVentas ? (
-          <Box display="flex" justifyContent="center" py={4}>
-            <CircularProgress size={28} />
-          </Box>
-        ) : todasVentas.length === 0 ? (
-          <Box px={2} py={3}>
-            <Typography variant="body2" color="text.secondary">Sin ventas para esta fecha</Typography>
+          <Box display="flex" justifyContent="center" py={3}><CircularProgress size={24} /></Box>
+        ) : ventasDerechaTel.length === 0 ? (
+          <Box px={2} py={2}>
+            <Typography variant="body2" color="text.secondary">Sin teléfonos para esta fecha</Typography>
           </Box>
         ) : (
-          <>
-            <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th style={thStyle}>Tipo</th>
-                  <th style={thStyle}>Descripción</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Precio</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Comisión</th>
+          <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Empleado</th>
+                <th style={thStyle}>Modelo</th>
+                <th style={{ ...thStyle, textAlign: 'right' }}>Tipo de pago</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ventasDerechaTel.map((v) => (
+                <tr key={v.id}>
+                  <td style={tdStyle}>{v.empleado?.username || '—'}</td>
+                  <td style={{ ...tdStyle, maxWidth: 240 }}>{v.producto}</td>
+                  <td style={tdR}>{capitalize(v.tipo_venta || '')}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {todasVentas.map((v) => (
-                  <tr key={v.id}>
-                    <td style={tdStyle}>
-                      {v.tipo_producto === 'accesorios' ? (
-                        <Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
-                      ) : (
-                        <Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
-                      )}
-                    </td>
-                    <td style={{ ...tdStyle, maxWidth: 220 }}>
-                      {v.producto}
-                      {v.tipo_venta && <span style={{ color: '#64748b' }}> — {v.tipo_venta}</span>}
-                    </td>
-                    <td style={tdR}>${getTotal(v).toFixed(2)}</td>
-                    <td style={{ ...tdR, color: '#15803d', fontWeight: 600 }}>${calcComision(v).toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Box>
-            <Box sx={{ px: 2, py: 1.5, bgcolor: '#f8fafc', borderTop: '2px solid #e2e8f0', display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-              <Typography variant="body2" color="text.secondary">
-                Accesorios: <strong>{ventasDerechaAcc.length}</strong> | <strong>${subtotalDerechaAcc.toFixed(2)}</strong>
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Teléfonos: <strong>{ventasDerechaTel.length}</strong> | <strong>${subtotalDerechaTel.toFixed(2)}</strong>
-              </Typography>
-            </Box>
-          </>
+              ))}
+            </tbody>
+          </Box>
+        )}
+      </Paper>
+
+      {/* 4 ── Card de Accesorios ────────────────────────────────────────── */}
+      <Paper sx={{ mb: 2, overflow: 'hidden' }}>
+        <Box sx={{ px: 2, py: 1.5, bgcolor: '#fff7ed', borderBottom: '1px solid #fed7aa' }}>
+          <Typography fontWeight={700} fontSize={14} color="#c2410c">
+            Accesorios del día ({ventasDerechaAcc.length})
+          </Typography>
+        </Box>
+        {loadingVentas ? (
+          <Box display="flex" justifyContent="center" py={3}><CircularProgress size={24} /></Box>
+        ) : ventasDerechaAcc.length === 0 ? (
+          <Box px={2} py={2}>
+            <Typography variant="body2" color="text.secondary">Sin accesorios para esta fecha</Typography>
+          </Box>
+        ) : (
+          <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Empleado</th>
+                <th style={thStyle}>Descripción</th>
+                <th style={{ ...thStyle, textAlign: 'right' }}>Precio</th>
+                <th style={{ ...thStyle, textAlign: 'right' }}>Método de pago</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ventasDerechaAcc.map((v) => (
+                <tr key={v.id}>
+                  <td style={tdStyle}>{v.empleado?.username || '—'}</td>
+                  <td style={{ ...tdStyle, maxWidth: 200 }}>{v.producto}</td>
+                  <td style={tdR}>${getTotal(v).toFixed(2)}</td>
+                  <td style={tdR}>{capitalize(v.metodo_pago || '')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Box>
         )}
       </Paper>
 
@@ -782,21 +749,47 @@ const CortePage = () => {
       <Paper sx={{ p: 2.5, mb: 2 }}>
         <Typography variant="h6" fontWeight={700} gutterBottom>Totales Finales</Typography>
         <Divider sx={{ mb: 2 }} />
-        <Box display="flex" justifyContent="space-between" mb={1}>
-          <Typography variant="body2" color="text.secondary">Total Tarjeta</Typography>
-          <Typography fontWeight={600}>${total_tarjeta.toFixed(2)}</Typography>
+
+        <Box display="flex" justifyContent="space-between" mb={0.5}>
+          <Typography variant="body2" color="text.secondary">Accesorios — Efectivo</Typography>
+          <Typography>${ef_acc.toFixed(2)}</Typography>
         </Box>
-        <Box display="flex" justifyContent="space-between" mb={1}>
-          <Typography variant="body2" color="text.secondary">Subtotal Efectivo</Typography>
-          <Typography fontWeight={600}>${subtotal_efectivo.toFixed(2)}</Typography>
+        <Box display="flex" justifyContent="space-between" mb={1.5}>
+          <Typography variant="body2" color="text.secondary">Accesorios — Tarjeta</Typography>
+          <Typography>${ta_acc.toFixed(2)}</Typography>
         </Box>
+
+        <Box display="flex" justifyContent="space-between" mb={0.5}>
+          <Typography variant="body2" color="text.secondary">Teléfonos — Efectivo</Typography>
+          <Typography>${ef_tel.toFixed(2)}</Typography>
+        </Box>
+        <Box display="flex" justifyContent="space-between" mb={1.5}>
+          <Typography variant="body2" color="text.secondary">Teléfonos — Tarjeta</Typography>
+          <Typography>${ta_tel.toFixed(2)}</Typography>
+        </Box>
+
+        {totalAdicional > 0 && (
+          <Box display="flex" justifyContent="space-between" mb={1.5}>
+            <Typography variant="body2" color="text.secondary">Recargas (Telcel + YOVOY + C. Pagos)</Typography>
+            <Typography>${totalAdicional.toFixed(2)}</Typography>
+          </Box>
+        )}
+
         {sal > 0 && (
-          <Box display="flex" justifyContent="space-between" mb={1}>
-            <Typography variant="body2" color="warning.main">Salida</Typography>
+          <Box display="flex" justifyContent="space-between" mb={1.5}>
+            <Typography variant="body2" color="warning.main">Salida de Efectivo</Typography>
             <Typography color="warning.main">-${sal.toFixed(2)}</Typography>
           </Box>
         )}
+
         <Divider sx={{ my: 1.5 }} />
+
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+          <Typography fontWeight={700} fontSize={15}>Total Tarjeta</Typography>
+          <Typography fontWeight={800} color="primary.main" fontSize={18}>
+            ${total_tarjeta.toFixed(2)}
+          </Typography>
+        </Box>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography fontWeight={700} fontSize={15}>Total Efectivo Final</Typography>
           <Typography fontWeight={800} color="success.main" fontSize={20}>
