@@ -720,12 +720,15 @@ def obtener_ventas_chips(
             query = query.filter(models.VentaChip.empleado_id == empleado_id)
         return query.all()
     elif current_user.rol == "encargado":
-        return (
+        chips = (
             db.query(models.VentaChip)
             .join(models.Usuario, models.VentaChip.empleado_id == models.Usuario.id)
             .filter(models.Usuario.modulo_id == current_user.modulo_id)
             .all()
         )
+        print(f"ENCARGADO modulo_id: {current_user.modulo_id}")
+        print(f"CHIPS encontrados: {len(chips)}")
+        return chips
     else:
         return db.query(models.VentaChip).filter(models.VentaChip.empleado_id == current_user.id).all()
 
