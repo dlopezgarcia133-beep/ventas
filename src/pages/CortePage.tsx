@@ -384,8 +384,7 @@ const CortePage = () => {
   const subtotal_efectivo = ef_acc + ef_tel + totalAdicional;
   const total_efectivo_final = subtotal_efectivo - sal;
 
-  console.log('CHIP FECHA RAW:', chips[0]?.fecha, '| HOY:', HOY, '| STARTS:', chips[0]?.fecha?.startsWith(HOY));
-  const chipsHoy = chips.filter((c) => c.fecha?.startsWith(HOY) && !c.cancelada);
+  const chipsHoy = chips.filter((c) => c.fecha?.startsWith(fechaDerecha) && !c.cancelada);
   const chipsTotal = chipsHoy.reduce((s: number, c: any) => s + (c.monto_recarga || 0), 0);
   const chipsPorTipo = chipsHoy.reduce((acc: Record<string, number>, c: any) => {
     acc[c.tipo_chip] = (acc[c.tipo_chip] || 0) + 1;
