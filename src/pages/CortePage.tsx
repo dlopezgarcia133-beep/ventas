@@ -384,7 +384,6 @@ const CortePage = () => {
   const subtotal_efectivo = ef_acc + ef_tel + totalAdicional;
   const total_efectivo_final = subtotal_efectivo - sal;
 
-  console.log('MODULOS EN CHIPS:', [...new Set(chips.map((c: any) => JSON.stringify({id: c.empleado?.modulo?.id, nombre: c.empleado?.modulo?.nombre, user: c.empleado?.username})))]);
   const chipsHoy = chips.filter((c) => {
     const fecha = c.fecha ? String(c.fecha).slice(0, 10) : '';
     return fecha === fechaDerecha && !c.cancelada;
@@ -558,387 +557,274 @@ const CortePage = () => {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // ENCARGADO VIEW
+  // ENCARGADO VIEW — una sola columna
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 } }}>
+    <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 720, mx: 'auto' }}>
+
+      {/* Título */}
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
         <Typography variant="h5" fontWeight={700}>Corte del Día</Typography>
         {bloqueado && <Chip label="ENVIADO" color="success" />}
       </Stack>
 
-      <Grid container spacing={3} alignItems="flex-start">
-        {/* ══════════════════════════════════════════════════════════════════
-            COLUMNA IZQUIERDA — Balance
-        ══════════════════════════════════════════════════════════════════ */}
-        <Grid item xs={12} md={6}>
+      {/* 1 ── Filtro de fecha ───────────────────────────────────────────── */}
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Box display="flex" gap={1} alignItems="center">
+          <TextField
+            type="date" size="small" label="Fecha" value={fechaDerecha}
+            onChange={(e) => setFechaDerecha(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{ flex: 1 }}
+          />
+          <Button
+            variant="contained" size="small"
+            sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' }, whiteSpace: 'nowrap' }}
+            onClick={() => fetchVentasDerecha(fechaDerecha)}
+          >
+            Buscar
+          </Button>
+        </Box>
+      </Paper>
 
-          {/* ── Resumen General ── */}
-          <Paper sx={{ p: 2.5, mb: 2 }}>
-            <Typography variant="h6" fontWeight={700} gutterBottom>Resumen General</Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Box
-              component="table"
-              sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}
-            >
+      {/* 2 ── Resumen General ───────────────────────────────────────────── */}
+      <Paper sx={{ p: 2.5, mb: 2 }}>
+        <Typography variant="h6" fontWeight={700} gutterBottom>Resumen General</Typography>
+        <Divider sx={{ mb: 2 }} />
+        <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+          <thead>
+            <tr>
+              <th style={thStyle}>Categoría</th>
+              <th style={{ ...thStyle, textAlign: 'right' }}>Ventas</th>
+              <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={tdStyle}>
+                <Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
+                &nbsp; Accesorios
+              </td>
+              <td style={tdR}>{ventasDerechaAcc.length > 0 ? ventasDerechaAcc.length : '—'}</td>
+              <td style={tdR}><strong>${subtotalDerechaAcc.toFixed(2)}</strong></td>
+            </tr>
+            <tr>
+              <td style={tdStyle}>
+                <Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
+                &nbsp; Teléfonos
+              </td>
+              <td style={tdR}>{ventasDerechaTel.length > 0 ? ventasDerechaTel.length : '—'}</td>
+              <td style={tdR}><strong>${subtotalDerechaTel.toFixed(2)}</strong></td>
+            </tr>
+            {chipsHoy.length === 0 ? (
+              <tr>
+                <td style={tdStyle}>
+                  <Chip label="Chip" size="small" sx={{ bgcolor: '#f0fdf4', color: '#15803d', fontWeight: 700, fontSize: 11 }} />
+                  &nbsp; Chips
+                </td>
+                <td style={tdR}>—</td>
+                <td style={tdR}>—</td>
+              </tr>
+            ) : (
+              Object.entries(chipsPorTipo).map(([tipo, cantidad]) => (
+                <tr key={tipo}>
+                  <td style={tdStyle}>
+                    <Chip label="Chip" size="small" sx={{ bgcolor: '#f0fdf4', color: '#15803d', fontWeight: 700, fontSize: 11 }} />
+                    &nbsp; {tipo}
+                  </td>
+                  <td style={tdR}>{cantidad as number}</td>
+                  <td style={tdR}>—</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </Box>
+      </Paper>
+
+      {/* 3 ── Desglose Efectivo / Tarjeta ──────────────────────────────── */}
+      <Paper sx={{ p: 2.5, mb: 2 }}>
+        <Typography variant="h6" fontWeight={700} gutterBottom>Desglose</Typography>
+        <Divider sx={{ mb: 2 }} />
+        <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+          <thead>
+            <tr>
+              <th style={thStyle} />
+              <th style={{ ...thStyle, textAlign: 'right' }}>Efectivo</th>
+              <th style={{ ...thStyle, textAlign: 'right' }}>Tarjeta</th>
+              <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={tdStyle}>Accesorios</td>
+              <td style={tdR}>${ef_acc.toFixed(2)}</td>
+              <td style={tdR}>${ta_acc.toFixed(2)}</td>
+              <td style={tdR}><strong>${(ef_acc + ta_acc).toFixed(2)}</strong></td>
+            </tr>
+            <tr>
+              <td style={tdStyle}>Teléfonos</td>
+              <td style={tdR}>${ef_tel.toFixed(2)}</td>
+              <td style={tdR}>${ta_tel.toFixed(2)}</td>
+              <td style={tdR}><strong>${(ef_tel + ta_tel).toFixed(2)}</strong></td>
+            </tr>
+          </tbody>
+        </Box>
+      </Paper>
+
+      {/* 4 ── Tabla de ventas del día ───────────────────────────────────── */}
+      <Paper sx={{ mb: 2, overflow: 'hidden' }}>
+        <Box sx={{ px: 2, py: 1.5, bgcolor: '#fff7ed', borderBottom: '1px solid #fed7aa' }}>
+          <Typography fontWeight={700} fontSize={14} color="#c2410c">
+            Ventas del {fechaDerecha === HOY ? 'día de hoy' : fechaDerecha}
+          </Typography>
+        </Box>
+        {loadingVentas ? (
+          <Box display="flex" justifyContent="center" py={4}>
+            <CircularProgress size={28} />
+          </Box>
+        ) : todasVentas.length === 0 ? (
+          <Box px={2} py={3}>
+            <Typography variant="body2" color="text.secondary">Sin ventas para esta fecha</Typography>
+          </Box>
+        ) : (
+          <>
+            <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  <th style={thStyle}>Categoría</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Ventas</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
+                  <th style={thStyle}>Tipo</th>
+                  <th style={thStyle}>Descripción</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Precio</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Comisión</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td style={tdStyle}>
-                    <Chip label="Acc" size="small"
-                      sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
-                    &nbsp; Accesorios
-                  </td>
-                  <td style={tdR}>
-                    {ventasDerechaAcc.length > 0 ? ventasDerechaAcc.length : '—'}
-                  </td>
-                  <td style={tdR}>
-                    <strong>${subtotalDerechaAcc.toFixed(2)}</strong>
-                  </td>
-                </tr>
-                <tr>
-                  <td style={tdStyle}>
-                    <Chip label="Tel" size="small"
-                      sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
-                    &nbsp; Teléfonos
-                  </td>
-                  <td style={tdR}>
-                    {ventasDerechaTel.length > 0 ? ventasDerechaTel.length : '—'}
-                  </td>
-                  <td style={tdR}>
-                    <strong>${subtotalDerechaTel.toFixed(2)}</strong>
-                  </td>
-                </tr>
-                {chipsHoy.length === 0 ? (
-                  <tr>
+                {todasVentas.map((v) => (
+                  <tr key={v.id}>
                     <td style={tdStyle}>
-                      <Chip label="Chip" size="small"
-                        sx={{ bgcolor: '#f0fdf4', color: '#15803d', fontWeight: 700, fontSize: 11 }} />
-                      &nbsp; Chips
+                      {v.tipo_producto === 'accesorios' ? (
+                        <Chip label="Acc" size="small" sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
+                      ) : (
+                        <Chip label="Tel" size="small" sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
+                      )}
                     </td>
-                    <td style={tdR}>—</td>
-                    <td style={tdR}>—</td>
+                    <td style={{ ...tdStyle, maxWidth: 220 }}>
+                      {v.producto}
+                      {v.tipo_venta && <span style={{ color: '#64748b' }}> — {v.tipo_venta}</span>}
+                    </td>
+                    <td style={tdR}>${getTotal(v).toFixed(2)}</td>
+                    <td style={{ ...tdR, color: '#15803d', fontWeight: 600 }}>${calcComision(v).toFixed(2)}</td>
                   </tr>
-                ) : (
-                  Object.entries(chipsPorTipo).map(([tipo, cantidad]) => (
-                    <tr key={tipo}>
-                      <td style={tdStyle}>
-                        <Chip label="Chip" size="small"
-                          sx={{ bgcolor: '#f0fdf4', color: '#15803d', fontWeight: 700, fontSize: 11 }} />
-                        &nbsp; {tipo}
-                      </td>
-                      <td style={tdR}>{cantidad as number}</td>
-                      <td style={tdR}>—</td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </Box>
-          </Paper>
-
-          {/* ── Desglose Efectivo / Tarjeta ── */}
-          <Paper sx={{ p: 2.5, mb: 2 }}>
-            <Typography variant="h6" fontWeight={700} gutterBottom>Desglose</Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Box
-              component="table"
-              sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}
-            >
-              <thead>
-                <tr>
-                  <th style={thStyle} />
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Efectivo</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Tarjeta</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style={tdStyle}>Accesorios</td>
-                  <td style={tdR}>${ef_acc.toFixed(2)}</td>
-                  <td style={tdR}>${ta_acc.toFixed(2)}</td>
-                  <td style={tdR}><strong>${(ef_acc + ta_acc).toFixed(2)}</strong></td>
-                </tr>
-                <tr>
-                  <td style={tdStyle}>Teléfonos</td>
-                  <td style={tdR}>${ef_tel.toFixed(2)}</td>
-                  <td style={tdR}>${ta_tel.toFixed(2)}</td>
-                  <td style={tdR}><strong>${(ef_tel + ta_tel).toFixed(2)}</strong></td>
-                </tr>
-              </tbody>
-            </Box>
-          </Paper>
-
-          {/* ── Montos Adicionales ── */}
-          <Paper sx={{ p: 2.5, mb: 2 }}>
-            <Typography variant="h6" fontWeight={700} gutterBottom>Montos Adicionales</Typography>
-            <Divider sx={{ mb: 1 }} />
-            <TextField
-              label="Recargas Telcel" type="number" value={recargas}
-              onChange={(e) => setRecargas(e.target.value)}
-              fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }}
-            />
-            <TextField
-              label="Recargas YOVOY" type="number" value={transporte}
-              onChange={(e) => setTransporte(e.target.value)}
-              fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }}
-            />
-            <TextField
-              label="Centro de Pagos" type="number" value={otros}
-              onChange={(e) => setOtros(e.target.value)}
-              fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }}
-            />
-            {msgRecargas && (
-              <Alert
-                severity={msgRecargas.toLowerCase().includes('error') ? 'error' : 'success'}
-                sx={{ mt: 1 }}
-              >
-                {msgRecargas}
-              </Alert>
-            )}
-            {!bloqueado && (
-              <Button
-                variant="outlined" fullWidth sx={{ mt: 1.5 }}
-                onClick={guardarRecargas} disabled={loadingRecargas}
-              >
-                {loadingRecargas ? 'Guardando...' : 'Guardar Recargas'}
-              </Button>
-            )}
-          </Paper>
-
-          {/* ── Salida de Efectivo ── */}
-          <Paper sx={{ p: 2.5, mb: 2 }}>
-            <Typography variant="h6" fontWeight={700} gutterBottom>Salida de Efectivo</Typography>
-            <Divider sx={{ mb: 1 }} />
-            <TextField
-              label="Monto de salida" type="number" value={salidaEfectivo}
-              onChange={(e) => setSalidaEfectivo(e.target.value)}
-              fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }}
-            />
-            <TextField
-              label="Nota" value={notaSalida}
-              onChange={(e) => setNotaSalida(e.target.value)}
-              fullWidth margin="dense" size="small" multiline rows={2} disabled={bloqueado}
-            />
-            {msgSalida && (
-              <Alert
-                severity={msgSalida.toLowerCase().includes('error') ? 'error' : 'success'}
-                sx={{ mt: 1 }}
-              >
-                {msgSalida}
-              </Alert>
-            )}
-            {!bloqueado && (
-              <Button
-                variant="outlined" fullWidth sx={{ mt: 1.5 }}
-                onClick={guardarSalida} disabled={loadingSalida}
-              >
-                {loadingSalida ? 'Guardando...' : 'Guardar Salida'}
-              </Button>
-            )}
-          </Paper>
-
-          {/* ── Totales Finales ── */}
-          <Paper sx={{ p: 2.5, mb: 2 }}>
-            <Typography variant="h6" fontWeight={700} gutterBottom>Totales Finales</Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Box display="flex" justifyContent="space-between" mb={1}>
-              <Typography variant="body2" color="text.secondary">Total Tarjeta</Typography>
-              <Typography fontWeight={600}>${total_tarjeta.toFixed(2)}</Typography>
-            </Box>
-            <Box display="flex" justifyContent="space-between" mb={1}>
-              <Typography variant="body2" color="text.secondary">Subtotal Efectivo</Typography>
-              <Typography fontWeight={600}>${subtotal_efectivo.toFixed(2)}</Typography>
-            </Box>
-            {sal > 0 && (
-              <Box display="flex" justifyContent="space-between" mb={1}>
-                <Typography variant="body2" color="warning.main">Salida</Typography>
-                <Typography color="warning.main">-${sal.toFixed(2)}</Typography>
-              </Box>
-            )}
-            <Divider sx={{ my: 1.5 }} />
-            <Box display="flex" justifyContent="space-between">
-              <Typography fontWeight={700}>Total Efectivo Final</Typography>
-              <Typography fontWeight={700} color="success.main" fontSize={16}>
-                ${total_efectivo_final.toFixed(2)}
+            <Box sx={{ px: 2, py: 1.5, bgcolor: '#f8fafc', borderTop: '2px solid #e2e8f0', display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+              <Typography variant="body2" color="text.secondary">
+                Accesorios: <strong>{ventasDerechaAcc.length}</strong> | <strong>${subtotalDerechaAcc.toFixed(2)}</strong>
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Teléfonos: <strong>{ventasDerechaTel.length}</strong> | <strong>${subtotalDerechaTel.toFixed(2)}</strong>
               </Typography>
             </Box>
-          </Paper>
+          </>
+        )}
+      </Paper>
 
-          {/* ── Enviar Corte ── */}
-          {!bloqueado ? (
-            <Button
-              variant="contained" size="large" fullWidth
-              sx={{ py: 2, fontWeight: 700, fontSize: '1rem', bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' } }}
-              onClick={() => enviarCorte(false)} disabled={loadingEnviar}
-            >
-              {loadingEnviar ? 'Enviando...' : 'ENVIAR CORTE DEL DÍA'}
-            </Button>
-          ) : (
-            <Alert severity="success">Corte del día enviado y bloqueado.</Alert>
-          )}
-          {msgEnviar && (
-            <Alert
-              severity={msgEnviar.toLowerCase().includes('error') ? 'error' : 'success'}
-              sx={{ mt: 1.5 }}
-            >
-              {msgEnviar}
-            </Alert>
-          )}
-        </Grid>
+      {/* 5 ── Montos Adicionales ────────────────────────────────────────── */}
+      <Paper sx={{ p: 2.5, mb: 2 }}>
+        <Typography variant="h6" fontWeight={700} gutterBottom>Montos Adicionales</Typography>
+        <Divider sx={{ mb: 1 }} />
+        <TextField label="Recargas Telcel" type="number" value={recargas}
+          onChange={(e) => setRecargas(e.target.value)}
+          fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }} />
+        <TextField label="Recargas YOVOY" type="number" value={transporte}
+          onChange={(e) => setTransporte(e.target.value)}
+          fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }} />
+        <TextField label="Centro de Pagos" type="number" value={otros}
+          onChange={(e) => setOtros(e.target.value)}
+          fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }} />
+        {msgRecargas && (
+          <Alert severity={msgRecargas.toLowerCase().includes('error') ? 'error' : 'success'} sx={{ mt: 1 }}>
+            {msgRecargas}
+          </Alert>
+        )}
+        {!bloqueado && (
+          <Button variant="outlined" fullWidth sx={{ mt: 1.5 }}
+            onClick={guardarRecargas} disabled={loadingRecargas}>
+            {loadingRecargas ? 'Guardando...' : 'GUARDAR RECARGAS'}
+          </Button>
+        )}
+      </Paper>
 
-        {/* ══════════════════════════════════════════════════════════════════
-            COLUMNA DERECHA — Resumen completo del día
-        ══════════════════════════════════════════════════════════════════ */}
-        <Grid item xs={12} md={6}>
-          <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>
-            Resumen del Día
-          </Typography>
+      {/* 6 ── Salida de Efectivo ─────────────────────────────────────────── */}
+      <Paper sx={{ p: 2.5, mb: 2 }}>
+        <Typography variant="h6" fontWeight={700} gutterBottom>Salida de Efectivo</Typography>
+        <Divider sx={{ mb: 1 }} />
+        <TextField label="Monto de salida" type="number" value={salidaEfectivo}
+          onChange={(e) => setSalidaEfectivo(e.target.value)}
+          fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }} />
+        <TextField label="Nota" value={notaSalida}
+          onChange={(e) => setNotaSalida(e.target.value)}
+          fullWidth margin="dense" size="small" multiline rows={2} disabled={bloqueado} />
+        {msgSalida && (
+          <Alert severity={msgSalida.toLowerCase().includes('error') ? 'error' : 'success'} sx={{ mt: 1 }}>
+            {msgSalida}
+          </Alert>
+        )}
+        {!bloqueado && (
+          <Button variant="outlined" fullWidth sx={{ mt: 1.5 }}
+            onClick={guardarSalida} disabled={loadingSalida}>
+            {loadingSalida ? 'Guardando...' : 'GUARDAR SALIDA'}
+          </Button>
+        )}
+      </Paper>
 
-          {/* Filtro de fecha */}
-          <Box display="flex" gap={1} alignItems="center" sx={{ mb: 2 }}>
-            <TextField
-              type="date" size="small" value={fechaDerecha}
-              onChange={(e) => setFechaDerecha(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              sx={{ flex: 1 }}
-            />
-            <Button
-              variant="contained" size="small"
-              sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' } }}
-              onClick={() => fetchVentasDerecha(fechaDerecha)}
-            >
-              Buscar
-            </Button>
+      {/* 7 ── Totales Finales ────────────────────────────────────────────── */}
+      <Paper sx={{ p: 2.5, mb: 2 }}>
+        <Typography variant="h6" fontWeight={700} gutterBottom>Totales Finales</Typography>
+        <Divider sx={{ mb: 2 }} />
+        <Box display="flex" justifyContent="space-between" mb={1}>
+          <Typography variant="body2" color="text.secondary">Total Tarjeta</Typography>
+          <Typography fontWeight={600}>${total_tarjeta.toFixed(2)}</Typography>
+        </Box>
+        <Box display="flex" justifyContent="space-between" mb={1}>
+          <Typography variant="body2" color="text.secondary">Subtotal Efectivo</Typography>
+          <Typography fontWeight={600}>${subtotal_efectivo.toFixed(2)}</Typography>
+        </Box>
+        {sal > 0 && (
+          <Box display="flex" justifyContent="space-between" mb={1}>
+            <Typography variant="body2" color="warning.main">Salida</Typography>
+            <Typography color="warning.main">-${sal.toFixed(2)}</Typography>
           </Box>
+        )}
+        <Divider sx={{ my: 1.5 }} />
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography fontWeight={700} fontSize={15}>Total Efectivo Final</Typography>
+          <Typography fontWeight={800} color="success.main" fontSize={20}>
+            ${total_efectivo_final.toFixed(2)}
+          </Typography>
+        </Box>
+      </Paper>
 
-          {loadingVentas ? (
-            <Box display="flex" justifyContent="center" py={4}>
-              <CircularProgress size={32} />
-            </Box>
-          ) : (
-            <>
-              {/* Tabla de ventas */}
-              <Paper
-                sx={{ borderRadius: 2, boxShadow: '0 1px 6px rgba(0,0,0,0.08)', mb: 2, overflow: 'hidden' }}
-              >
-                <Box sx={{ px: 2, py: 1.5, bgcolor: '#fff7ed', borderBottom: '1px solid #fed7aa' }}>
-                  <Typography fontWeight={700} fontSize={14} color="#c2410c">
-                    Ventas del {fechaDerecha === HOY ? 'día de hoy' : fechaDerecha}
-                    {fechaDerecha !== HOY && (
-                      <Chip label="Solo lectura" size="small" sx={{ ml: 1, fontSize: 11 }} />
-                    )}
-                  </Typography>
-                </Box>
-                {todasVentas.length === 0 ? (
-                  <Box px={2} py={3}>
-                    <Typography variant="body2" color="text.secondary">
-                      Sin ventas para esta fecha
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr>
-                        <th style={thStyle}>Tipo</th>
-                        <th style={thStyle}>Descripción</th>
-                        <th style={{ ...thStyle, textAlign: 'right' }}>Precio</th>
-                        <th style={{ ...thStyle, textAlign: 'right' }}>Comisión</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {todasVentas.map((v) => (
-                        <tr key={v.id}>
-                          <td style={tdStyle}>
-                            {v.tipo_producto === 'accesorios' ? (
-                              <Chip label="Acc" size="small"
-                                sx={{ bgcolor: '#fff7ed', color: '#f97316', fontWeight: 700, fontSize: 11 }} />
-                            ) : (
-                              <Chip label="Tel" size="small"
-                                sx={{ bgcolor: '#eff6ff', color: '#0d1e3a', fontWeight: 700, fontSize: 11 }} />
-                            )}
-                          </td>
-                          <td style={{ ...tdStyle, maxWidth: 180 }}>
-                            {v.producto}
-                            {v.tipo_venta && (
-                              <span style={{ color: '#64748b', fontWeight: 400 }}> — {v.tipo_venta}</span>
-                            )}
-                          </td>
-                          <td style={tdR}>${getTotal(v).toFixed(2)}</td>
-                          <td style={{ ...tdR, color: '#15803d', fontWeight: 600 }}>
-                            ${calcComision(v).toFixed(2)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Box>
-                )}
-
-                {/* Subtotales */}
-                {todasVentas.length > 0 && (
-                  <Box
-                    sx={{
-                      px: 2, py: 1.5,
-                      bgcolor: '#f8fafc',
-                      borderTop: '2px solid #e2e8f0',
-                      display: 'flex',
-                      gap: 3,
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    <Typography variant="body2" color="text.secondary">
-                      Accesorios:{' '}
-                      <strong>{ventasDerechaAcc.length} ventas</strong>{' '}
-                      | <strong>${subtotalDerechaAcc.toFixed(2)}</strong>
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Teléfonos:{' '}
-                      <strong>{ventasDerechaTel.length} ventas</strong>{' '}
-                      | <strong>${subtotalDerechaTel.toFixed(2)}</strong>
-                    </Typography>
-                  </Box>
-                )}
-              </Paper>
-
-              {/* Comisiones del día */}
-              {todasVentas.length > 0 && (
-                <Paper
-                  sx={{ borderRadius: 2, boxShadow: '0 1px 6px rgba(0,0,0,0.08)', overflow: 'hidden' }}
-                >
-                  <Box sx={{ px: 2, py: 1.5, bgcolor: '#f0fdf4', borderBottom: '1px solid #bbf7d0' }}>
-                    <Typography fontWeight={700} fontSize={14} color="#15803d">
-                      Comisiones del Día
-                    </Typography>
-                  </Box>
-                  <Box sx={{ p: 2 }}>
-                    <Box display="flex" justifyContent="space-between" mb={0.5}>
-                      <Typography variant="body2" color="text.secondary">Accesorios</Typography>
-                      <Typography variant="body2" fontWeight={600}>${comisionDerechaAcc.toFixed(2)}</Typography>
-                    </Box>
-                    <Box display="flex" justifyContent="space-between" mb={0.5}>
-                      <Typography variant="body2" color="text.secondary">Teléfonos</Typography>
-                      <Typography variant="body2" fontWeight={600}>${comisionDerechaTel.toFixed(2)}</Typography>
-                    </Box>
-                    <Divider sx={{ my: 1 }} />
-                    <Box display="flex" justifyContent="space-between">
-                      <Typography fontWeight={700}>Total Comisionado</Typography>
-                      <Typography fontWeight={700} color="success.main">
-                        ${(comisionDerechaAcc + comisionDerechaTel).toFixed(2)}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-              )}
-            </>
-          )}
-        </Grid>
-      </Grid>
+      {/* 8 ── Botón Enviar Corte ─────────────────────────────────────────── */}
+      {!bloqueado ? (
+        <Button
+          variant="contained" size="large" fullWidth
+          sx={{ py: 2, fontWeight: 700, fontSize: '1rem', bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' } }}
+          onClick={() => enviarCorte(false)} disabled={loadingEnviar}
+        >
+          {loadingEnviar ? 'Enviando...' : 'ENVIAR CORTE DEL DÍA'}
+        </Button>
+      ) : (
+        <Alert severity="success">Corte del día enviado y bloqueado.</Alert>
+      )}
+      {msgEnviar && (
+        <Alert
+          severity={msgEnviar.toLowerCase().includes('error') ? 'error' : 'success'}
+          sx={{ mt: 1.5 }}
+        >
+          {msgEnviar}
+        </Alert>
+      )}
     </Box>
   );
 };
