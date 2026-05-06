@@ -1613,18 +1613,18 @@ const FormularioVentaMultiple = () => {
   // ════════════════════════════════════════════════════════════════════════════
 
   // ── Agrupación para Resumen del Día ─────────────────────────────────────────
-  type GrupoVenta = { producto: string; precio: number; cantidad: number; total: number };
+  type GrupoVenta = { producto: string; precio: number; cantidad: number; total: number; tipo_venta?: string };
 
   const agrupar = (lista: Venta[]): GrupoVenta[] => {
     const map = new Map<string, GrupoVenta>();
     lista.filter((v) => !v.cancelada).forEach((v) => {
-      const key = `${v.producto}||${v.precio_unitario}`;
+      const key = `${v.producto}||${v.precio_unitario}||${v.tipo_venta || ''}`;
       const prev = map.get(key);
       if (prev) {
         prev.cantidad += v.cantidad;
         prev.total    += v.total;
       } else {
-        map.set(key, { producto: v.producto, precio: v.precio_unitario, cantidad: v.cantidad, total: v.total });
+        map.set(key, { producto: v.producto, precio: v.precio_unitario, cantidad: v.cantidad, total: v.total, tipo_venta: v.tipo_venta });
       }
     });
     return Array.from(map.values()).sort((a, b) => a.producto.localeCompare(b.producto));
@@ -1705,6 +1705,7 @@ const FormularioVentaMultiple = () => {
                 <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={{ ...tdStyle, fontWeight: 600 }}>
                     {g.cantidad}× {g.producto}
+                    {g.tipo_venta && <span style={{ fontWeight: 400, color: '#64748b' }}> — {g.tipo_venta}</span>}
                   </td>
                   <td style={{ ...tdStyle, color: '#64748b' }}>${g.precio.toFixed(2)}</td>
                   <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 700, color: '#15803d' }}>
