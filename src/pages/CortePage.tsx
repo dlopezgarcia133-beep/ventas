@@ -7,6 +7,7 @@ import {
   CircularProgress,
   Divider,
   FormControl,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
@@ -20,6 +21,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
+import SimCardIcon from '@mui/icons-material/SimCard';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import PersonIcon from '@mui/icons-material/Person';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import { Grid } from '@mui/material';
 import axios from 'axios';
 import { obtenerRolDesdeToken } from '../components/Token';
@@ -613,6 +622,16 @@ const CortePage = () => {
   // ─────────────────────────────────────────────────────────────────────────
   const capitalize = (s: string) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '—';
 
+  const lightFieldSx = {
+    '& .MuiInputLabel-root': { color: '#777' },
+    '& .MuiInputLabel-root.Mui-focused': { color: '#FF6600' },
+    '& .MuiOutlinedInput-root': { color: '#222', bgcolor: '#fafafa' },
+    '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.18)' },
+    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#FF6600' },
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#FF6600' },
+    '& .MuiInputAdornment-root svg': { color: '#FF6600' },
+  };
+
   return (
     <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 720, mx: 'auto' }}>
 
@@ -773,115 +792,158 @@ const CortePage = () => {
       </Paper>
 
       {/* 5 ── Montos Adicionales ────────────────────────────────────────── */}
-      <Paper sx={{ p: 2.5, mb: 2 }}>
-        <Typography variant="h6" fontWeight={700} gutterBottom>Montos Adicionales</Typography>
-        <Divider sx={{ mb: 1 }} />
-        <TextField label="Recargas Telcel" type="number" value={recargas}
-          onChange={(e) => setRecargas(e.target.value)}
-          fullWidth margin="dense" size="small" disabled={soloLectura} inputProps={{ min: 0 }} />
-        <TextField label="Recargas YOVOY" type="number" value={transporte}
-          onChange={(e) => setTransporte(e.target.value)}
-          fullWidth margin="dense" size="small" disabled={soloLectura} inputProps={{ min: 0 }} />
-        <TextField label="Centro de Pagos" type="number" value={otros}
-          onChange={(e) => setOtros(e.target.value)}
-          fullWidth margin="dense" size="small" disabled={soloLectura} inputProps={{ min: 0 }} />
-        <TextField label="Recargas Mayoreo" type="number" value={mayoreo}
-          onChange={(e) => setMayoreo(e.target.value)}
-          fullWidth margin="dense" size="small" disabled={soloLectura} inputProps={{ min: 0 }} />
-        <TextField label="Para quién (Mayoreo)" value={mayoreoParaQuien}
-          onChange={(e) => setMayoreoParaQuien(e.target.value)}
-          fullWidth margin="dense" size="small" disabled={soloLectura} />
-        <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mt: 1.5, px: 0.5 }}>
-          <Typography variant="body2" fontWeight={600} color="text.secondary">Total Montos Adicionales</Typography>
-          <Typography fontWeight={700} color="#f97316">${totalAdicional.toFixed(2)}</Typography>
+      <Paper sx={{ mb: 2, overflow: 'hidden', borderRadius: 2, bgcolor: 'white' }}>
+        <Box sx={{ px: 2, py: 1.5, bgcolor: '#FF6600', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <MonetizationOnIcon sx={{ color: 'white', fontSize: 20 }} />
+          <Typography fontWeight={700} fontSize={15} color="white" letterSpacing={0.3}>
+            MONTOS ADICIONALES
+          </Typography>
         </Box>
-        {msgRecargas && (
-          <Alert severity={msgRecargas.toLowerCase().includes('error') ? 'error' : 'success'} sx={{ mt: 1 }}>
-            {msgRecargas}
-          </Alert>
-        )}
-        {esHoy && !corteEnviado && (
-          <Button variant="outlined" fullWidth sx={{ mt: 1.5 }}
-            onClick={guardarRecargas} disabled={loadingRecargas}>
-            {loadingRecargas ? 'Guardando...' : 'GUARDAR RECARGAS'}
-          </Button>
-        )}
+        <Box sx={{ p: 2 }}>
+          <TextField label="Recargas Telcel" type="number" value={recargas}
+            onChange={(e) => setRecargas(e.target.value)}
+            fullWidth margin="dense" size="small" disabled={soloLectura}
+            inputProps={{ min: 0 }}
+            InputProps={{ startAdornment: <InputAdornment position="start"><PhoneAndroidIcon fontSize="small" /></InputAdornment> }}
+            sx={lightFieldSx} />
+          <TextField label="Recargas YOVOY" type="number" value={transporte}
+            onChange={(e) => setTransporte(e.target.value)}
+            fullWidth margin="dense" size="small" disabled={soloLectura}
+            inputProps={{ min: 0 }}
+            InputProps={{ startAdornment: <InputAdornment position="start"><SimCardIcon fontSize="small" /></InputAdornment> }}
+            sx={lightFieldSx} />
+          <TextField label="Centro de Pagos" type="number" value={otros}
+            onChange={(e) => setOtros(e.target.value)}
+            fullWidth margin="dense" size="small" disabled={soloLectura}
+            inputProps={{ min: 0 }}
+            InputProps={{ startAdornment: <InputAdornment position="start"><AccountBalanceIcon fontSize="small" /></InputAdornment> }}
+            sx={{ ...lightFieldSx, mb: 0.5 }} />
+
+          {/* Mayoreo — grupo visual diferenciado */}
+          <Box sx={{ border: '1.5px solid #FFD1A9', borderRadius: 2, p: 1.5, mt: 1, mb: 1, bgcolor: '#fff8f3' }}>
+            <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#FF6600', letterSpacing: 0.5, mb: 0.5 }}>
+              RECARGAS MAYOREO
+            </Typography>
+            <TextField label="Cantidad" type="number" value={mayoreo}
+              onChange={(e) => setMayoreo(e.target.value)}
+              fullWidth margin="dense" size="small" disabled={soloLectura}
+              inputProps={{ min: 0 }}
+              InputProps={{ startAdornment: <InputAdornment position="start"><LocalOfferIcon fontSize="small" /></InputAdornment> }}
+              sx={lightFieldSx} />
+            <TextField label="Para quién" value={mayoreoParaQuien}
+              onChange={(e) => setMayoreoParaQuien(e.target.value)}
+              fullWidth margin="dense" size="small" disabled={soloLectura}
+              InputProps={{ startAdornment: <InputAdornment position="start"><PersonIcon fontSize="small" /></InputAdornment> }}
+              sx={lightFieldSx} />
+          </Box>
+
+          {/* Total destacado */}
+          <Box sx={{ bgcolor: '#fff3e0', border: '1px solid #FFD1A9', borderRadius: 2, px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+            <Typography fontWeight={600} color="#cc4400" fontSize={13}>Total Montos Adicionales</Typography>
+            <Typography fontWeight={800} color="#FF6600" fontSize={22}>${totalAdicional.toFixed(2)}</Typography>
+          </Box>
+
+          {msgRecargas && (
+            <Alert severity={msgRecargas.toLowerCase().includes('error') ? 'error' : 'success'} sx={{ mb: 1 }}>
+              {msgRecargas}
+            </Alert>
+          )}
+          {esHoy && !corteEnviado && (
+            <Button variant="contained" fullWidth
+              sx={{ bgcolor: '#FF6600', color: 'white', fontWeight: 700, fontSize: 14, py: 1.5, borderRadius: 2, '&:hover': { bgcolor: '#cc4400' } }}
+              onClick={guardarRecargas} disabled={loadingRecargas}>
+              {loadingRecargas ? 'Guardando...' : 'GUARDAR RECARGAS'}
+            </Button>
+          )}
+        </Box>
       </Paper>
 
       {/* 6 ── Salida de Efectivo ─────────────────────────────────────────── */}
-      <Paper sx={{ p: 2.5, mb: 2 }}>
-        <Typography variant="h6" fontWeight={700} gutterBottom>Salida de Efectivo</Typography>
-        <Divider sx={{ mb: 1 }} />
-        <TextField label="Monto de salida" type="number" value={salidaEfectivo}
-          onChange={(e) => setSalidaEfectivo(e.target.value)}
-          fullWidth margin="dense" size="small" disabled={soloLectura} inputProps={{ min: 0 }} />
-        <TextField label="Nota" value={notaSalida}
-          onChange={(e) => setNotaSalida(e.target.value)}
-          fullWidth margin="dense" size="small" multiline rows={2} disabled={soloLectura} />
-        {msgSalida && (
-          <Alert severity={msgSalida.toLowerCase().includes('error') ? 'error' : 'success'} sx={{ mt: 1 }}>
-            {msgSalida}
-          </Alert>
-        )}
-        {esHoy && !corteEnviado && (
-          <Button variant="outlined" fullWidth sx={{ mt: 1.5 }}
-            onClick={guardarSalida} disabled={loadingSalida}>
-            {loadingSalida ? 'Guardando...' : 'GUARDAR SALIDA'}
-          </Button>
-        )}
+      <Paper sx={{ mb: 2, overflow: 'hidden', borderRadius: 2, bgcolor: 'white' }}>
+        <Box sx={{ px: 2, py: 1.5, bgcolor: '#b71c1c', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <TrendingDownIcon sx={{ color: 'white', fontSize: 20 }} />
+          <Typography fontWeight={700} fontSize={15} color="white" letterSpacing={0.3}>
+            SALIDA DE EFECTIVO
+          </Typography>
+        </Box>
+        <Box sx={{ p: 2 }}>
+          <TextField label="Monto de salida" type="number" value={salidaEfectivo}
+            onChange={(e) => setSalidaEfectivo(e.target.value)}
+            fullWidth margin="dense" size="small" disabled={soloLectura}
+            inputProps={{ min: 0 }}
+            InputProps={{ startAdornment: <InputAdornment position="start"><TrendingDownIcon fontSize="small" sx={{ color: '#b71c1c' }} /></InputAdornment> }}
+            sx={{ ...lightFieldSx, '& .MuiInputAdornment-root svg': { color: '#b71c1c' } }} />
+          <TextField label="Nota" value={notaSalida}
+            onChange={(e) => setNotaSalida(e.target.value)}
+            fullWidth margin="dense" size="small" multiline rows={2} disabled={soloLectura}
+            sx={lightFieldSx} />
+          {msgSalida && (
+            <Alert severity={msgSalida.toLowerCase().includes('error') ? 'error' : 'success'} sx={{ mt: 1, mb: 1 }}>
+              {msgSalida}
+            </Alert>
+          )}
+          {esHoy && !corteEnviado && (
+            <Button variant="contained" fullWidth
+              sx={{ bgcolor: '#FF6600', color: 'white', fontWeight: 700, fontSize: 14, py: 1.5, borderRadius: 2, mt: 1, '&:hover': { bgcolor: '#cc4400' } }}
+              onClick={guardarSalida} disabled={loadingSalida}>
+              {loadingSalida ? 'Guardando...' : 'GUARDAR SALIDA'}
+            </Button>
+          )}
+        </Box>
       </Paper>
 
       {/* 7 ── Totales Finales ────────────────────────────────────────────── */}
-      <Paper sx={{ p: 2.5, mb: 2 }}>
-        <Typography variant="h6" fontWeight={700} gutterBottom>Totales Finales</Typography>
-        <Divider sx={{ mb: 2 }} />
+      <Paper sx={{ mb: 2, overflow: 'hidden', borderRadius: 2, bgcolor: 'white' }}>
+        <Box sx={{ px: 2, py: 1.5, bgcolor: '#1a2744', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ReceiptLongIcon sx={{ color: '#FF6600', fontSize: 20 }} />
+          <Typography fontWeight={700} fontSize={15} color="white" letterSpacing={0.3}>
+            TOTALES FINALES
+          </Typography>
+        </Box>
 
-        <Table size="small" sx={{ borderCollapse: 'collapse', width: '100%' }}>
+        <Table size="small" sx={{ tableLayout: 'fixed', width: '100%' }}>
           <TableHead>
-            <TableRow>
-              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, fontWeight: 700 }}>
-                CONCEPTO
-              </TableCell>
-              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, fontWeight: 700, color: '#f97316' }}>
-                EFECTIVO
-              </TableCell>
-              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, fontWeight: 700, color: '#f97316' }}>
-                TARJETA
-              </TableCell>
+            <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+              <TableCell sx={{ fontWeight: 700, fontSize: 11, color: '#555', border: 'none', py: 1, pl: 2, width: '44%', letterSpacing: 0.5 }}>CONCEPTO</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700, fontSize: 11, color: '#FF6600', border: 'none', py: 1, width: '28%', letterSpacing: 0.5 }}>EFECTIVO</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700, fontSize: 11, color: '#FF6600', border: 'none', py: 1, pr: 2, width: '28%', letterSpacing: 0.5 }}>TARJETA</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            <TableRow>
-              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>ACCESORIOS</TableCell>
-              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>${ef_acc.toFixed(2)}</TableCell>
-              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>${ta_acc.toFixed(2)}</TableCell>
+            <TableRow sx={{ bgcolor: 'white' }}>
+              <TableCell sx={{ fontSize: 13, border: 'none', py: 1, pl: 2, color: '#333' }}>Accesorios</TableCell>
+              <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 1, color: '#222' }}>${ef_acc.toFixed(2)}</TableCell>
+              <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 1, pr: 2, color: '#222' }}>${ta_acc.toFixed(2)}</TableCell>
             </TableRow>
-            <TableRow>
-              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>TELÉFONOS</TableCell>
-              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>${ef_tel.toFixed(2)}</TableCell>
-              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>${ta_tel.toFixed(2)}</TableCell>
+            <TableRow sx={{ bgcolor: '#fafafa' }}>
+              <TableCell sx={{ fontSize: 13, border: 'none', py: 1, pl: 2, color: '#333' }}>Teléfonos</TableCell>
+              <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 1, color: '#222' }}>${ef_tel.toFixed(2)}</TableCell>
+              <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 1, pr: 2, color: '#222' }}>${ta_tel.toFixed(2)}</TableCell>
             </TableRow>
-            <TableRow>
-              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>RECARGAS</TableCell>
-              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>${totalAdicional.toFixed(2)}</TableCell>
-              <TableCell align="center" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, color: 'text.secondary' }}>—</TableCell>
+            <TableRow sx={{ bgcolor: 'white' }}>
+              <TableCell sx={{ fontSize: 13, border: 'none', py: 1, pl: 2, color: '#333' }}>Recargas</TableCell>
+              <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 1, color: '#222' }}>${totalAdicional.toFixed(2)}</TableCell>
+              <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 1, pr: 2, color: '#aaa' }}>—</TableCell>
             </TableRow>
-            <TableRow>
-              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>SALIDAS</TableCell>
-              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, color: sal > 0 ? 'error.main' : 'inherit' }}>
+            <TableRow sx={{ bgcolor: '#fafafa' }}>
+              <TableCell sx={{ fontSize: 13, border: 'none', py: 1, pl: 2, color: '#333' }}>Salidas</TableCell>
+              <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 1, color: sal > 0 ? '#d32f2f' : '#222' }}>
                 {sal > 0 ? `-$${sal.toFixed(2)}` : `$${sal.toFixed(2)}`}
               </TableCell>
-              <TableCell align="center" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, color: 'text.secondary' }}>—</TableCell>
+              <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 1, pr: 2, color: '#aaa' }}>—</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1.2, fontWeight: 700 }}>TOTAL EFECTIVO</TableCell>
-              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1.2, fontWeight: 800, color: 'success.main', fontSize: 16 }}>${total_efectivo_final.toFixed(2)}</TableCell>
-              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1.2 }} />
+              <TableCell colSpan={3} sx={{ border: 'none', p: 0, borderTop: '2px solid #eee' }} />
             </TableRow>
-            <TableRow>
-              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1.2, fontWeight: 700 }}>TOTAL TARJETA</TableCell>
-              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1.2 }} />
-              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1.2, fontWeight: 800, color: '#f97316', fontSize: 16 }}>${total_tarjeta.toFixed(2)}</TableCell>
+            <TableRow sx={{ bgcolor: '#e8f5e9' }}>
+              <TableCell sx={{ fontWeight: 700, fontSize: 13, border: 'none', py: 1.5, pl: 2, color: '#2e7d32' }}>TOTAL EFECTIVO</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 800, fontSize: 20, border: 'none', py: 1.5, color: '#2e7d32' }}>${total_efectivo_final.toFixed(2)}</TableCell>
+              <TableCell sx={{ border: 'none', bgcolor: '#e8f5e9' }} />
+            </TableRow>
+            <TableRow sx={{ bgcolor: '#fff3e0' }}>
+              <TableCell sx={{ fontWeight: 700, fontSize: 13, border: 'none', py: 1.5, pl: 2, color: '#FF6600' }}>TOTAL TARJETA</TableCell>
+              <TableCell sx={{ border: 'none', bgcolor: '#fff3e0' }} />
+              <TableCell align="right" sx={{ fontWeight: 800, fontSize: 20, border: 'none', py: 1.5, pr: 2, color: '#FF6600' }}>${total_tarjeta.toFixed(2)}</TableCell>
             </TableRow>
           </TableBody>
         </Table>
