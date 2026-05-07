@@ -408,6 +408,8 @@ const CortePage = () => {
     const params = new URLSearchParams({ fecha_inicio: fecha, fecha_fin: fecha });
     if (moduloId) params.append('modulo_id', String(moduloId));
     try {
+      console.log('CHIPS URL:', `/dashboard/chips?fecha_inicio=${fecha}&fecha_fin=${fecha}&modulo_id=${moduloId}`);
+      console.log('MODULO ID:', moduloId);
       const res = await fetch(`${API}/dashboard/chips?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
