@@ -688,14 +688,24 @@ const CortePage = () => {
               <thead>
                 <tr>
                   <th style={thStyle}>Descripción</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Precio</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Cantidad</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
                 </tr>
               </thead>
               <tbody>
-                {ventasDerechaAcc.map((v) => (
-                  <tr key={v.id}>
-                    <td style={{ ...tdStyle, maxWidth: 300 }}>{v.producto}</td>
-                    <td style={tdR}>${getTotal(v).toFixed(2)}</td>
+                {Object.values(
+                  ventasDerechaAcc.reduce((acc: Record<string, { producto: string; precio: number; cantidad: number; total: number }>, v) => {
+                    const key = `${v.producto}||${getTotal(v)}`;
+                    if (!acc[key]) acc[key] = { producto: v.producto, precio: getTotal(v), cantidad: 0, total: 0 };
+                    acc[key].cantidad += v.cantidad || 1;
+                    acc[key].total += getTotal(v);
+                    return acc;
+                  }, {})
+                ).map((g) => (
+                  <tr key={g.producto + g.precio}>
+                    <td style={{ ...tdStyle, maxWidth: 300 }}>{g.producto}</td>
+                    <td style={tdR}>{g.cantidad}</td>
+                    <td style={tdR}>${g.total.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
