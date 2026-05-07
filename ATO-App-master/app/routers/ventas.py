@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta
 from typing import List, Optional
 from zoneinfo import ZoneInfo
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
-from sqlalchemy import func
+from sqlalchemy import func, text
 from sqlalchemy.orm import Session, joinedload
 from app import models, schemas
 from app.database import get_db
@@ -667,50 +667,52 @@ def pagar_comisiones(
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(get_current_user)
 ):
-    no_encontrados = []
-    pagados = 0
+    try:
+        no_encontrados = []
+        pagados = 0
 
-    # Limpiar números de entrada
-    numeros_limpios = [n.strip().split()[0] for n in data.numeros]
+        # Limpiar números de entrada
+        numeros_limpios = [n.strip().split()[0] for n in data.numeros]
 
-    # Consultar comisiones en Supabase de una sola vez
-    comision_telcel: dict[str, float] = {}
-    sb = _get_supabase()
-    if sb:
-        try:
-            res = sb.from_("comisiones_telcel") \
-                .select("numero, comision_telcel") \
-                .in_("numero", numeros_limpios) \
-                .execute()
-            for row in (res.data or []):
-                comision_telcel[str(row["numero"]).strip()] = float(row["comision_telcel"] or 0)
-        except Exception:
-            pass  # Si Supabase falla, continuamos sin escribir el monto
+        # Consultar comisiones directamente vía SQLAlchemy
+        comision_telcel: dict[str, float] = {}
+        if numeros_limpios:
+            rows = db.execute(
+                text("SELECT numero, comision_telcel FROM comisiones_telcel WHERE numero = ANY(:nums)"),
+                {"nums": numeros_limpios}
+            ).fetchall()
+            for row in rows:
+                comision_telcel[str(row[0]).strip()] = float(row[1] or 0)
 
-    for numero in data.numeros:
-        numero_limpio = numero.strip().split()[0]
-        candidatos = db.query(models.VentaChip).filter(
-            models.VentaChip.numero_telefono.like(f"{numero_limpio}%")
-        ).all()
-        chip = next(
-            (c for c in candidatos if c.numero_telefono.strip().split()[0] == numero_limpio),
-            None
-        )
-        if chip is None:
-            no_encontrados.append(numero)
-        else:
-            chip.validado = True
-            chip.comision_pagada = True
-            chip.comision = comision_telcel.get(numero_limpio, chip.comision or 0)
-            pagados += 1
+        for numero in data.numeros:
+            numero_limpio = numero.strip().split()[0]
+            candidatos = db.query(models.VentaChip).filter(
+                models.VentaChip.numero_telefono.like(f"{numero_limpio}%")
+            ).all()
+            chip = next(
+                (c for c in candidatos if c.numero_telefono.strip().split()[0] == numero_limpio),
+                None
+            )
+            if chip is None:
+                no_encontrados.append(numero)
+            else:
+                chip.validado = True
+                chip.comision_pagada = True
+                chip.comision = comision_telcel.get(numero_limpio, chip.comision or 0)
+                pagados += 1
 
-    db.commit()
-    return {"pagados": pagados, "no_encontrados": no_encontrados}
+        db.commit()
+        return {"pagados": pagados, "no_encontrados": no_encontrados}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error interno: {type(e).__name__}: {str(e)}")
 
 
 @router.get("/venta_chips", response_model=list[schemas.VentaChipResponse])
 def obtener_ventas_chips(
-    empleado_id: Optional[int] = None, 
+    empleado_id: Optional[int] = None,
+    modulo_nombre: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(get_current_user)
 ):
@@ -1071,12 +1073,12 @@ def corte_general(
     # ACCESORIOS
     efectivo_productos = sum(
         v.total for v in ventas_productos
-        if v.metodo_pago == "efectivo" and not v.cancelada
+        if (v.metodo_pago or "").lower() == "efectivo" and not v.cancelada
     )
 
     tarjeta_productos = sum(
         v.total for v in ventas_productos
-        if v.metodo_pago == "tarjeta" and not v.cancelada
+        if (v.metodo_pago or "").lower() == "tarjeta" and not v.cancelada
     )
 
     def total_tel(v):
@@ -1085,13 +1087,13 @@ def corte_general(
     efectivo_tel = sum(
         total_tel(v)
         for v in ventas_telefonos
-        if v.metodo_pago == "efectivo" and not v.cancelada
+        if (v.metodo_pago or "").lower() == "efectivo" and not v.cancelada
     )
 
     tarjeta_tel = sum(
         total_tel(v)
         for v in ventas_telefonos
-        if v.metodo_pago == "tarjeta" and not v.cancelada
+        if (v.metodo_pago or "").lower() == "tarjeta" and not v.cancelada
     )
 
     total_efectivo = efectivo_productos + efectivo_tel
@@ -1249,9 +1251,133 @@ def crear_corte(
     return nuevo_corte
 
 
+@router.get("/cortes/hoy", response_model=Optional[schemas.CorteDiaResponse])
+def obtener_corte_hoy(
+    fecha: Optional[date] = Query(None),
+    user: models.Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    target = fecha or date.today()
+    return db.query(models.CorteDia).filter(
+        models.CorteDia.fecha == target,
+        models.CorteDia.modulo_id == user.modulo_id
+    ).first()
 
-    
-    
+
+@router.patch("/cortes/hoy/recargas", response_model=schemas.CorteDiaResponse)
+def guardar_recargas(
+    data: schemas.RecargasUpdate,
+    user: models.Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    hoy = date.today()
+    corte = db.query(models.CorteDia).filter(
+        models.CorteDia.fecha == hoy,
+        models.CorteDia.modulo_id == user.modulo_id
+    ).first()
+    if corte and corte.enviado:
+        raise HTTPException(status_code=400, detail="El corte ya fue enviado y no se puede modificar")
+    if not corte:
+        corte = models.CorteDia(fecha=hoy, modulo_id=user.modulo_id)
+        db.add(corte)
+    corte.adicional_recargas = data.adicional_recargas
+    corte.adicional_transporte = data.adicional_transporte
+    corte.adicional_otros = data.adicional_otros
+    corte.adicional_mayoreo = data.adicional_mayoreo
+    corte.adicional_mayoreo_para = data.adicional_mayoreo_para
+    db.commit()
+    db.refresh(corte)
+    return corte
+
+
+@router.patch("/cortes/hoy/salida", response_model=schemas.CorteDiaResponse)
+def guardar_salida(
+    data: schemas.SalidaUpdate,
+    user: models.Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    hoy = date.today()
+    corte = db.query(models.CorteDia).filter(
+        models.CorteDia.fecha == hoy,
+        models.CorteDia.modulo_id == user.modulo_id
+    ).first()
+    if corte and corte.enviado:
+        raise HTTPException(status_code=400, detail="El corte ya fue enviado y no se puede modificar")
+    if not corte:
+        corte = models.CorteDia(fecha=hoy, modulo_id=user.modulo_id)
+        db.add(corte)
+    corte.salida_efectivo = data.salida_efectivo
+    corte.nota_salida = data.nota_salida
+    db.commit()
+    db.refresh(corte)
+    return corte
+
+
+@router.post("/cortes/hoy/enviar", response_model=schemas.CorteDiaResponse)
+def enviar_corte_hoy(
+    user: models.Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if user.rol != "encargado":
+        raise HTTPException(status_code=403, detail="Solo los encargados pueden enviar cortes")
+    if not user.modulo_id:
+        raise HTTPException(status_code=400, detail="El encargado no tiene módulo asignado")
+
+    hoy = date.today()
+    corte = db.query(models.CorteDia).filter(
+        models.CorteDia.fecha == hoy,
+        models.CorteDia.modulo_id == user.modulo_id
+    ).first()
+    if corte and corte.enviado:
+        raise HTTPException(status_code=400, detail="El corte ya fue enviado")
+
+    ventas = db.query(models.Venta).filter(
+        func.date(models.Venta.fecha) == hoy,
+        models.Venta.modulo_id == user.modulo_id,
+        models.Venta.cancelada == False
+    ).all()
+
+    ventas_acc = [v for v in ventas if v.tipo_producto == "accesorios"]
+    ventas_tel = [v for v in ventas if v.tipo_producto == "telefono"]
+
+    def _tot_tel(v): return (v.precio_unitario or 0) * (v.cantidad or 1)
+
+    ef_acc = sum(v.total for v in ventas_acc if v.metodo_pago == "efectivo")
+    ta_acc = sum(v.total for v in ventas_acc if v.metodo_pago == "tarjeta")
+    ef_tel = sum(_tot_tel(v) for v in ventas_tel if v.metodo_pago == "efectivo")
+    ta_tel = sum(_tot_tel(v) for v in ventas_tel if v.metodo_pago == "tarjeta")
+
+    total_ef = ef_acc + ef_tel
+    total_ta = ta_acc + ta_tel
+    total_sis = total_ef + total_ta
+
+    adic = (
+        (corte.adicional_recargas or 0) +
+        (corte.adicional_transporte or 0) +
+        (corte.adicional_otros or 0)
+    ) if corte else 0
+    total_gen = total_sis + adic
+
+    if not corte:
+        corte = models.CorteDia(fecha=hoy, modulo_id=user.modulo_id)
+        db.add(corte)
+
+    corte.accesorios_efectivo = ef_acc
+    corte.accesorios_tarjeta = ta_acc
+    corte.accesorios_total = ef_acc + ta_acc
+    corte.telefonos_efectivo = ef_tel
+    corte.telefonos_tarjeta = ta_tel
+    corte.telefonos_total = ef_tel + ta_tel
+    corte.total_efectivo = total_ef
+    corte.total_tarjeta = total_ta
+    corte.total_sistema = total_sis
+    corte.total_general = total_gen
+    corte.enviado = True
+
+    db.commit()
+    db.refresh(corte)
+    return corte
+
 
 # vamos a modificar ya no se que es 
 

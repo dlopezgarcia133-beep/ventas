@@ -240,6 +240,13 @@ class CorteDia(Base):
     adicional_recargas = Column(Float, default=0)
     adicional_transporte = Column(Float, default=0)
     adicional_otros = Column(Float, default=0)
+    adicional_mayoreo = Column(Float, default=0)
+    adicional_mayoreo_para = Column(String, nullable=True)
+
+    # 🔹 Salida y estado
+    salida_efectivo = Column(Float, default=0)
+    nota_salida = Column(String, nullable=True)
+    enviado = Column(Boolean, default=False)
 
     modulo = relationship("Modulo", back_populates="cortes")
     
@@ -325,6 +332,7 @@ class NominaHistorial(Base):
     pago_horas_extra = Column(Float, default=0)
     sanciones = Column(Float, default=0)
     comisiones_pendientes = Column(Float, default=0)
+    horas_faltantes = Column(Float, default=0)
     total_pagar = Column(Float, default=0)
     guardado_at = Column(DateTime(timezone=True), server_default=func.now())
 

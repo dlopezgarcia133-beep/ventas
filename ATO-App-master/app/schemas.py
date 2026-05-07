@@ -407,6 +407,43 @@ class CorteDiaCreate(BaseModel):
     adicional_otros: float
     
 
+class RecargasUpdate(BaseModel):
+    adicional_recargas: float = 0
+    adicional_transporte: float = 0
+    adicional_otros: float = 0
+    adicional_mayoreo: float = 0
+    adicional_mayoreo_para: Optional[str] = None
+
+class SalidaUpdate(BaseModel):
+    salida_efectivo: float = 0
+    nota_salida: Optional[str] = None
+
+class CorteDiaResponse(BaseModel):
+    id: int
+    fecha: date
+    modulo_id: int
+    accesorios_efectivo: float
+    accesorios_tarjeta: float
+    accesorios_total: float
+    telefonos_efectivo: float
+    telefonos_tarjeta: float
+    telefonos_total: float
+    total_efectivo: float
+    total_tarjeta: float
+    total_sistema: float
+    total_general: float
+    adicional_recargas: float
+    adicional_transporte: float
+    adicional_otros: float
+    adicional_mayoreo: float
+    adicional_mayoreo_para: Optional[str]
+    salida_efectivo: float
+    nota_salida: Optional[str]
+    enviado: bool
+
+    class Config:
+        from_attributes = True
+
 class ComisionInput(BaseModel):
     comision_manual: Optional[float] = None
     
@@ -480,6 +517,9 @@ class NominaEmpleadoResponse(BaseModel):
     usuario_id: int
     username: str
     comisiones: float
+    comisiones_accesorios: float = 0
+    comisiones_telefonos: float = 0
+    comisiones_chips: float = 0
     sueldo_base: float
     horas_extra: int
     pago_hora_extra: float
@@ -521,11 +561,12 @@ class NominaHistorialEmpleado(BaseModel):
     comisiones_chips: float = 0
     comisiones_total: float = 0
     sueldo_base: float = 0
-    horas_extra: int = 0
+    horas_extra: float = 0
     precio_hora_extra: float = 0
     pago_horas_extra: float = 0
     sanciones: float = 0
     comisiones_pendientes: float = 0
+    horas_faltantes: float = 0
     total_pagar: float = 0
 
 
@@ -553,11 +594,12 @@ class NominaHistorialResponse(BaseModel):
     comisiones_chips: float
     comisiones_total: float
     sueldo_base: float
-    horas_extra: int
+    horas_extra: float
     precio_hora_extra: float
     pago_horas_extra: float
     sanciones: float
     comisiones_pendientes: float
+    horas_faltantes: float = 0
     total_pagar: float
     guardado_at: datetime
 
