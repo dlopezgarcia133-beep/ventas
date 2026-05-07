@@ -425,6 +425,9 @@ const CortePage = () => {
   useEffect(() => {
     if (rolToken !== 'encargado') return;
     const cargar = async () => {
+      console.log('LS KEYS:', Object.keys(localStorage));
+      console.log('LS USER:', localStorage.getItem('usuario'));
+      console.log('LS MODULO:', localStorage.getItem('modulo_id'), localStorage.getItem('modulo'));
       const [resRes, userRes] = await Promise.all([
         axios.get(`${API}/ventas/corte-general`, config).catch(() => ({ data: null })),
         axios.get(`${API}/auth/usuarios/me`, config).catch(() => ({ data: null })),
