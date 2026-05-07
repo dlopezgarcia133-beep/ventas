@@ -335,7 +335,6 @@ const CortePage = () => {
 
   // ── encargado left-column state ───────────────────────────────────────────
   const [resumen, setResumen] = useState<any>(null);
-  const [moduloId, setModuloId] = useState<number | null>(null);
   const [chips, setChips] = useState<any[]>([]);
   const [corteHoy, setCorteHoy] = useState<any>(null);
   const [recargas, setRecargas] = useState('');
@@ -385,9 +384,14 @@ const CortePage = () => {
   const subtotal_efectivo = ef_acc + ef_tel + totalAdicional;
   const total_efectivo_final = subtotal_efectivo - sal;
 
-  const chipsCount = chips.reduce((s: number, c: any) => s + (c.total || 0), 0);
-  const chipsPorTipo = chips.reduce((acc: Record<string, number>, c: any) => {
-    acc[c.tipo || 'Sin tipo'] = c.total || 0;
+  const chipsHoy = chips.filter((c) => {
+    const fecha = c.fecha ? String(c.fecha).slice(0, 10) : '';
+    return fecha === fechaDerecha && !c.cancelada;
+  });
+  const chipsCount = chipsHoy.length;
+  const chipsPorTipo = chipsHoy.reduce((acc: Record<string, number>, c: any) => {
+    const tipo = c.tipo_chip || 'Sin tipo';
+    acc[tipo] = (acc[tipo] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
@@ -404,18 +408,15 @@ const CortePage = () => {
     }
   };
 
-  // ── fetch chips from dashboard endpoint ──────────────────────────────────
-  const fetchChips = async (fecha: string, moduloId?: number | null) => {
-    const params = new URLSearchParams({ fecha_inicio: fecha, fecha_fin: fecha });
-    if (moduloId) params.append('modulo_id', String(moduloId));
+  // ── fetch chips by module name ────────────────────────────────────────────
+  const fetchChips = async () => {
+    const moduloNombre = localStorage.getItem('modulo') || '';
     try {
-      console.log('CHIPS URL:', `/dashboard/chips?fecha_inicio=${fecha}&fecha_fin=${fecha}&modulo_id=${moduloId}`);
-      console.log('MODULO ID:', moduloId);
-      const res = await fetch(`${API}/dashboard/chips?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await axios.get(`${API}/ventas/venta_chips`, {
+        ...config,
+        params: moduloNombre ? { modulo_nombre: moduloNombre } : {},
       });
-      const json = await res.json();
-      setChips(Array.isArray(json) ? json : []);
+      setChips(Array.isArray(res.data) ? res.data : []);
     } catch {
       setChips([]);
     }
@@ -425,17 +426,9 @@ const CortePage = () => {
   useEffect(() => {
     if (rolToken !== 'encargado') return;
     const cargar = async () => {
-      console.log('LS KEYS:', Object.keys(localStorage));
-      console.log('LS USER:', localStorage.getItem('usuario'));
-      console.log('LS MODULO:', localStorage.getItem('modulo_id'), localStorage.getItem('modulo'));
-      const [resRes, userRes] = await Promise.all([
-        axios.get(`${API}/ventas/corte-general`, config).catch(() => ({ data: null })),
-        axios.get(`${API}/auth/usuarios/me`, config).catch(() => ({ data: null })),
-      ]);
+      const resRes = await axios.get(`${API}/ventas/corte-general`, config).catch(() => ({ data: null }));
       setResumen(resRes.data);
-      const mid = userRes.data?.modulo?.id ?? null;
-      setModuloId(mid);
-      await fetchChips(HOY, mid);
+      fetchChips();
     };
     cargar();
     fetchVentasDerecha(HOY);
@@ -600,7 +593,7 @@ const CortePage = () => {
           <Button
             variant="contained" size="small"
             sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' }, whiteSpace: 'nowrap' }}
-            onClick={() => { fetchVentasDerecha(fechaDerecha); fetchChips(fechaDerecha, moduloId); }}
+            onClick={() => { fetchVentasDerecha(fechaDerecha); fetchChips(); }}
           >
             Buscar
           </Button>
@@ -614,7 +607,7 @@ const CortePage = () => {
             Chips del día ({chipsCount})
           </Typography>
         </Box>
-        {chips.length === 0 ? (
+        {chipsHoy.length === 0 ? (
           <Box px={2} py={2}>
             <Typography variant="body2" color="text.secondary">Sin chips para esta fecha</Typography>
           </Box>
