@@ -438,21 +438,21 @@ const CortePage = () => {
       const res = await axios.get(`${API}/ventas/cortes/hoy`, { ...config, params: { fecha } });
       const c = res.data;
       setCorteHoy(c);
-      setRecargas(c?.adicional_recargas != null ? String(c.adicional_recargas) : '');
-      setTransporte(c?.adicional_transporte != null ? String(c.adicional_transporte) : '');
-      setOtros(c?.adicional_otros != null ? String(c.adicional_otros) : '');
-      setMayoreo(c?.adicional_mayoreo != null ? String(c.adicional_mayoreo) : '');
+      setRecargas(c?.adicional_recargas != null ? String(c.adicional_recargas) : '0');
+      setTransporte(c?.adicional_transporte != null ? String(c.adicional_transporte) : '0');
+      setOtros(c?.adicional_otros != null ? String(c.adicional_otros) : '0');
+      setMayoreo(c?.adicional_mayoreo != null ? String(c.adicional_mayoreo) : '0');
       setMayoreoParaQuien(c?.adicional_mayoreo_para || '');
-      setSalidaEfectivo(c?.salida_efectivo != null ? String(c.salida_efectivo) : '');
+      setSalidaEfectivo(c?.salida_efectivo != null ? String(c.salida_efectivo) : '0');
       setNotaSalida(c?.nota_salida || '');
     } catch {
       setCorteHoy(null);
-      setRecargas('');
-      setTransporte('');
-      setOtros('');
-      setMayoreo('');
+      setRecargas('0');
+      setTransporte('0');
+      setOtros('0');
+      setMayoreo('0');
       setMayoreoParaQuien('');
-      setSalidaEfectivo('');
+      setSalidaEfectivo('0');
       setNotaSalida('');
     }
   };
