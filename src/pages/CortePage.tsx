@@ -645,6 +645,7 @@ const CortePage = () => {
               <thead>
                 <tr>
                   <th style={thStyle}>Modelo</th>
+                  <th style={thStyle}>Tipo</th>
                   <th style={thStyle}>Método de pago</th>
                   <th style={{ ...thStyle, textAlign: 'right' }}>Precio</th>
                 </tr>
@@ -652,8 +653,9 @@ const CortePage = () => {
               <tbody>
                 {ventasDerechaTel.map((v) => (
                   <tr key={v.id}>
-                    <td style={{ ...tdStyle, maxWidth: 260 }}>{v.producto}</td>
+                    <td style={{ ...tdStyle, maxWidth: 220 }}>{v.producto}</td>
                     <td style={tdStyle}>{capitalize(v.tipo_venta || '')}</td>
+                    <td style={tdStyle}>{capitalize(v.metodo_pago || '')}</td>
                     <td style={tdR}>${getTotal(v).toFixed(2)}</td>
                   </tr>
                 ))}
