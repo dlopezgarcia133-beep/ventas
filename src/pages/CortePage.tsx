@@ -423,20 +423,22 @@ const CortePage = () => {
       setNotaSalida(c?.nota_salida || '');
     } catch {
       setCorteHoy(null);
+      setRecargas('');
+      setTransporte('');
+      setOtros('');
+      setSalidaEfectivo('');
+      setNotaSalida('');
     }
   };
 
   // ── fetch chips by module name ────────────────────────────────────────────
   const fetchChips = async () => {
     const moduloNombre = localStorage.getItem('modulo') || '';
-    console.log('MODULO NOMBRE:', localStorage.getItem('modulo'));
-    console.log('FECHA FILTRO:', fechaDerecha);
     try {
       const res = await axios.get(`${API}/ventas/venta_chips`, {
         ...config,
         params: moduloNombre ? { modulo_nombre: moduloNombre } : {},
       });
-      console.log('CHIPS RAW:', JSON.stringify(res.data?.slice(0, 3)));
       setChips(Array.isArray(res.data) ? res.data : []);
     } catch {
       setChips([]);
