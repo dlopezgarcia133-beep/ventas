@@ -689,6 +689,7 @@ const CortePage = () => {
                 <tr>
                   <th style={thStyle}>Descripción</th>
                   <th style={{ ...thStyle, textAlign: 'right' }}>Cantidad</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Precio Prom.</th>
                   <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
                 </tr>
               </thead>
@@ -703,8 +704,9 @@ const CortePage = () => {
                   }, {})
                 ).map((g) => (
                   <tr key={g.producto + g.precio}>
-                    <td style={{ ...tdStyle, maxWidth: 300 }}>{g.producto}</td>
+                    <td style={{ ...tdStyle, maxWidth: 260 }}>{g.producto}</td>
                     <td style={tdR}>{g.cantidad}</td>
+                    <td style={tdR}>${(g.total / g.cantidad).toFixed(2)}</td>
                     <td style={tdR}>${g.total.toFixed(2)}</td>
                   </tr>
                 ))}
