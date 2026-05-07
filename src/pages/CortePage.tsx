@@ -384,16 +384,11 @@ const CortePage = () => {
   const subtotal_efectivo = ef_acc + ef_tel + totalAdicional;
   const total_efectivo_final = subtotal_efectivo - sal;
 
-  const chipsHoy = chips.filter((c) => {
-    const fecha = c.fecha ? String(c.fecha).slice(0, 10) : '';
-    return fecha === fechaDerecha && !c.cancelada;
-  });
-  const chipsTotal = chipsHoy.reduce((s: number, c: any) => s + (c.monto_recarga || 0), 0);
-  const chipsPorTipo = chipsHoy.reduce((acc: Record<string, number>, c: any) => {
-    const tipo = c.tipo_chip || 'Sin tipo';
-    acc[tipo] = (acc[tipo] || 0) + 1;
+  const chipsCount = chips.reduce((s: number, c: any) => s + (c.total || 0), 0);
+  const chipsPorTipo = chips.reduce((acc: Record<string, number>, c: any) => {
+    acc[c.tipo || 'Sin tipo'] = c.total || 0;
     return acc;
-  }, {});
+  }, {} as Record<string, number>);
 
   // ── fetch ventas for right column ─────────────────────────────────────────
   const fetchVentasDerecha = async (fecha: string) => {
@@ -408,16 +403,28 @@ const CortePage = () => {
     }
   };
 
+  // ── fetch chips from dashboard endpoint ──────────────────────────────────
+  const fetchChips = async (fecha: string, moduloId?: number | null) => {
+    const params = new URLSearchParams({ fecha_inicio: fecha, fecha_fin: fecha });
+    if (moduloId) params.append('modulo_id', String(moduloId));
+    try {
+      const res = await fetch(`${API}/dashboard/chips?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const json = await res.json();
+      setChips(Array.isArray(json) ? json : []);
+    } catch {
+      setChips([]);
+    }
+  };
+
   // ── on mount: load all encargado data ─────────────────────────────────────
   useEffect(() => {
     if (rolToken !== 'encargado') return;
     const cargar = async () => {
-      const [resRes, chipsRes] = await Promise.all([
-        axios.get(`${API}/ventas/corte-general`, config).catch(() => ({ data: null })),
-        axios.get(`${API}/ventas/venta_chips`, config).catch(() => ({ data: [] })),
-      ]);
+      const resRes = await axios.get(`${API}/ventas/corte-general`, config).catch(() => ({ data: null }));
       setResumen(resRes.data);
-      setChips(chipsRes.data ?? []);
+      await fetchChips(HOY, resRes.data?.modulo_id);
     };
     cargar();
     fetchVentasDerecha(HOY);
@@ -582,7 +589,7 @@ const CortePage = () => {
           <Button
             variant="contained" size="small"
             sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' }, whiteSpace: 'nowrap' }}
-            onClick={() => fetchVentasDerecha(fechaDerecha)}
+            onClick={() => { fetchVentasDerecha(fechaDerecha); fetchChips(fechaDerecha, resumen?.modulo_id); }}
           >
             Buscar
           </Button>
@@ -593,10 +600,10 @@ const CortePage = () => {
       <Paper sx={{ mb: 2, overflow: 'hidden' }}>
         <Box sx={{ px: 2, py: 1.5, bgcolor: '#f0fdf4', borderBottom: '1px solid #bbf7d0' }}>
           <Typography fontWeight={700} fontSize={14} color="#15803d">
-            Chips del día ({chipsHoy.length})
+            Chips del día ({chipsCount})
           </Typography>
         </Box>
-        {chipsHoy.length === 0 ? (
+        {chips.length === 0 ? (
           <Box px={2} py={2}>
             <Typography variant="body2" color="text.secondary">Sin chips para esta fecha</Typography>
           </Box>
@@ -620,7 +627,7 @@ const CortePage = () => {
             </Box>
             <Box sx={{ px: 2, py: 1.5, bgcolor: '#f0fdf4', borderTop: '2px solid #bbf7d0', display: 'flex', justifyContent: 'space-between' }}>
               <Typography variant="body2" fontWeight={700} color="#15803d">Total chips</Typography>
-              <Typography variant="body2" fontWeight={700} color="#15803d">{chipsHoy.length}</Typography>
+              <Typography variant="body2" fontWeight={700} color="#15803d">{chipsCount}</Typography>
             </Box>
           </>
         )}
