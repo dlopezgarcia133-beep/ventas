@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Box,
@@ -341,7 +341,7 @@ const CorteVisual = ({ corte, ventas }: { corte: any; ventas: any[] }) => {
 
 // ─── CortePage ────────────────────────────────────────────────────────────────
 const CortePage = () => {
-  const rolToken = obtenerRolDesdeToken();
+  const rolToken = useMemo(() => obtenerRolDesdeToken(), []);
   const token = localStorage.getItem('token');
   const config = { headers: { Authorization: `Bearer ${token}` } };
   const API = process.env.REACT_APP_API_URL;
