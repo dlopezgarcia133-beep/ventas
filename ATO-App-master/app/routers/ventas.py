@@ -714,26 +714,40 @@ def obtener_ventas_chips(
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(get_current_user)
 ):
-    if current_user.rol == "admin":
+    print(f"[chips] usuario={current_user.username} rol={current_user.rol!r} modulo_id={current_user.modulo_id}")
+    if current_user.is_admin:
         query = db.query(models.VentaChip)
         if empleado_id is not None:
             query = query.filter(models.VentaChip.empleado_id == empleado_id)
-        return query.all()
-    elif current_user.rol == "encargado":
-        from sqlalchemy.orm import aliased
-        EmpleadoUser = aliased(models.Usuario)
-        ModuloAlias = aliased(models.Modulo)
-        EncargadoModulo = aliased(models.Modulo)
-        return (
-            db.query(models.VentaChip)
-            .join(EmpleadoUser, models.VentaChip.empleado_id == EmpleadoUser.id)
-            .join(ModuloAlias, EmpleadoUser.modulo_id == ModuloAlias.id)
-            .join(EncargadoModulo, EncargadoModulo.id == current_user.modulo_id)
-            .filter(ModuloAlias.nombre == EncargadoModulo.nombre)
+        resultado = query.all()
+        print(f"[chips] admin -> {len(resultado)} chips")
+        return resultado
+    elif str(current_user.rol).replace("RolEnum.", "") == "encargado" or current_user.rol == "encargado":
+        encargado_modulo = db.query(models.Modulo).filter(models.Modulo.id == current_user.modulo_id).first()
+        if not encargado_modulo:
+            print(f"[chips] encargado sin modulo -> devolviendo []")
+            return []
+        nombre_modulo = encargado_modulo.nombre
+        print(f"[chips] encargado modulo_nombre={nombre_modulo!r}")
+        empleados_modulo = (
+            db.query(models.Usuario.id)
+            .join(models.Modulo, models.Usuario.modulo_id == models.Modulo.id)
+            .filter(models.Modulo.nombre == nombre_modulo)
             .all()
         )
+        ids_empleados = [e.id for e in empleados_modulo]
+        print(f"[chips] empleados en modulo {nombre_modulo!r}: {ids_empleados}")
+        resultado = (
+            db.query(models.VentaChip)
+            .filter(models.VentaChip.empleado_id.in_(ids_empleados))
+            .all()
+        )
+        print(f"[chips] encargado -> {len(resultado)} chips")
+        return resultado
     else:
-        return db.query(models.VentaChip).filter(models.VentaChip.empleado_id == current_user.id).all()
+        resultado = db.query(models.VentaChip).filter(models.VentaChip.empleado_id == current_user.id).all()
+        print(f"[chips] asesor -> {len(resultado)} chips")
+        return resultado
 
 
 @router.put("/venta_chips/{id}/validar", response_model=schemas.VentaChipResponse)
