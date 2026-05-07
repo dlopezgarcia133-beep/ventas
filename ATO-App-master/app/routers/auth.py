@@ -2,6 +2,7 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app import models
@@ -105,15 +106,17 @@ def hashear_contraseña(password: str):
 
 
 # ------------------- SETUP TEMPORAL -------------------
+class _CrearDireccionBody(BaseModel):
+    username: str
+    password: str
+
 @router.post("/crear-usuario-direccion")
 def crear_usuario_direccion(
-    body: dict,
+    body: _CrearDireccionBody,
     db: Session = Depends(get_db)
 ):
-    username = body.get("username")
-    password = body.get("password")
-    if not username or not password:
-        raise HTTPException(status_code=400, detail="username y password requeridos")
+    username = body.username
+    password = body.password
     existente = db.query(models.Usuario).filter(models.Usuario.username == username).first()
     if existente:
         raise HTTPException(status_code=400, detail="El usuario ya existe")
