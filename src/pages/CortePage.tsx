@@ -434,6 +434,11 @@ const CortePage = () => {
 
   // ── fetch corte for a given date and populate fields ─────────────────────
   const fetchCorte = async (fecha: string) => {
+    setRecargas('0');
+    setTransporte('0');
+    setOtros('0');
+    setMayoreo('0');
+    setMayoreoParaQuien('');
     try {
       const res = await axios.get(`${API}/ventas/cortes/hoy`, { ...config, params: { fecha } });
       const c = res.data;
