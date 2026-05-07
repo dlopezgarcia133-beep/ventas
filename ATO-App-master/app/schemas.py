@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 from pydantic import BaseModel
 from datetime import date, datetime, time
 from app.models import EstadoTraspasoEnum, RolEnum
@@ -28,6 +28,7 @@ class RolEnum(str, Enum):
     admin = "admin"
     encargado = "encargado"
     asesor = "asesor"
+    direccion = "direccion"
 
 # 👉 Este es el que se usa para crear un usuario
 class UsuarioCreate(BaseModel):
@@ -605,3 +606,8 @@ class NominaHistorialResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class DireccionCorteResponse(CorteDiaResponse):
+    chips_count: int = 0
+    chips_por_tipo: Dict[str, int] = {}
