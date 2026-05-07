@@ -439,6 +439,8 @@ const CortePage = () => {
     setOtros('0');
     setMayoreo('0');
     setMayoreoParaQuien('');
+    setSalidaEfectivo('0');
+    setNotaSalida('');
     try {
       const res = await axios.get(`${API}/ventas/cortes/hoy`, { ...config, params: { fecha } });
       const c = res.data;
