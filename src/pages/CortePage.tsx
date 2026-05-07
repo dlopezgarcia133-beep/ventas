@@ -186,7 +186,8 @@ const CorteVisual = ({ corte, ventas }: { corte: any; ventas: any[] }) => {
   const totalAdicional =
     (corte.adicional_recargas || 0) +
     (corte.adicional_transporte || 0) +
-    (corte.adicional_otros || 0);
+    (corte.adicional_otros || 0) +
+    (corte.adicional_mayoreo || 0);
   const totalFinal = (corte.total_sistema || 0) + totalAdicional;
   const totalEfectivo =
     (corte.accesorios_efectivo || 0) + (corte.telefonos_efectivo || 0) + totalAdicional;
@@ -232,6 +233,10 @@ const CorteVisual = ({ corte, ventas }: { corte: any; ventas: any[] }) => {
             <Typography>Recargas Telcel: ${(corte.adicional_recargas || 0).toFixed(2)}</Typography>
             <Typography>Recargas YOVOY: ${(corte.adicional_transporte || 0).toFixed(2)}</Typography>
             <Typography>Centro de Pagos: ${(corte.adicional_otros || 0).toFixed(2)}</Typography>
+            <Typography>
+              Recargas Mayoreo: ${(corte.adicional_mayoreo || 0).toFixed(2)}
+              {corte.adicional_mayoreo_para ? ` — ${corte.adicional_mayoreo_para}` : ''}
+            </Typography>
             {(corte.salida_efectivo || 0) > 0 && (
               <Typography sx={{ mt: 1 }} color="warning.main">
                 Salida Efectivo: ${(corte.salida_efectivo || 0).toFixed(2)}
@@ -345,6 +350,8 @@ const CortePage = () => {
   const [recargas, setRecargas] = useState('');
   const [transporte, setTransporte] = useState('');
   const [otros, setOtros] = useState('');
+  const [mayoreo, setMayoreo] = useState('');
+  const [mayoreoParaQuien, setMayoreoParaQuien] = useState('');
   const [salidaEfectivo, setSalidaEfectivo] = useState('');
   const [notaSalida, setNotaSalida] = useState('');
   const [msgRecargas, setMsgRecargas] = useState('');
@@ -385,7 +392,8 @@ const CortePage = () => {
   const rec = parseFloat(recargas || '0');
   const trans = parseFloat(transporte || '0');
   const otr = parseFloat(otros || '0');
-  const totalAdicional = rec + trans + otr;
+  const may = parseFloat(mayoreo || '0');
+  const totalAdicional = rec + trans + otr + may;
   const sal = parseFloat(salidaEfectivo || '0');
   const total_tarjeta = ta_acc + ta_tel;
   const subtotal_efectivo = ef_acc + ef_tel + totalAdicional;
@@ -424,6 +432,8 @@ const CortePage = () => {
       setRecargas(c?.adicional_recargas != null ? String(c.adicional_recargas) : '');
       setTransporte(c?.adicional_transporte != null ? String(c.adicional_transporte) : '');
       setOtros(c?.adicional_otros != null ? String(c.adicional_otros) : '');
+      setMayoreo(c?.adicional_mayoreo != null ? String(c.adicional_mayoreo) : '');
+      setMayoreoParaQuien(c?.adicional_mayoreo_para || '');
       setSalidaEfectivo(c?.salida_efectivo != null ? String(c.salida_efectivo) : '');
       setNotaSalida(c?.nota_salida || '');
     } catch {
@@ -431,6 +441,8 @@ const CortePage = () => {
       setRecargas('');
       setTransporte('');
       setOtros('');
+      setMayoreo('');
+      setMayoreoParaQuien('');
       setSalidaEfectivo('');
       setNotaSalida('');
     }
@@ -507,7 +519,7 @@ const CortePage = () => {
     try {
       const res = await axios.patch(
         `${API}/ventas/cortes/hoy/recargas`,
-        { adicional_recargas: rec, adicional_transporte: trans, adicional_otros: otr },
+        { adicional_recargas: rec, adicional_transporte: trans, adicional_otros: otr, adicional_mayoreo: may, adicional_mayoreo_para: mayoreoParaQuien || null },
         config,
       );
       setCorteHoy(res.data);
@@ -773,6 +785,16 @@ const CortePage = () => {
         <TextField label="Centro de Pagos" type="number" value={otros}
           onChange={(e) => setOtros(e.target.value)}
           fullWidth margin="dense" size="small" disabled={soloLectura} inputProps={{ min: 0 }} />
+        <TextField label="Recargas Mayoreo" type="number" value={mayoreo}
+          onChange={(e) => setMayoreo(e.target.value)}
+          fullWidth margin="dense" size="small" disabled={soloLectura} inputProps={{ min: 0 }} />
+        <TextField label="Para quién (Mayoreo)" value={mayoreoParaQuien}
+          onChange={(e) => setMayoreoParaQuien(e.target.value)}
+          fullWidth margin="dense" size="small" disabled={soloLectura} />
+        <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mt: 1.5, px: 0.5 }}>
+          <Typography variant="body2" fontWeight={600} color="text.secondary">Total Montos Adicionales</Typography>
+          <Typography fontWeight={700} color="#f97316">${totalAdicional.toFixed(2)}</Typography>
+        </Box>
         {msgRecargas && (
           <Alert severity={msgRecargas.toLowerCase().includes('error') ? 'error' : 'success'} sx={{ mt: 1 }}>
             {msgRecargas}
