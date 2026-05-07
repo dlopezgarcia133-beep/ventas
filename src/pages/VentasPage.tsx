@@ -10,6 +10,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 import Grid from '@mui/material/Grid';
 import axios from 'axios';
 import { InventarioGeneral, ProductoEnVenta, Usuario, Venta, VentaChip } from '../Types';
@@ -1879,7 +1880,7 @@ const FormularioVentaMultiple = () => {
       {/* ── Pestañas superiores (encargado) ── */}
       <Tabs
         value={tabAsesor}
-        onChange={(_, v) => setTabAsesor(v)}
+        onChange={(_, v) => { if (v === 3) { navigate('/corte'); return; } setTabAsesor(v); }}
         variant="scrollable"
         scrollButtons="auto"
         sx={{ mb: 2, borderBottom: '1px solid #e2e8f0', minHeight: 44 }}
@@ -1900,6 +1901,12 @@ const FormularioVentaMultiple = () => {
           iconPosition="start"
           label="COMISIONES"
           sx={{ fontWeight: 700, minHeight: 44, fontSize: { xs: 11, sm: 13 }, px: { xs: 1, sm: 2 }, '&.Mui-selected': { color: '#f97316' } }}
+        />
+        <Tab
+          icon={<AssessmentIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />}
+          iconPosition="start"
+          label="CORTE"
+          sx={{ fontWeight: 700, minHeight: 44, fontSize: { xs: 11, sm: 13 }, px: { xs: 1, sm: 2 }, '&.Mui-selected': { color: '#f97316' }, color: '#f97316' }}
         />
       </Tabs>
 
@@ -2024,12 +2031,6 @@ const FormularioVentaMultiple = () => {
           </Box>
         </Paper>
 
-        <Box mt={1.5}>
-          <Button variant="contained" onClick={() => navigate('/corte')}
-            sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' } }}>
-            Corte
-          </Button>
-        </Box>
       </Grid>
     </Grid>
     )} {/* fin Tab TICKET */}
