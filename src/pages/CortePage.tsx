@@ -839,20 +839,18 @@ const CortePage = () => {
               <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>${ef_tel.toFixed(2)}</TableCell>
               <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>${ta_tel.toFixed(2)}</TableCell>
             </TableRow>
-            {totalAdicional > 0 && (
-              <TableRow>
-                <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>RECARGAS</TableCell>
-                <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>${totalAdicional.toFixed(2)}</TableCell>
-                <TableCell align="center" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, color: 'text.secondary' }}>—</TableCell>
-              </TableRow>
-            )}
-            {sal > 0 && (
-              <TableRow>
-                <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>SALIDAS</TableCell>
-                <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, color: 'warning.main' }}>-${sal.toFixed(2)}</TableCell>
-                <TableCell align="center" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, color: 'text.secondary' }}>—</TableCell>
-              </TableRow>
-            )}
+            <TableRow>
+              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>RECARGAS</TableCell>
+              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>${totalAdicional.toFixed(2)}</TableCell>
+              <TableCell align="center" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, color: 'text.secondary' }}>—</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>SALIDAS</TableCell>
+              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, color: sal > 0 ? 'error.main' : 'inherit' }}>
+                {sal > 0 ? `-$${sal.toFixed(2)}` : `$${sal.toFixed(2)}`}
+              </TableCell>
+              <TableCell align="center" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, color: 'text.secondary' }}>—</TableCell>
+            </TableRow>
             <TableRow>
               <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1.2, fontWeight: 700 }}>TOTAL EFECTIVO</TableCell>
               <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1.2, fontWeight: 800, color: 'success.main', fontSize: 16 }}>${total_efectivo_final.toFixed(2)}</TableCell>
