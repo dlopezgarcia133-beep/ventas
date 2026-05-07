@@ -12,6 +12,11 @@ import {
   Paper,
   Select,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from '@mui/material';
@@ -809,52 +814,57 @@ const CortePage = () => {
         <Typography variant="h6" fontWeight={700} gutterBottom>Totales Finales</Typography>
         <Divider sx={{ mb: 2 }} />
 
-        <Box display="flex" justifyContent="space-between" mb={0.5}>
-          <Typography variant="body2" color="text.secondary">Accesorios — Efectivo</Typography>
-          <Typography>${ef_acc.toFixed(2)}</Typography>
-        </Box>
-        <Box display="flex" justifyContent="space-between" mb={1.5}>
-          <Typography variant="body2" color="text.secondary">Accesorios — Tarjeta</Typography>
-          <Typography>${ta_acc.toFixed(2)}</Typography>
-        </Box>
-
-        <Box display="flex" justifyContent="space-between" mb={0.5}>
-          <Typography variant="body2" color="text.secondary">Teléfonos — Efectivo</Typography>
-          <Typography>${ef_tel.toFixed(2)}</Typography>
-        </Box>
-        <Box display="flex" justifyContent="space-between" mb={1.5}>
-          <Typography variant="body2" color="text.secondary">Teléfonos — Tarjeta</Typography>
-          <Typography>${ta_tel.toFixed(2)}</Typography>
-        </Box>
-
-        {totalAdicional > 0 && (
-          <Box display="flex" justifyContent="space-between" mb={1.5}>
-            <Typography variant="body2" color="text.secondary">Recargas (Telcel + YOVOY + C. Pagos)</Typography>
-            <Typography>${totalAdicional.toFixed(2)}</Typography>
-          </Box>
-        )}
-
-        {sal > 0 && (
-          <Box display="flex" justifyContent="space-between" mb={1.5}>
-            <Typography variant="body2" color="warning.main">Salida de Efectivo</Typography>
-            <Typography color="warning.main">-${sal.toFixed(2)}</Typography>
-          </Box>
-        )}
-
-        <Divider sx={{ my: 1.5 }} />
-
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-          <Typography fontWeight={700} fontSize={15}>Total Tarjeta</Typography>
-          <Typography fontWeight={800} color="primary.main" fontSize={18}>
-            ${total_tarjeta.toFixed(2)}
-          </Typography>
-        </Box>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography fontWeight={700} fontSize={15}>Total Efectivo Final</Typography>
-          <Typography fontWeight={800} color="success.main" fontSize={20}>
-            ${total_efectivo_final.toFixed(2)}
-          </Typography>
-        </Box>
+        <Table size="small" sx={{ borderCollapse: 'collapse', width: '100%' }}>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, fontWeight: 700 }}>
+                CONCEPTO
+              </TableCell>
+              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, fontWeight: 700, color: '#f97316' }}>
+                EFECTIVO
+              </TableCell>
+              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, fontWeight: 700, color: '#f97316' }}>
+                TARJETA
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow>
+              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>ACCESORIOS</TableCell>
+              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>${ef_acc.toFixed(2)}</TableCell>
+              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>${ta_acc.toFixed(2)}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>TELÉFONOS</TableCell>
+              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>${ef_tel.toFixed(2)}</TableCell>
+              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>${ta_tel.toFixed(2)}</TableCell>
+            </TableRow>
+            {totalAdicional > 0 && (
+              <TableRow>
+                <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>RECARGAS</TableCell>
+                <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>${totalAdicional.toFixed(2)}</TableCell>
+                <TableCell align="center" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, color: 'text.secondary' }}>—</TableCell>
+              </TableRow>
+            )}
+            {sal > 0 && (
+              <TableRow>
+                <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1 }}>SALIDAS</TableCell>
+                <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, color: 'warning.main' }}>-${sal.toFixed(2)}</TableCell>
+                <TableCell align="center" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1, color: 'text.secondary' }}>—</TableCell>
+              </TableRow>
+            )}
+            <TableRow>
+              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1.2, fontWeight: 700 }}>TOTAL EFECTIVO</TableCell>
+              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1.2, fontWeight: 800, color: 'success.main', fontSize: 16 }}>${total_efectivo_final.toFixed(2)}</TableCell>
+              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1.2 }} />
+            </TableRow>
+            <TableRow>
+              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1.2, fontWeight: 700 }}>TOTAL TARJETA</TableCell>
+              <TableCell sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1.2 }} />
+              <TableCell align="right" sx={{ border: '1px solid rgba(255,255,255,0.15)', py: 1.2, fontWeight: 800, color: '#f97316', fontSize: 16 }}>${total_tarjeta.toFixed(2)}</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </Paper>
 
       {/* 8 ── Botón Enviar Corte ─────────────────────────────────────────── */}
