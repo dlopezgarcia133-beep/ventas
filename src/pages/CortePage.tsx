@@ -376,6 +376,7 @@ const CortePage = () => {
   const [loadingVentas, setLoadingVentas] = useState(false);
 
   const midnightRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchingFechaRef = useRef('');
   const esHoy = fechaDerecha === HOY;
   const corteEnviado = corteHoy?.enviado === true;
   const soloLectura = !esHoy || corteEnviado;
@@ -434,6 +435,7 @@ const CortePage = () => {
 
   // ── fetch corte for a given date and populate fields ─────────────────────
   const fetchCorte = async (fecha: string) => {
+    fetchingFechaRef.current = fecha;
     setRecargas('0');
     setTransporte('0');
     setOtros('0');
@@ -443,6 +445,7 @@ const CortePage = () => {
     setNotaSalida('');
     try {
       const res = await axios.get(`${API}/ventas/cortes/hoy`, { ...config, params: { fecha } });
+      if (fetchingFechaRef.current !== fecha) return;
       const c = res.data;
       setCorteHoy(c);
       setRecargas(c?.adicional_recargas != null ? String(c.adicional_recargas) : '0');
@@ -453,6 +456,7 @@ const CortePage = () => {
       setSalidaEfectivo(c?.salida_efectivo != null ? String(c.salida_efectivo) : '0');
       setNotaSalida(c?.nota_salida || '');
     } catch {
+      if (fetchingFechaRef.current !== fecha) return;
       setCorteHoy(null);
       setRecargas('0');
       setTransporte('0');
