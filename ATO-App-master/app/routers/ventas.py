@@ -1253,15 +1253,18 @@ def crear_corte(
 
 @router.get("/cortes/hoy", response_model=Optional[schemas.CorteDiaResponse])
 def obtener_corte_hoy(
-    fecha: Optional[date] = Query(None),
+    fecha: Optional[date] = Query(default=None),
     user: models.Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    target = fecha or date.today()
-    return db.query(models.CorteDia).filter(
+    target = fecha if fecha is not None else date.today()
+    print(f"[cortes/hoy] fecha_param={fecha!r} target={target!r} modulo_id={user.modulo_id}")
+    resultado = db.query(models.CorteDia).filter(
         models.CorteDia.fecha == target,
         models.CorteDia.modulo_id == user.modulo_id
     ).first()
+    print(f"[cortes/hoy] resultado_fecha={getattr(resultado, 'fecha', None)!r}")
+    return resultado
 
 
 @router.patch("/cortes/hoy/recargas", response_model=schemas.CorteDiaResponse)
