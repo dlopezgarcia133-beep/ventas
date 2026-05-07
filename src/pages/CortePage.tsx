@@ -335,6 +335,7 @@ const CortePage = () => {
 
   // ── encargado left-column state ───────────────────────────────────────────
   const [resumen, setResumen] = useState<any>(null);
+  const [moduloId, setModuloId] = useState<number | null>(null);
   const [chips, setChips] = useState<any[]>([]);
   const [corteHoy, setCorteHoy] = useState<any>(null);
   const [recargas, setRecargas] = useState('');
@@ -424,9 +425,14 @@ const CortePage = () => {
   useEffect(() => {
     if (rolToken !== 'encargado') return;
     const cargar = async () => {
-      const resRes = await axios.get(`${API}/ventas/corte-general`, config).catch(() => ({ data: null }));
+      const [resRes, userRes] = await Promise.all([
+        axios.get(`${API}/ventas/corte-general`, config).catch(() => ({ data: null })),
+        axios.get(`${API}/auth/usuarios/me`, config).catch(() => ({ data: null })),
+      ]);
       setResumen(resRes.data);
-      await fetchChips(HOY, resRes.data?.modulo_id);
+      const mid = userRes.data?.modulo?.id ?? null;
+      setModuloId(mid);
+      await fetchChips(HOY, mid);
     };
     cargar();
     fetchVentasDerecha(HOY);
@@ -591,7 +597,7 @@ const CortePage = () => {
           <Button
             variant="contained" size="small"
             sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' }, whiteSpace: 'nowrap' }}
-            onClick={() => { fetchVentasDerecha(fechaDerecha); fetchChips(fechaDerecha, resumen?.modulo_id); }}
+            onClick={() => { fetchVentasDerecha(fechaDerecha); fetchChips(fechaDerecha, moduloId); }}
           >
             Buscar
           </Button>
