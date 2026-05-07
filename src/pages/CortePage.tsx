@@ -355,7 +355,9 @@ const CortePage = () => {
   const [loadingVentas, setLoadingVentas] = useState(false);
 
   const midnightRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const bloqueado = corteHoy?.enviado === true;
+  const esHoy = fechaDerecha === HOY;
+  const corteEnviado = corteHoy?.enviado === true;
+  const soloLectura = !esHoy || corteEnviado;
 
   // ── derived: right column ────────────────────────────────────────────────
   const ventasDerechaAcc = ventasDerecha.filter(
@@ -408,6 +410,22 @@ const CortePage = () => {
     }
   };
 
+  // ── fetch corte for a given date and populate fields ─────────────────────
+  const fetchCorte = async (fecha: string) => {
+    try {
+      const res = await axios.get(`${API}/ventas/cortes/hoy`, { ...config, params: { fecha } });
+      const c = res.data;
+      setCorteHoy(c);
+      setRecargas(c?.adicional_recargas != null ? String(c.adicional_recargas) : '');
+      setTransporte(c?.adicional_transporte != null ? String(c.adicional_transporte) : '');
+      setOtros(c?.adicional_otros != null ? String(c.adicional_otros) : '');
+      setSalidaEfectivo(c?.salida_efectivo != null ? String(c.salida_efectivo) : '');
+      setNotaSalida(c?.nota_salida || '');
+    } catch {
+      setCorteHoy(null);
+    }
+  };
+
   // ── fetch chips by module name ────────────────────────────────────────────
   const fetchChips = async () => {
     const moduloNombre = localStorage.getItem('modulo') || '';
@@ -432,6 +450,7 @@ const CortePage = () => {
       const resRes = await axios.get(`${API}/ventas/corte-general`, config).catch(() => ({ data: null }));
       setResumen(resRes.data);
       fetchChips();
+      fetchCorte(HOY);
     };
     cargar();
     fetchVentasDerecha(HOY);
@@ -440,7 +459,7 @@ const CortePage = () => {
 
   // ── midnight auto-send ────────────────────────────────────────────────────
   useEffect(() => {
-    if (rolToken !== 'encargado' || bloqueado) return;
+    if (rolToken !== 'encargado' || corteEnviado) return;
     const ahora = new Date();
     const manana = new Date(ahora);
     manana.setDate(manana.getDate() + 1);
@@ -449,7 +468,7 @@ const CortePage = () => {
     midnightRef.current = setTimeout(() => enviarCorte(true), ms);
     return () => { if (midnightRef.current) clearTimeout(midnightRef.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bloqueado, rolToken]);
+  }, [corteEnviado, rolToken]);
 
   // ── admin/contador: modules ───────────────────────────────────────────────
   useEffect(() => {
@@ -581,7 +600,7 @@ const CortePage = () => {
       {/* Título */}
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
         <Typography variant="h5" fontWeight={700}>Corte del Día</Typography>
-        {bloqueado && <Chip label="ENVIADO" color="success" />}
+        {corteEnviado && <Chip label="ENVIADO" color="success" />}
       </Stack>
 
       {/* 1 ── Filtro de fecha ───────────────────────────────────────────── */}
@@ -596,7 +615,7 @@ const CortePage = () => {
           <Button
             variant="contained" size="small"
             sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' }, whiteSpace: 'nowrap' }}
-            onClick={() => { fetchVentasDerecha(fechaDerecha); fetchChips(); }}
+            onClick={() => { fetchVentasDerecha(fechaDerecha); fetchChips(); fetchCorte(fechaDerecha); }}
           >
             Buscar
           </Button>
@@ -740,19 +759,19 @@ const CortePage = () => {
         <Divider sx={{ mb: 1 }} />
         <TextField label="Recargas Telcel" type="number" value={recargas}
           onChange={(e) => setRecargas(e.target.value)}
-          fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }} />
+          fullWidth margin="dense" size="small" disabled={soloLectura} inputProps={{ min: 0 }} />
         <TextField label="Recargas YOVOY" type="number" value={transporte}
           onChange={(e) => setTransporte(e.target.value)}
-          fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }} />
+          fullWidth margin="dense" size="small" disabled={soloLectura} inputProps={{ min: 0 }} />
         <TextField label="Centro de Pagos" type="number" value={otros}
           onChange={(e) => setOtros(e.target.value)}
-          fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }} />
+          fullWidth margin="dense" size="small" disabled={soloLectura} inputProps={{ min: 0 }} />
         {msgRecargas && (
           <Alert severity={msgRecargas.toLowerCase().includes('error') ? 'error' : 'success'} sx={{ mt: 1 }}>
             {msgRecargas}
           </Alert>
         )}
-        {!bloqueado && (
+        {esHoy && !corteEnviado && (
           <Button variant="outlined" fullWidth sx={{ mt: 1.5 }}
             onClick={guardarRecargas} disabled={loadingRecargas}>
             {loadingRecargas ? 'Guardando...' : 'GUARDAR RECARGAS'}
@@ -766,16 +785,16 @@ const CortePage = () => {
         <Divider sx={{ mb: 1 }} />
         <TextField label="Monto de salida" type="number" value={salidaEfectivo}
           onChange={(e) => setSalidaEfectivo(e.target.value)}
-          fullWidth margin="dense" size="small" disabled={bloqueado} inputProps={{ min: 0 }} />
+          fullWidth margin="dense" size="small" disabled={soloLectura} inputProps={{ min: 0 }} />
         <TextField label="Nota" value={notaSalida}
           onChange={(e) => setNotaSalida(e.target.value)}
-          fullWidth margin="dense" size="small" multiline rows={2} disabled={bloqueado} />
+          fullWidth margin="dense" size="small" multiline rows={2} disabled={soloLectura} />
         {msgSalida && (
           <Alert severity={msgSalida.toLowerCase().includes('error') ? 'error' : 'success'} sx={{ mt: 1 }}>
             {msgSalida}
           </Alert>
         )}
-        {!bloqueado && (
+        {esHoy && !corteEnviado && (
           <Button variant="outlined" fullWidth sx={{ mt: 1.5 }}
             onClick={guardarSalida} disabled={loadingSalida}>
             {loadingSalida ? 'Guardando...' : 'GUARDAR SALIDA'}
@@ -837,7 +856,7 @@ const CortePage = () => {
       </Paper>
 
       {/* 8 ── Botón Enviar Corte ─────────────────────────────────────────── */}
-      {!bloqueado ? (
+      {esHoy && !corteEnviado ? (
         <Button
           variant="contained" size="large" fullWidth
           sx={{ py: 2, fontWeight: 700, fontSize: '1rem', bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' } }}
