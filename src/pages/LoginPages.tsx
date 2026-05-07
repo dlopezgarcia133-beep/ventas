@@ -34,11 +34,14 @@ const LoginPage: React.FC = () => {
 
       sessionStorage.removeItem("cadena_seleccionada");
 
-      const esCadenasAsesor =
-        modulo?.toLowerCase().includes("cadena") &&
-        rol?.toLowerCase().includes("asesor");
-
-      navegacion(esCadenasAsesor ? '/seleccionar-cadena' : '/ventas');
+      if (rol === "direccion") {
+        navegacion("/direccion");
+      } else {
+        const esCadenasAsesor =
+          modulo?.toLowerCase().includes("cadena") &&
+          rol?.toLowerCase().includes("asesor");
+        navegacion(esCadenasAsesor ? "/seleccionar-cadena" : "/ventas");
+      }
     } catch (err) {
       setError('Credenciales inválidas. Intenta nuevamente.');
     }

@@ -189,6 +189,12 @@ const Navbar = () => {
             </>
           )}
 
+          {rolToken === "direccion" && (
+            <Button sx={{ ...navBtnSx, color: "#f97316", fontWeight: 700 }} component={Link} to="/direccion">
+              Cortes
+            </Button>
+          )}
+
           <Button
             sx={{
               ...navBtnSx,

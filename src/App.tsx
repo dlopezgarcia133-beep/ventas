@@ -24,6 +24,7 @@ import SeleccionCadena from "./pages/SeleccionCadena";
 import TelcelPage from "./pages/TelcelPage";
 import CLineasPage from "./pages/CLineasPage";
 import EntradaMercancia from './pages/EntradaMercancia';
+import DireccionPage from './pages/DireccionPage';
 
 const RutaProtegida: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -56,6 +57,7 @@ const App: React.FC = () => {
     { path: '/telcel', element: <RutaProtegida><TelcelPage /></RutaProtegida> },
     { path: '/clineas', element: <RutaProtegida><CLineasPage /></RutaProtegida> },
     { path: '/entrada-mercancia', element: <RutaProtegida><EntradaMercancia/></RutaProtegida> },
+    { path: '/direccion', element: <RutaProtegida><DireccionPage /></RutaProtegida> },
   ]);
 
   return routes;
