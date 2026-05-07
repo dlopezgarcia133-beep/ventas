@@ -435,6 +435,7 @@ const CortePage = () => {
 
   // ── fetch corte for a given date and populate fields ─────────────────────
   const fetchCorte = async (fecha: string) => {
+    console.log('fetchCorte llamado con fecha:', fecha);
     fetchingFechaRef.current = fecha;
     setRecargas('0');
     setTransporte('0');
@@ -443,10 +444,13 @@ const CortePage = () => {
     setMayoreoParaQuien('');
     setSalidaEfectivo('0');
     setNotaSalida('');
+    console.log('reset hecho');
     try {
       const res = await axios.get(`${API}/ventas/cortes/hoy`, { ...config, params: { fecha } });
+      console.log('respuesta para fecha:', fecha, 'datos:', res.data);
       if (fetchingFechaRef.current !== fecha) return;
       const c = res.data;
+      console.log('seteando estados con datos de:', fecha);
       setCorteHoy(c);
       setRecargas(c?.adicional_recargas != null ? String(c.adicional_recargas) : '0');
       setTransporte(c?.adicional_transporte != null ? String(c.adicional_transporte) : '0');
