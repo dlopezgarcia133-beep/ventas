@@ -22,12 +22,11 @@ import {
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import SimCardIcon from '@mui/icons-material/SimCard';
-import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import axios from 'axios';
 
 const HOY = new Date().toLocaleDateString('en-CA');
 
+// ─── Style helpers (idénticos a CortePage) ───────────────────────────────────
 const thStyle: React.CSSProperties = {
   padding: 8,
   borderBottom: '1px solid #e2e8f0',
@@ -39,13 +38,11 @@ const thStyle: React.CSSProperties = {
 const tdStyle: React.CSSProperties = { padding: '6px 8px', borderBottom: '1px solid #e2e8f0' };
 const tdR: React.CSSProperties = { ...tdStyle, textAlign: 'right' };
 
-const ValorFila = ({ label, valor, color }: { label: string; valor: string | number; color?: string }) => (
-  <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.8, px: 1, borderBottom: '1px solid #f0f0f0' }}>
-    <Typography fontSize={13} color="#555">{label}</Typography>
-    <Typography fontSize={13} fontWeight={600} color={color || '#222'}>{valor}</Typography>
-  </Box>
-);
+const getTotal = (v: any) => v.total ?? (v.precio_unitario || 0) * (v.cantidad || 1);
 
+const capitalize = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '—');
+
+// ─── DireccionPage ────────────────────────────────────────────────────────────
 const DireccionPage: React.FC = () => {
   const token = localStorage.getItem('token');
   const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -88,37 +85,42 @@ const DireccionPage: React.FC = () => {
     }
   };
 
-  // ── computed from corte ──────────────────────────────────────────────────────
-  const ef_acc = corte?.accesorios_efectivo ?? 0;
-  const ta_acc = corte?.accesorios_tarjeta ?? 0;
-  const ef_tel = corte?.telefonos_efectivo ?? 0;
-  const ta_tel = corte?.telefonos_tarjeta ?? 0;
-  const rec = corte?.adicional_recargas ?? 0;
-  const trans = corte?.adicional_transporte ?? 0;
-  const otr = corte?.adicional_otros ?? 0;
-  const may = corte?.adicional_mayoreo ?? 0;
-  const totalAdicional = rec + trans + otr + may;
-  const sal = corte?.salida_efectivo ?? 0;
-  const total_efectivo_final = ef_acc + ef_tel + totalAdicional - sal;
-  const total_tarjeta = ta_acc + ta_tel;
+  // ── derived ──────────────────────────────────────────────────────────────────
+  const ventas: any[] = corte?.ventas ?? [];
+  const ventasAcc = ventas.filter((v) => v.tipo_producto === 'accesorios');
+  const ventasTel = ventas.filter((v) => v.tipo_producto === 'telefono');
 
-  const moduloNombre = modulos.find((m) => m.id === moduloId)?.nombre || '';
+  const ef_acc   = corte?.accesorios_efectivo ?? 0;
+  const ta_acc   = corte?.accesorios_tarjeta  ?? 0;
+  const ef_tel   = corte?.telefonos_efectivo  ?? 0;
+  const ta_tel   = corte?.telefonos_tarjeta   ?? 0;
+  const rec      = corte?.adicional_recargas  ?? 0;
+  const trans    = corte?.adicional_transporte ?? 0;
+  const otr      = corte?.adicional_otros     ?? 0;
+  const may      = corte?.adicional_mayoreo   ?? 0;
+  const totalAdicional = rec + trans + otr + may;
+  const sal      = corte?.salida_efectivo     ?? 0;
+  const subtotalAcc = ventasAcc.reduce((s: number, v: any) => s + getTotal(v), 0);
+  const subtotalTel = ventasTel.reduce((s: number, v: any) => s + getTotal(v), 0);
+  const total_efectivo_final = ef_acc + ef_tel + totalAdicional - sal;
+  const total_tarjeta        = ta_acc + ta_tel;
+
+  const moduloNombre = modulos.find((m) => m.id === moduloId)?.nombre ?? '';
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 720, mx: 'auto' }}>
 
-      {/* ── Título ──────────────────────────────────────────────────────── */}
-      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 3 }}>
-        <ReceiptLongIcon sx={{ color: '#f97316', fontSize: 28 }} />
-        <Typography variant="h5" fontWeight={700} color="white">
-          Revisión de Cortes
-        </Typography>
+      {/* ── Título ────────────────────────────────────────────────────────── */}
+      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
+        <Typography variant="h5" fontWeight={700}>Revisión de Corte</Typography>
+        {corte?.enviado && <Chip label="ENVIADO" color="success" />}
+        {corte && !corte.enviado && <Chip label="BORRADOR" color="warning" />}
       </Stack>
 
-      {/* ── Filtros ─────────────────────────────────────────────────────── */}
-      <Paper sx={{ p: 2, mb: 3 }}>
+      {/* ── Filtros ───────────────────────────────────────────────────────── */}
+      <Paper sx={{ p: 2, mb: 2 }}>
         <Stack spacing={1.5} direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }}>
-          <FormControl size="small" sx={{ minWidth: 180, flex: 1 }}>
+          <FormControl size="small" sx={{ flex: 1 }}>
             <InputLabel>Módulo</InputLabel>
             <Select
               value={moduloId}
@@ -132,54 +134,45 @@ const DireccionPage: React.FC = () => {
           </FormControl>
 
           <TextField
-            type="date"
-            label="Fecha"
-            size="small"
-            value={fecha}
+            type="date" size="small" label="Fecha" value={fecha}
             onChange={(e) => setFecha(e.target.value)}
             InputLabelProps={{ shrink: true }}
             sx={{ flex: 1 }}
           />
 
           <Button
-            variant="contained"
+            variant="contained" size="small"
             onClick={buscar}
             disabled={!moduloId || !fecha || loading}
-            sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' }, fontWeight: 700, whiteSpace: 'nowrap', px: 3 }}
+            sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' }, fontWeight: 700, whiteSpace: 'nowrap' }}
           >
-            {loading ? <CircularProgress size={20} sx={{ color: 'white' }} /> : 'BUSCAR'}
+            {loading ? <CircularProgress size={18} sx={{ color: 'white' }} /> : 'Buscar'}
           </Button>
         </Stack>
       </Paper>
 
-      {/* ── Estado vacío ──────────────────────────────────────────────────── */}
+      {/* ── Sin datos ─────────────────────────────────────────────────────── */}
       {sinCorte && !loading && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Sin corte registrado para esta fecha en el módulo seleccionado.
+          Sin corte registrado para <strong>{moduloNombre}</strong> el <strong>{fecha}</strong>.
         </Alert>
       )}
 
-      {/* ── Resultados ────────────────────────────────────────────────────── */}
       {corte && (
         <>
-          {/* Encabezado del corte */}
-          <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 2 }}>
-            <Typography fontWeight={700} fontSize={15} color="#ccc">
-              {moduloNombre} — {corte.fecha}
-            </Typography>
-            {corte.enviado && <Chip label="ENVIADO" color="success" size="small" />}
-            {!corte.enviado && <Chip label="BORRADOR" color="warning" size="small" />}
-          </Stack>
+          {/* Subtítulo */}
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {moduloNombre} — {corte.fecha}
+          </Typography>
 
-          {/* ── Chips ─────────────────────────────────────────────────────── */}
+          {/* ── 2 · Chips del día ───────────────────────────────────────── */}
           <Paper sx={{ mb: 2, overflow: 'hidden' }}>
-            <Box sx={{ px: 2, py: 1.5, bgcolor: '#f0fdf4', borderBottom: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: 1 }}>
-              <SimCardIcon sx={{ color: '#15803d', fontSize: 18 }} />
+            <Box sx={{ px: 2, py: 1.5, bgcolor: '#f0fdf4', borderBottom: '1px solid #bbf7d0' }}>
               <Typography fontWeight={700} fontSize={14} color="#15803d">
                 Chips del día ({corte.chips_count ?? 0})
               </Typography>
             </Box>
-            {(!corte.chips_por_tipo || Object.keys(corte.chips_por_tipo).length === 0) ? (
+            {!corte.chips_por_tipo || Object.keys(corte.chips_por_tipo).length === 0 ? (
               <Box px={2} py={2}>
                 <Typography variant="body2" color="text.secondary">Sin chips para esta fecha</Typography>
               </Box>
@@ -209,87 +202,170 @@ const DireccionPage: React.FC = () => {
             )}
           </Paper>
 
-          {/* ── Teléfonos ─────────────────────────────────────────────────── */}
+          {/* ── 3 · Teléfonos del día ───────────────────────────────────── */}
           <Paper sx={{ mb: 2, overflow: 'hidden' }}>
-            <Box sx={{ px: 2, py: 1.5, bgcolor: '#eff6ff', borderBottom: '1px solid #bfdbfe', display: 'flex', alignItems: 'center', gap: 1 }}>
-              <PhoneAndroidIcon sx={{ color: '#1d4ed8', fontSize: 18 }} />
-              <Typography fontWeight={700} fontSize={14} color="#1d4ed8">Teléfonos del día</Typography>
+            <Box sx={{ px: 2, py: 1.5, bgcolor: '#eff6ff', borderBottom: '1px solid #bfdbfe' }}>
+              <Typography fontWeight={700} fontSize={14} color="#1d4ed8">
+                Teléfonos del día ({ventasTel.length})
+              </Typography>
             </Box>
-            <Box sx={{ px: 1 }}>
-              <ValorFila label="Efectivo" valor={`$${(ef_tel).toFixed(2)}`} color="#1d4ed8" />
-              <ValorFila label="Tarjeta" valor={`$${(ta_tel).toFixed(2)}`} color="#1d4ed8" />
-            </Box>
-            <Box sx={{ px: 2, py: 1.5, bgcolor: '#eff6ff', borderTop: '2px solid #bfdbfe', display: 'flex', justifyContent: 'space-between' }}>
-              <Typography variant="body2" fontWeight={700} color="#1d4ed8">Total teléfonos</Typography>
-              <Typography variant="body2" fontWeight={700} color="#1d4ed8">${(corte.telefonos_total ?? 0).toFixed(2)}</Typography>
-            </Box>
+            {ventasTel.length === 0 ? (
+              <Box px={2} py={2}>
+                <Typography variant="body2" color="text.secondary">Sin teléfonos para esta fecha</Typography>
+              </Box>
+            ) : (
+              <>
+                <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr>
+                      <th style={thStyle}>Modelo</th>
+                      <th style={thStyle}>Tipo</th>
+                      <th style={thStyle}>Método de pago</th>
+                      <th style={{ ...thStyle, textAlign: 'right' }}>Precio</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ventasTel.map((v) => (
+                      <tr key={v.id}>
+                        <td style={{ ...tdStyle, maxWidth: 220 }}>{v.producto}</td>
+                        <td style={tdStyle}>{capitalize(v.tipo_venta || '')}</td>
+                        <td style={tdStyle}>{capitalize(v.metodo_pago || '')}</td>
+                        <td style={tdR}>${getTotal(v).toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Box>
+                <Box sx={{ px: 2, py: 1.5, bgcolor: '#eff6ff', borderTop: '2px solid #bfdbfe', display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" fontWeight={700} color="#1d4ed8">Total teléfonos</Typography>
+                  <Typography variant="body2" fontWeight={700} color="#1d4ed8">${subtotalTel.toFixed(2)}</Typography>
+                </Box>
+              </>
+            )}
           </Paper>
 
-          {/* ── Accesorios ────────────────────────────────────────────────── */}
+          {/* ── 4 · Accesorios del día ──────────────────────────────────── */}
           <Paper sx={{ mb: 2, overflow: 'hidden' }}>
-            <Box sx={{ px: 2, py: 1.5, bgcolor: '#fff7ed', borderBottom: '1px solid #fed7aa', display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography fontWeight={700} fontSize={14} color="#c2410c">Accesorios del día</Typography>
+            <Box sx={{ px: 2, py: 1.5, bgcolor: '#fff7ed', borderBottom: '1px solid #fed7aa' }}>
+              <Typography fontWeight={700} fontSize={14} color="#c2410c">
+                Accesorios del día ({ventasAcc.length})
+              </Typography>
             </Box>
-            <Box sx={{ px: 1 }}>
-              <ValorFila label="Efectivo" valor={`$${(ef_acc).toFixed(2)}`} color="#c2410c" />
-              <ValorFila label="Tarjeta" valor={`$${(ta_acc).toFixed(2)}`} color="#c2410c" />
-            </Box>
-            <Box sx={{ px: 2, py: 1.5, bgcolor: '#fff7ed', borderTop: '2px solid #fed7aa', display: 'flex', justifyContent: 'space-between' }}>
-              <Typography variant="body2" fontWeight={700} color="#c2410c">Total accesorios</Typography>
-              <Typography variant="body2" fontWeight={700} color="#c2410c">${(corte.accesorios_total ?? 0).toFixed(2)}</Typography>
-            </Box>
+            {ventasAcc.length === 0 ? (
+              <Box px={2} py={2}>
+                <Typography variant="body2" color="text.secondary">Sin accesorios para esta fecha</Typography>
+              </Box>
+            ) : (
+              <>
+                <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr>
+                      <th style={thStyle}>Descripción</th>
+                      <th style={{ ...thStyle, textAlign: 'right' }}>Cantidad</th>
+                      <th style={{ ...thStyle, textAlign: 'right' }}>Precio Prom.</th>
+                      <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.values(
+                      ventasAcc.reduce(
+                        (acc: Record<string, { producto: string; precio: number; cantidad: number; total: number }>, v: any) => {
+                          const key = `${v.producto}||${getTotal(v)}`;
+                          if (!acc[key]) acc[key] = { producto: v.producto, precio: getTotal(v), cantidad: 0, total: 0 };
+                          acc[key].cantidad += v.cantidad || 1;
+                          acc[key].total += getTotal(v);
+                          return acc;
+                        },
+                        {}
+                      )
+                    ).map((g) => (
+                      <tr key={g.producto + g.precio}>
+                        <td style={{ ...tdStyle, maxWidth: 260 }}>{g.producto}</td>
+                        <td style={tdR}>{g.cantidad}</td>
+                        <td style={tdR}>${(g.total / g.cantidad).toFixed(2)}</td>
+                        <td style={tdR}>${g.total.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Box>
+                <Box sx={{ px: 2, py: 1.5, bgcolor: '#fff7ed', borderTop: '2px solid #fed7aa', display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" fontWeight={700} color="#c2410c">Total accesorios</Typography>
+                  <Typography variant="body2" fontWeight={700} color="#c2410c">${subtotalAcc.toFixed(2)}</Typography>
+                </Box>
+              </>
+            )}
           </Paper>
 
-          {/* ── Montos Adicionales ────────────────────────────────────────── */}
-          <Paper sx={{ mb: 2, overflow: 'hidden', borderRadius: 2 }}>
+          {/* ── 5 · Montos Adicionales ──────────────────────────────────── */}
+          <Paper sx={{ mb: 2, overflow: 'hidden', borderRadius: 2, bgcolor: 'white' }}>
             <Box sx={{ px: 2, py: 1.5, bgcolor: '#FF6600', display: 'flex', alignItems: 'center', gap: 1 }}>
               <MonetizationOnIcon sx={{ color: 'white', fontSize: 20 }} />
               <Typography fontWeight={700} fontSize={15} color="white" letterSpacing={0.3}>
                 MONTOS ADICIONALES
               </Typography>
             </Box>
-            <Box sx={{ px: 1, py: 0.5 }}>
-              <ValorFila label="Recargas Telcel" valor={`$${rec.toFixed(2)}`} />
-              <ValorFila label="Recargas YOVOY" valor={`$${trans.toFixed(2)}`} />
-              <ValorFila label="Centro de Pagos" valor={`$${otr.toFixed(2)}`} />
-              <Box sx={{ border: '1.5px solid #FFD1A9', borderRadius: 2, p: 1, mx: 1, my: 1, bgcolor: '#fff8f3' }}>
+            <Box sx={{ p: 2 }}>
+              {[
+                { label: 'Recargas Telcel',  val: rec   },
+                { label: 'Recargas YOVOY',   val: trans  },
+                { label: 'Centro de Pagos',  val: otr   },
+              ].map(({ label, val }) => (
+                <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.8, borderBottom: '1px solid #f0f0f0' }}>
+                  <Typography fontSize={13} color="#555">{label}</Typography>
+                  <Typography fontSize={13} fontWeight={600} color="#222">${val.toFixed(2)}</Typography>
+                </Box>
+              ))}
+
+              {/* Mayoreo */}
+              <Box sx={{ border: '1.5px solid #FFD1A9', borderRadius: 2, p: 1.5, mt: 1, mb: 1, bgcolor: '#fff8f3' }}>
                 <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#FF6600', letterSpacing: 0.5, mb: 0.5 }}>
                   RECARGAS MAYOREO
                 </Typography>
-                <ValorFila label="Cantidad" valor={`$${may.toFixed(2)}`} color="#FF6600" />
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
+                  <Typography fontSize={13} color="#555">Cantidad</Typography>
+                  <Typography fontSize={13} fontWeight={600} color="#FF6600">${may.toFixed(2)}</Typography>
+                </Box>
                 {corte.adicional_mayoreo_para && (
-                  <ValorFila label="Para quién" valor={corte.adicional_mayoreo_para} />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
+                    <Typography fontSize={13} color="#555">Para quién</Typography>
+                    <Typography fontSize={13} fontWeight={600} color="#222">{corte.adicional_mayoreo_para}</Typography>
+                  </Box>
                 )}
               </Box>
-            </Box>
-            <Box sx={{ bgcolor: '#fff3e0', border: '1px solid #FFD1A9', mx: 2, mb: 2, borderRadius: 2, px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography fontWeight={600} color="#cc4400" fontSize={13}>Total Montos Adicionales</Typography>
-              <Typography fontWeight={800} color="#FF6600" fontSize={22}>${totalAdicional.toFixed(2)}</Typography>
+
+              {/* Total */}
+              <Box sx={{ bgcolor: '#fff3e0', border: '1px solid #FFD1A9', borderRadius: 2, px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography fontWeight={600} color="#cc4400" fontSize={13}>Total Montos Adicionales</Typography>
+                <Typography fontWeight={800} color="#FF6600" fontSize={22}>${totalAdicional.toFixed(2)}</Typography>
+              </Box>
             </Box>
           </Paper>
 
-          {/* ── Salida de Efectivo ────────────────────────────────────────── */}
-          <Paper sx={{ mb: 2, overflow: 'hidden', borderRadius: 2 }}>
+          {/* ── 6 · Salida de Efectivo ──────────────────────────────────── */}
+          <Paper sx={{ mb: 2, overflow: 'hidden', borderRadius: 2, bgcolor: 'white' }}>
             <Box sx={{ px: 2, py: 1.5, bgcolor: '#b71c1c', display: 'flex', alignItems: 'center', gap: 1 }}>
               <TrendingDownIcon sx={{ color: 'white', fontSize: 20 }} />
               <Typography fontWeight={700} fontSize={15} color="white" letterSpacing={0.3}>
                 SALIDA DE EFECTIVO
               </Typography>
             </Box>
-            <Box sx={{ px: 1, py: 0.5 }}>
-              <ValorFila
-                label="Monto de salida"
-                valor={`$${sal.toFixed(2)}`}
-                color={sal > 0 ? '#b71c1c' : '#222'}
-              />
+            <Box sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.8, borderBottom: '1px solid #f0f0f0' }}>
+                <Typography fontSize={13} color="#555">Monto de salida</Typography>
+                <Typography fontSize={13} fontWeight={600} color={sal > 0 ? '#b71c1c' : '#222'}>
+                  {sal > 0 ? `-$${sal.toFixed(2)}` : `$${sal.toFixed(2)}`}
+                </Typography>
+              </Box>
               {corte.nota_salida && (
-                <ValorFila label="Nota" valor={corte.nota_salida} />
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.8 }}>
+                  <Typography fontSize={13} color="#555">Nota</Typography>
+                  <Typography fontSize={13} color="#333">{corte.nota_salida}</Typography>
+                </Box>
               )}
             </Box>
           </Paper>
 
-          {/* ── Totales Finales ───────────────────────────────────────────── */}
-          <Paper sx={{ mb: 3, overflow: 'hidden', borderRadius: 2 }}>
+          {/* ── 7 · Totales Finales ─────────────────────────────────────── */}
+          <Paper sx={{ mb: 3, overflow: 'hidden', borderRadius: 2, bgcolor: 'white' }}>
             <Box sx={{ px: 2, py: 1.5, bgcolor: '#1a2744', display: 'flex', alignItems: 'center', gap: 1 }}>
               <ReceiptLongIcon sx={{ color: '#FF6600', fontSize: 20 }} />
               <Typography fontWeight={700} fontSize={15} color="white" letterSpacing={0.3}>
