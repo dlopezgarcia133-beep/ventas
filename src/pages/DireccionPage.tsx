@@ -49,7 +49,7 @@ const DireccionPage: React.FC = () => {
   const API = process.env.REACT_APP_API_URL;
 
   const [modulos, setModulos] = useState<any[]>([]);
-  const [moduloId, setModuloId] = useState<number | ''>('');
+  const [moduloId, setModuloId] = useState('');   // string para MUI Select
   const [fecha, setFecha] = useState(HOY);
   const [corte, setCorte] = useState<any>(null);
   const [sinCorte, setSinCorte] = useState(false);
@@ -90,22 +90,23 @@ const DireccionPage: React.FC = () => {
   const ventasAcc = ventas.filter((v) => v.tipo_producto === 'accesorios');
   const ventasTel = ventas.filter((v) => v.tipo_producto === 'telefono');
 
-  const ef_acc   = corte?.accesorios_efectivo ?? 0;
-  const ta_acc   = corte?.accesorios_tarjeta  ?? 0;
-  const ef_tel   = corte?.telefonos_efectivo  ?? 0;
-  const ta_tel   = corte?.telefonos_tarjeta   ?? 0;
-  const rec      = corte?.adicional_recargas  ?? 0;
-  const trans    = corte?.adicional_transporte ?? 0;
-  const otr      = corte?.adicional_otros     ?? 0;
-  const may      = corte?.adicional_mayoreo   ?? 0;
+  // Totales calculados desde ventas individuales (igual que CortePage)
+  const ef_acc = ventasAcc.filter((v) => v.metodo_pago?.toLowerCase() === 'efectivo').reduce((s: number, v: any) => s + getTotal(v), 0);
+  const ta_acc = ventasAcc.filter((v) => v.metodo_pago?.toLowerCase() === 'tarjeta').reduce((s: number, v: any) => s + getTotal(v), 0);
+  const ef_tel = ventasTel.filter((v) => v.metodo_pago?.toLowerCase() === 'efectivo').reduce((s: number, v: any) => s + getTotal(v), 0);
+  const ta_tel = ventasTel.filter((v) => v.metodo_pago?.toLowerCase() === 'tarjeta').reduce((s: number, v: any) => s + getTotal(v), 0);
+  const rec    = corte?.adicional_recargas   ?? 0;
+  const trans  = corte?.adicional_transporte ?? 0;
+  const otr    = corte?.adicional_otros      ?? 0;
+  const may    = corte?.adicional_mayoreo    ?? 0;
   const totalAdicional = rec + trans + otr + may;
-  const sal      = corte?.salida_efectivo     ?? 0;
+  const sal    = corte?.salida_efectivo      ?? 0;
   const subtotalAcc = ventasAcc.reduce((s: number, v: any) => s + getTotal(v), 0);
   const subtotalTel = ventasTel.reduce((s: number, v: any) => s + getTotal(v), 0);
   const total_efectivo_final = ef_acc + ef_tel + totalAdicional - sal;
   const total_tarjeta        = ta_acc + ta_tel;
 
-  const moduloNombre = modulos.find((m) => m.id === moduloId)?.nombre ?? '';
+  const moduloNombre = modulos.find((m) => String(m.id) === moduloId)?.nombre ?? '';
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 720, mx: 'auto' }}>
@@ -124,11 +125,13 @@ const DireccionPage: React.FC = () => {
             <InputLabel>Módulo</InputLabel>
             <Select
               value={moduloId}
-              onChange={(e) => setModuloId(e.target.value as number)}
+              onChange={(e) => setModuloId(e.target.value)}
               label="Módulo"
+              displayEmpty
             >
+              <MenuItem value="" disabled>Seleccionar módulo</MenuItem>
               {modulos.map((m) => (
-                <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
+                <MenuItem key={m.id} value={String(m.id)}>{m.nombre}</MenuItem>
               ))}
             </Select>
           </FormControl>
