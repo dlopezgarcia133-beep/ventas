@@ -58,7 +58,7 @@ const DireccionPage: React.FC = () => {
   useEffect(() => {
     axios
       .get(`${API}/registro/modulos`, config)
-      .then((r) => { console.log('[DireccionPage] módulos:', r.data); setModulos(r.data); })
+      .then((r) => setModulos(r.data))
       .catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -69,13 +69,10 @@ const DireccionPage: React.FC = () => {
     setSinCorte(false);
     setCorte(null);
     try {
-      const moduloIdNum = Number(moduloId);
-      console.log('[DireccionPage] buscando con moduloId:', moduloId, '→ numérico:', moduloIdNum, 'fecha:', fecha);
       const res = await axios.get(`${API}/direccion/cortes`, {
         ...config,
-        params: { modulo_id: moduloIdNum, fecha },
+        params: { modulo_id: Number(moduloId), fecha },
       });
-      console.log('[DireccionPage] respuesta /direccion/cortes:', res.data);
       if (res.data) {
         setCorte(res.data);
       } else {
