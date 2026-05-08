@@ -58,7 +58,7 @@ const DireccionPage: React.FC = () => {
   useEffect(() => {
     axios
       .get(`${API}/registro/modulos`, config)
-      .then((r) => setModulos(r.data))
+      .then((r) => { console.log('[DireccionPage] módulos:', r.data); setModulos(r.data); })
       .catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -73,6 +73,7 @@ const DireccionPage: React.FC = () => {
         ...config,
         params: { modulo_id: moduloId, fecha },
       });
+      console.log('[DireccionPage] respuesta /direccion/cortes:', res.data);
       if (res.data) {
         setCorte(res.data);
       } else {
