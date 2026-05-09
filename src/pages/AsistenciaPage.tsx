@@ -41,6 +41,17 @@ const API = process.env.REACT_APP_API_URL ?? "";
 const token = () => localStorage.getItem("token") ?? "";
 const authH = () => ({ Authorization: `Bearer ${token()}` });
 
+function isMobileDevice(): boolean {
+  if (typeof window === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  const mobileRegex = /Android|iPhone|iPad|iPod|Mobile|Tablet|Opera Mini|IEMobile/i;
+  if (mobileRegex.test(ua)) return true;
+  if (navigator.maxTouchPoints && navigator.maxTouchPoints > 1) return true;
+  if (window.screen && window.screen.width < 1024) return true;
+  if ("ontouchstart" in window) return true;
+  return false;
+}
+
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
 interface AsistenciaResumen {
@@ -157,6 +168,9 @@ const VistaEmpleado: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const pendingRef = useRef<{ tipo: "entrada" | "salida"; lat: number; lng: number } | null>(null);
+
+  const esMovil = isMobileDevice();
+  const bloquearCheckIn = !esMovil;
 
   useEffect(() => {
     const t = setInterval(() => setAhora(new Date()), 1000);
@@ -277,34 +291,55 @@ const VistaEmpleado: React.FC = () => {
         {ahora.toLocaleTimeString("es-MX")}
       </Typography>
 
-      <Box display="flex" gap={2} mb={4}>
-        <Button
-          variant="contained"
-          size="large"
-          disabled={cargando}
-          onClick={() => handleCheck("entrada")}
-          startIcon={<AccessTimeIcon />}
-          sx={{
-            flex: 1, py: 3, fontSize: 18, fontWeight: 700,
-            bgcolor: "#16a34a", "&:hover": { bgcolor: "#15803d" },
-          }}
-        >
-          CHECK-IN (ENTRADA)
-        </Button>
-        <Button
-          variant="contained"
-          size="large"
-          disabled={cargando}
-          onClick={() => handleCheck("salida")}
-          startIcon={<AccessTimeIcon />}
-          sx={{
-            flex: 1, py: 3, fontSize: 18, fontWeight: 700,
-            bgcolor: "#FF6600", "&:hover": { bgcolor: "#ea5c00" },
-          }}
-        >
-          CHECK-OUT (SALIDA)
-        </Button>
-      </Box>
+      {!bloquearCheckIn ? (
+        <Box display="flex" gap={2} mb={4}>
+          <Button
+            variant="contained"
+            size="large"
+            disabled={cargando}
+            onClick={() => handleCheck("entrada")}
+            startIcon={<AccessTimeIcon />}
+            sx={{
+              flex: 1, py: 3, fontSize: 18, fontWeight: 700,
+              bgcolor: "#16a34a", "&:hover": { bgcolor: "#15803d" },
+            }}
+          >
+            CHECK-IN (ENTRADA)
+          </Button>
+          <Button
+            variant="contained"
+            size="large"
+            disabled={cargando}
+            onClick={() => handleCheck("salida")}
+            startIcon={<AccessTimeIcon />}
+            sx={{
+              flex: 1, py: 3, fontSize: 18, fontWeight: 700,
+              bgcolor: "#FF6600", "&:hover": { bgcolor: "#ea5c00" },
+            }}
+          >
+            CHECK-OUT (SALIDA)
+          </Button>
+        </Box>
+      ) : (
+        <Paper elevation={2} sx={{ p: 4, mb: 3, bgcolor: "#FFF3E0", border: "2px solid #FF6600", textAlign: "center" }}>
+          <Box sx={{ fontSize: 64, mb: 2 }}>📱</Box>
+          <Typography variant="h5" fontWeight={700} color="#FF6600" gutterBottom>
+            Solo desde tu celular
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            El registro de asistencia solo está disponible desde tu teléfono o tablet.
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Por favor entra desde tu celular a:
+          </Typography>
+          <Typography variant="h6" fontWeight={700}>
+            https://atosistema.vercel.app
+          </Typography>
+          <Typography variant="caption" display="block" sx={{ mt: 2, color: "text.secondary" }}>
+            Esto es para validar que estés físicamente en tu módulo con tu propia cámara y GPS.
+          </Typography>
+        </Paper>
+      )}
 
       {cargando && <Box textAlign="center" mb={2}><CircularProgress /></Box>}
 
