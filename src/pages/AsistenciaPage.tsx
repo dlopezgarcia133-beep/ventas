@@ -386,7 +386,7 @@ const VistaEmpleado: React.FC = () => {
         <Table size="small">
           <TableHead>
             <TableRow sx={{ bgcolor: "#f8fafc" }}>
-              {["Fecha","Entrada","Foto E","Salida","Foto S","Horas","Estado"].map((h) => (
+              {["Fecha","Entrada","Foto E","Salida","Foto S","Horas","Estado E","Estado S"].map((h) => (
                 <TableCell key={h} sx={{ fontWeight: 700, color: "#FF6600" }}>{h}</TableCell>
               ))}
             </TableRow>
@@ -394,7 +394,7 @@ const VistaEmpleado: React.FC = () => {
           <TableBody>
             {historial.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ color: "#94a3b8", py: 3 }}>
+                <TableCell colSpan={8} align="center" sx={{ color: "#94a3b8", py: 3 }}>
                   Sin registros para este período
                 </TableCell>
               </TableRow>
@@ -409,11 +409,8 @@ const VistaEmpleado: React.FC = () => {
                   <TableCell>{formatHora(r.salida)}</TableCell>
                   <TableCell><FotoThumb url={r.foto_salida_url} /></TableCell>
                   <TableCell>{r.horas_trabajadas.toFixed(2)} h</TableCell>
-                  <TableCell>
-                    {fueraAlguno
-                      ? <Chip icon={<WarningAmberIcon />} label="Fuera de zona" color="warning" size="small" />
-                      : <Chip icon={<CheckCircleIcon />} label="En zona" color="success" size="small" />}
-                  </TableCell>
+                  <TableCell><ZonaChip dentro={r.dentro_de_zona_entrada ?? null} /></TableCell>
+                  <TableCell><ZonaChip dentro={r.dentro_de_zona_salida ?? null} /></TableCell>
                 </TableRow>
               );
             })}
@@ -421,7 +418,7 @@ const VistaEmpleado: React.FC = () => {
               <TableRow sx={{ bgcolor: "#f1f5f9" }}>
                 <TableCell colSpan={5} sx={{ fontWeight: 700 }}>Total del mes</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>{totalHoras.toFixed(2)} h</TableCell>
-                <TableCell />
+                <TableCell /><TableCell />
               </TableRow>
             )}
           </TableBody>
@@ -548,7 +545,7 @@ const TabRegistros: React.FC = () => {
           <Table size="small">
             <TableHead>
               <TableRow sx={{ bgcolor: "#f8fafc" }}>
-                {["Usuario","Módulo","Fecha","Entrada","Foto E","Salida","Foto S","Horas","Estado"].map((h) => (
+                {["Usuario","Módulo","Fecha","Entrada","Foto E","Salida","Foto S","Horas","Estado E","Estado S"].map((h) => (
                   <TableCell key={h} sx={{ fontWeight: 700, color: "#FF6600" }}>{h}</TableCell>
                 ))}
               </TableRow>
@@ -556,7 +553,7 @@ const TabRegistros: React.FC = () => {
             <TableBody>
               {registros.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={9} align="center" sx={{ color: "#94a3b8", py: 3 }}>
+                  <TableCell colSpan={10} align="center" sx={{ color: "#94a3b8", py: 3 }}>
                     Usa los filtros y presiona BUSCAR
                   </TableCell>
                 </TableRow>
@@ -573,9 +570,8 @@ const TabRegistros: React.FC = () => {
                     <TableCell>{formatHora(r.salida)}</TableCell>
                     <TableCell><FotoThumb url={r.foto_salida_url} /></TableCell>
                     <TableCell>{r.horas_trabajadas.toFixed(2)} h</TableCell>
-                    <TableCell>
-                      <ZonaChip dentro={fuera ? false : true} />
-                    </TableCell>
+                    <TableCell><ZonaChip dentro={r.dentro_de_zona_entrada ?? null} /></TableCell>
+                    <TableCell><ZonaChip dentro={r.dentro_de_zona_salida ?? null} /></TableCell>
                   </TableRow>
                 );
               })}
@@ -583,7 +579,7 @@ const TabRegistros: React.FC = () => {
                 <TableRow sx={{ bgcolor: "#f1f5f9" }}>
                   <TableCell colSpan={7} sx={{ fontWeight: 700 }}>Total general</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>{totalHoras.toFixed(2)} h</TableCell>
-                  <TableCell />
+                  <TableCell /><TableCell />
                 </TableRow>
               )}
             </TableBody>
