@@ -1,8 +1,28 @@
 import React, { useState, useEffect } from "react";
 import {
-  AppBar, Toolbar, Typography, Button, Box, MenuItem, Menu
+  AppBar, Toolbar, Typography, Button, Box, MenuItem, Menu,
+  IconButton, Drawer, List, ListItemButton, ListItemIcon, ListItemText,
+  Divider, Collapse, useMediaQuery,
 } from "@mui/material";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
+import MenuIcon from "@mui/icons-material/Menu";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import InventoryIcon from "@mui/icons-material/Inventory";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import LogoutIcon from "@mui/icons-material/Logout";
+import PaymentsIcon from "@mui/icons-material/Payments";
+import ContentCutIcon from "@mui/icons-material/ContentCut";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import PeopleIcon from "@mui/icons-material/People";
+import ListAltIcon from "@mui/icons-material/ListAlt";
+import SimCardIcon from "@mui/icons-material/SimCard";
+import MoveToInboxIcon from "@mui/icons-material/MoveToInbox";
+import SignalCellular4BarIcon from "@mui/icons-material/SignalCellular4Bar";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../ATO.jpeg";
 import { obtenerRolDesdeToken } from "./Token";
@@ -18,18 +38,39 @@ const navBtnSx = {
   transition: "color 0.2s ease",
 };
 
+const drawerItemSx = {
+  px: 3,
+  py: 1.2,
+  color: "#1e293b",
+  "&:hover": {
+    bgcolor: "rgba(249,115,22,0.08)",
+    color: "#FF6600",
+    "& .MuiListItemIcon-root": { color: "#FF6600" },
+  },
+};
+
+const drawerIconSx = { color: "#64748b", minWidth: 36 };
+
 const Navbar = () => {
   const navigate = useNavigate();
   const rolToken = obtenerRolDesdeToken();
+  const isMobile = useMediaQuery("(max-width: 900px)");
 
   const [usuario, setUsuario] = useState(localStorage.getItem("usuario") || "");
   const [modulo, setModulo] = useState(localStorage.getItem("modulo") || "");
   const [rolM, setRolM] = useState(localStorage.getItem("rol") || "");
   const [cadena, setCadena] = useState(sessionStorage.getItem("cadena_seleccionada") || "");
 
+  // Desktop dropdowns
   const [anchorInventario, setAnchorInventario] = useState<null | HTMLElement>(null);
   const [anchorAdmin, setAnchorAdmin] = useState<null | HTMLElement>(null);
   const [anchorVentas, setAnchorVentas] = useState<null | HTMLElement>(null);
+
+  // Mobile drawer
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [ventasOpen, setVentasOpen] = useState(false);
+  const [inventarioOpen, setInventarioOpen] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(false);
 
   useEffect(() => {
     const actualizarDatos = () => {
@@ -66,165 +107,416 @@ const Navbar = () => {
   };
   const closeMenu = (setFn: any) => setFn(null);
 
-  return (
-    <AppBar position="static">
-      <Toolbar sx={{ display: "flex", justifyContent: "space-between", minHeight: 56 }}>
+  const mostrarAsistencia =
+    ((rolToken === "asesor" || rolToken === "encargado") && modulo && modulo !== "Cadenas") ||
+    rolToken === "admin" ||
+    rolToken === "direccion";
 
-        {/* LEFT: Logo + user info */}
-        <Box
-          display="flex"
-          alignItems="center"
-          gap={1.5}
-          component={Link}
-          to="/ventas"
-          sx={{ textDecoration: "none", color: "inherit" }}
-        >
+  const navegar = (ruta: string) => {
+    navigate(ruta);
+    setDrawerOpen(false);
+  };
+
+  return (
+    <>
+      <AppBar position="static">
+        <Toolbar sx={{ display: "flex", justifyContent: "space-between", minHeight: 56 }}>
+
+          {/* LEFT: Logo + user info */}
           <Box
-            sx={{
-              bgcolor: "white",
-              borderRadius: 1,
-              px: 0.8,
-              py: 0.3,
-              display: "flex",
-              alignItems: "center",
-            }}
+            display="flex"
+            alignItems="center"
+            gap={1.5}
+            component={Link}
+            to="/ventas"
+            sx={{ textDecoration: "none", color: "inherit" }}
           >
+            <Box
+              sx={{
+                bgcolor: "white",
+                borderRadius: 1,
+                px: 0.8,
+                py: 0.3,
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <img src={logo} alt="ATO" style={{ height: 28, display: "block" }} />
+            </Box>
+            {usuario && (
+              <Typography
+                variant="body2"
+                sx={{ color: "#94a3b8", ml: 1.5, display: { xs: "none", sm: "block" } }}
+              >
+                {usuario} · {modulo}{cadena ? ` · ${cadena}` : ""} · {rolM}
+              </Typography>
+            )}
+          </Box>
+
+          {/* RIGHT: Desktop nav OR hamburger */}
+          {!isMobile ? (
+            <Box display="flex" alignItems="center" gap={0.5}>
+
+              {rolToken === "admin" && (
+                <>
+                  <Button sx={navBtnSx} onClick={(e) => openMenu(e, setAnchorVentas)}>
+                    Ventas
+                  </Button>
+                  <Menu
+                    anchorEl={anchorVentas}
+                    open={Boolean(anchorVentas)}
+                    onClose={() => closeMenu(setAnchorVentas)}
+                  >
+                    <MenuItem component={Link} to="/ventas"><ConfirmationNumberIcon fontSize="small" sx={{ mr: 0.5, verticalAlign: 'middle' }} />Ticket</MenuItem>
+                    <MenuItem component={Link} to="/ventas/chips">Chips</MenuItem>
+                    <MenuItem component={Link} to="/corte">Cortes</MenuItem>
+                  </Menu>
+
+                  <Button sx={navBtnSx} onClick={(e) => openMenu(e, setAnchorInventario)}>
+                    Inventario
+                  </Button>
+                  <Menu
+                    anchorEl={anchorInventario}
+                    open={Boolean(anchorInventario)}
+                    onClose={() => closeMenu(setAnchorInventario)}
+                  >
+                    <MenuItem component={Link} to="/inventario">Inventario</MenuItem>
+                    <MenuItem component={Link} to="/entrada-mercancia">Entrada de Mercancia</MenuItem>
+                    <MenuItem component={Link} to="/traspasos/admin">Traspasos</MenuItem>
+                    <MenuItem component={Link} to="/kardex">Kardex</MenuItem>
+                  </Menu>
+
+                  <Button sx={navBtnSx} onClick={(e) => openMenu(e, setAnchorAdmin)}>
+                    Administración
+                  </Button>
+                  <Menu
+                    anchorEl={anchorAdmin}
+                    open={Boolean(anchorAdmin)}
+                    onClose={() => closeMenu(setAnchorAdmin)}
+                  >
+                    <MenuItem component={Link} to="/usuarios">Usuarios</MenuItem>
+                    <MenuItem component={Link} to="/nomina">Nómina</MenuItem>
+                    <MenuItem component={Link} to="/comisiones">Comisiones</MenuItem>
+                    <MenuItem component={Link} to="/metricas">Métricas</MenuItem>
+                  </Menu>
+
+                  <Button sx={navBtnSx} component={Link} to="/telcel">
+                    TELCEL
+                  </Button>
+                  <Button sx={navBtnSx} component={Link} to="/clineas">
+                    C LÍNEAS
+                  </Button>
+                </>
+              )}
+
+              {rolToken === "contador" && (
+                <>
+                  <Button sx={navBtnSx} component={Link} to="/nomina">Nómina</Button>
+                  <Button sx={navBtnSx} component={Link} to="/corte">Cortes</Button>
+                  <Button sx={navBtnSx} component={Link} to="/comisiones">Comisiones</Button>
+                  <Button sx={navBtnSx} component={Link} to="/traspasos/admin">Traspasos</Button>
+                  <Button sx={navBtnSx} component={Link} to="/usuarios">Usuarios</Button>
+                  <Button sx={navBtnSx} component={Link} to="/inventario">Inventario</Button>
+                  <Button sx={navBtnSx} component={Link} to="/ventas/chips">Chips</Button>
+                </>
+              )}
+
+              {rolToken === "encargado" && (
+                <>
+                  <Button sx={navBtnSx} component={Link} to="/kardex">Kardex</Button>
+                  <Button sx={navBtnSx} component={Link} to="/nominaEmpleado">Nómina</Button>
+                  <Button sx={navBtnSx} component={Link} to="/traspasos">Traspasos</Button>
+                  <Button sx={navBtnSx} component={Link} to="/ventas" startIcon={<ConfirmationNumberIcon />}>Ticket</Button>
+                  <Button sx={navBtnSx} component={Link} to="/comisiones/usuario">Comisiones</Button>
+                  <Button sx={navBtnSx} component={Link} to="/inventario/modulo">Inventario</Button>
+                  <Button sx={navBtnSx} component={Link} to="/ventas/chips">Chips</Button>
+                </>
+              )}
+
+              {rolToken === "asesor" && (
+                <>
+                  <Button sx={navBtnSx} component={Link} to="/nominaEmpleado">Nómina</Button>
+                  <Button sx={navBtnSx} component={Link} to="/ventas" startIcon={<ConfirmationNumberIcon />}>Ticket</Button>
+                  <Button sx={navBtnSx} component={Link} to="/comisiones/usuario">Comisiones</Button>
+                  <Button sx={navBtnSx} component={Link} to="/ventas/chips">Chips</Button>
+                </>
+              )}
+
+              {rolToken === "direccion" && (
+                <Button sx={{ ...navBtnSx, color: "#f97316", fontWeight: 700 }} component={Link} to="/direccion">
+                  Cortes
+                </Button>
+              )}
+
+              {/* ASISTENCIA: asesor/encargado con módulo (no Cadenas) + admin/direccion */}
+              {mostrarAsistencia && (
+                <Button sx={navBtnSx} component={Link} to="/asistencia">
+                  ASISTENCIA
+                </Button>
+              )}
+
+              <Button
+                sx={{
+                  ...navBtnSx,
+                  ml: 1,
+                  border: "1px solid rgba(249,115,22,0.35)",
+                  borderRadius: 1,
+                  "&:hover": {
+                    color: "#ffffff",
+                    backgroundColor: "#f97316",
+                    border: "1px solid #f97316",
+                  },
+                }}
+                onClick={cerrarSesion}
+              >
+                Cerrar sesión
+              </Button>
+            </Box>
+          ) : (
+            <IconButton onClick={() => setDrawerOpen(true)} sx={{ color: "#f1f5f9" }}>
+              <MenuIcon />
+            </IconButton>
+          )}
+        </Toolbar>
+      </AppBar>
+
+      {/* ── Mobile Drawer ─────────────────────────────────────────────────────── */}
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        PaperProps={{ sx: { width: 280 } }}
+      >
+        {/* Header con logo */}
+        <Box sx={{ p: 2, bgcolor: "#1e293b", display: "flex", alignItems: "center" }}>
+          <Box sx={{ bgcolor: "white", borderRadius: 1, px: 0.8, py: 0.3, display: "flex", alignItems: "center" }}>
             <img src={logo} alt="ATO" style={{ height: 28, display: "block" }} />
           </Box>
-          {usuario && (
-            <Typography
-              variant="body2"
-              sx={{ color: "#94a3b8", ml: 1.5, display: { xs: "none", sm: "block" } }}
-            >
-              {usuario} · {modulo}{cadena ? ` · ${cadena}` : ""} · {rolM}
-            </Typography>
-          )}
         </Box>
+        <Divider />
 
-        {/* RIGHT: Navigation */}
-        <Box display="flex" alignItems="center" gap={0.5}>
+        <List disablePadding>
 
+          {/* ── ADMIN ─────────────────────────────────────────────────────────── */}
           {rolToken === "admin" && (
             <>
-              <Button sx={navBtnSx} onClick={(e) => openMenu(e, setAnchorVentas)}>
-                Ventas
-              </Button>
-              <Menu
-                anchorEl={anchorVentas}
-                open={Boolean(anchorVentas)}
-                onClose={() => closeMenu(setAnchorVentas)}
-              >
-                <MenuItem component={Link} to="/ventas"><ConfirmationNumberIcon fontSize="small" sx={{ mr: 0.5, verticalAlign: 'middle' }} />Ticket</MenuItem>
-                <MenuItem component={Link} to="/ventas/chips">Chips</MenuItem>
-                <MenuItem component={Link} to="/corte">Cortes</MenuItem>
-              </Menu>
+              {/* VENTAS expandible */}
+              <ListItemButton sx={drawerItemSx} onClick={() => setVentasOpen((o) => !o)}>
+                <ListItemIcon sx={drawerIconSx}><ReceiptLongIcon /></ListItemIcon>
+                <ListItemText primary="VENTAS" primaryTypographyProps={{ fontWeight: 700 }} />
+                {ventasOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </ListItemButton>
+              <Collapse in={ventasOpen} timeout="auto" unmountOnExit>
+                <List disablePadding>
+                  <ListItemButton sx={{ ...drawerItemSx, pl: 6 }} onClick={() => navegar("/ventas")}>
+                    <ListItemIcon sx={drawerIconSx}><ConfirmationNumberIcon /></ListItemIcon>
+                    <ListItemText primary="Ticket" />
+                  </ListItemButton>
+                  <ListItemButton sx={{ ...drawerItemSx, pl: 6 }} onClick={() => navegar("/ventas/chips")}>
+                    <ListItemIcon sx={drawerIconSx}><SimCardIcon /></ListItemIcon>
+                    <ListItemText primary="Chips" />
+                  </ListItemButton>
+                  <ListItemButton sx={{ ...drawerItemSx, pl: 6 }} onClick={() => navegar("/corte")}>
+                    <ListItemIcon sx={drawerIconSx}><ContentCutIcon /></ListItemIcon>
+                    <ListItemText primary="Cortes" />
+                  </ListItemButton>
+                </List>
+              </Collapse>
 
-              <Button sx={navBtnSx} onClick={(e) => openMenu(e, setAnchorInventario)}>
-                Inventario
-              </Button>
-              <Menu
-                anchorEl={anchorInventario}
-                open={Boolean(anchorInventario)}
-                onClose={() => closeMenu(setAnchorInventario)}
-              >
-                <MenuItem component={Link} to="/inventario">Inventario</MenuItem>
-                <MenuItem component={Link} to="/entrada-mercancia">Entrada de Mercancia</MenuItem>
-                <MenuItem component={Link} to="/traspasos/admin">Traspasos</MenuItem>
-                <MenuItem component={Link} to="/kardex">Kardex</MenuItem>
-              </Menu>
+              {/* INVENTARIO expandible */}
+              <ListItemButton sx={drawerItemSx} onClick={() => setInventarioOpen((o) => !o)}>
+                <ListItemIcon sx={drawerIconSx}><InventoryIcon /></ListItemIcon>
+                <ListItemText primary="INVENTARIO" primaryTypographyProps={{ fontWeight: 700 }} />
+                {inventarioOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </ListItemButton>
+              <Collapse in={inventarioOpen} timeout="auto" unmountOnExit>
+                <List disablePadding>
+                  <ListItemButton sx={{ ...drawerItemSx, pl: 6 }} onClick={() => navegar("/inventario")}>
+                    <ListItemIcon sx={drawerIconSx}><InventoryIcon /></ListItemIcon>
+                    <ListItemText primary="Inventario" />
+                  </ListItemButton>
+                  <ListItemButton sx={{ ...drawerItemSx, pl: 6 }} onClick={() => navegar("/entrada-mercancia")}>
+                    <ListItemIcon sx={drawerIconSx}><MoveToInboxIcon /></ListItemIcon>
+                    <ListItemText primary="Entrada de Mercancía" />
+                  </ListItemButton>
+                  <ListItemButton sx={{ ...drawerItemSx, pl: 6 }} onClick={() => navegar("/traspasos/admin")}>
+                    <ListItemIcon sx={drawerIconSx}><SwapHorizIcon /></ListItemIcon>
+                    <ListItemText primary="Traspasos" />
+                  </ListItemButton>
+                  <ListItemButton sx={{ ...drawerItemSx, pl: 6 }} onClick={() => navegar("/kardex")}>
+                    <ListItemIcon sx={drawerIconSx}><ListAltIcon /></ListItemIcon>
+                    <ListItemText primary="Kardex" />
+                  </ListItemButton>
+                </List>
+              </Collapse>
 
-              <Button sx={navBtnSx} onClick={(e) => openMenu(e, setAnchorAdmin)}>
-                Administración
-              </Button>
-              <Menu
-                anchorEl={anchorAdmin}
-                open={Boolean(anchorAdmin)}
-                onClose={() => closeMenu(setAnchorAdmin)}
-              >
-                <MenuItem component={Link} to="/usuarios">Usuarios</MenuItem>
-                <MenuItem component={Link} to="/nomina">Nómina</MenuItem>
-                <MenuItem component={Link} to="/comisiones">Comisiones</MenuItem>
-                <MenuItem component={Link} to="/metricas">Métricas</MenuItem>
-              </Menu>
+              {/* ADMINISTRACIÓN expandible */}
+              <ListItemButton sx={drawerItemSx} onClick={() => setAdminOpen((o) => !o)}>
+                <ListItemIcon sx={drawerIconSx}><AdminPanelSettingsIcon /></ListItemIcon>
+                <ListItemText primary="ADMINISTRACIÓN" primaryTypographyProps={{ fontWeight: 700 }} />
+                {adminOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </ListItemButton>
+              <Collapse in={adminOpen} timeout="auto" unmountOnExit>
+                <List disablePadding>
+                  <ListItemButton sx={{ ...drawerItemSx, pl: 6 }} onClick={() => navegar("/usuarios")}>
+                    <ListItemIcon sx={drawerIconSx}><PeopleIcon /></ListItemIcon>
+                    <ListItemText primary="Usuarios" />
+                  </ListItemButton>
+                  <ListItemButton sx={{ ...drawerItemSx, pl: 6 }} onClick={() => navegar("/nomina")}>
+                    <ListItemIcon sx={drawerIconSx}><PaymentsIcon /></ListItemIcon>
+                    <ListItemText primary="Nómina" />
+                  </ListItemButton>
+                  <ListItemButton sx={{ ...drawerItemSx, pl: 6 }} onClick={() => navegar("/comisiones")}>
+                    <ListItemIcon sx={drawerIconSx}><MonetizationOnIcon /></ListItemIcon>
+                    <ListItemText primary="Comisiones" />
+                  </ListItemButton>
+                  <ListItemButton sx={{ ...drawerItemSx, pl: 6 }} onClick={() => navegar("/metricas")}>
+                    <ListItemIcon sx={drawerIconSx}><BarChartIcon /></ListItemIcon>
+                    <ListItemText primary="Métricas" />
+                  </ListItemButton>
+                </List>
+              </Collapse>
 
-              <Button sx={navBtnSx} component={Link} to="/telcel">
-                TELCEL
-              </Button>
-              <Button sx={navBtnSx} component={Link} to="/clineas">
-                C LÍNEAS
-              </Button>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/telcel")}>
+                <ListItemIcon sx={drawerIconSx}><SimCardIcon /></ListItemIcon>
+                <ListItemText primary="TELCEL" primaryTypographyProps={{ fontWeight: 700 }} />
+              </ListItemButton>
+
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/clineas")}>
+                <ListItemIcon sx={drawerIconSx}><SignalCellular4BarIcon /></ListItemIcon>
+                <ListItemText primary="C LÍNEAS" primaryTypographyProps={{ fontWeight: 700 }} />
+              </ListItemButton>
             </>
           )}
 
+          {/* ── CONTADOR ──────────────────────────────────────────────────────── */}
           {rolToken === "contador" && (
             <>
-              <Button sx={navBtnSx} component={Link} to="/nomina">Nómina</Button>
-              <Button sx={navBtnSx} component={Link} to="/corte">Cortes</Button>
-              <Button sx={navBtnSx} component={Link} to="/comisiones">Comisiones</Button>
-              <Button sx={navBtnSx} component={Link} to="/traspasos/admin">Traspasos</Button>
-              <Button sx={navBtnSx} component={Link} to="/usuarios">Usuarios</Button>
-              <Button sx={navBtnSx} component={Link} to="/inventario">Inventario</Button>
-              <Button sx={navBtnSx} component={Link} to="/ventas/chips">Chips</Button>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/nomina")}>
+                <ListItemIcon sx={drawerIconSx}><PaymentsIcon /></ListItemIcon>
+                <ListItemText primary="Nómina" />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/corte")}>
+                <ListItemIcon sx={drawerIconSx}><ContentCutIcon /></ListItemIcon>
+                <ListItemText primary="Cortes" />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/comisiones")}>
+                <ListItemIcon sx={drawerIconSx}><MonetizationOnIcon /></ListItemIcon>
+                <ListItemText primary="Comisiones" />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/traspasos/admin")}>
+                <ListItemIcon sx={drawerIconSx}><SwapHorizIcon /></ListItemIcon>
+                <ListItemText primary="Traspasos" />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/usuarios")}>
+                <ListItemIcon sx={drawerIconSx}><PeopleIcon /></ListItemIcon>
+                <ListItemText primary="Usuarios" />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/inventario")}>
+                <ListItemIcon sx={drawerIconSx}><InventoryIcon /></ListItemIcon>
+                <ListItemText primary="Inventario" />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/ventas/chips")}>
+                <ListItemIcon sx={drawerIconSx}><SimCardIcon /></ListItemIcon>
+                <ListItemText primary="Chips" />
+              </ListItemButton>
             </>
           )}
 
+          {/* ── ENCARGADO ─────────────────────────────────────────────────────── */}
           {rolToken === "encargado" && (
             <>
-              <Button sx={navBtnSx} component={Link} to="/kardex">Kardex</Button>
-              <Button sx={navBtnSx} component={Link} to="/nominaEmpleado">Nómina</Button>
-              <Button sx={navBtnSx} component={Link} to="/traspasos">Traspasos</Button>
-              <Button sx={navBtnSx} component={Link} to="/ventas" startIcon={<ConfirmationNumberIcon />}>Ticket</Button>
-              <Button sx={navBtnSx} component={Link} to="/comisiones/usuario">Comisiones</Button>
-              <Button sx={navBtnSx} component={Link} to="/inventario/modulo">Inventario</Button>
-              <Button sx={navBtnSx} component={Link} to="/ventas/chips">Chips</Button>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/kardex")}>
+                <ListItemIcon sx={drawerIconSx}><ListAltIcon /></ListItemIcon>
+                <ListItemText primary="Kardex" />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/nominaEmpleado")}>
+                <ListItemIcon sx={drawerIconSx}><PaymentsIcon /></ListItemIcon>
+                <ListItemText primary="Nómina" />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/traspasos")}>
+                <ListItemIcon sx={drawerIconSx}><SwapHorizIcon /></ListItemIcon>
+                <ListItemText primary="Traspasos" />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/ventas")}>
+                <ListItemIcon sx={drawerIconSx}><ConfirmationNumberIcon /></ListItemIcon>
+                <ListItemText primary="Ticket" />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/comisiones/usuario")}>
+                <ListItemIcon sx={drawerIconSx}><MonetizationOnIcon /></ListItemIcon>
+                <ListItemText primary="Comisiones" />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/inventario/modulo")}>
+                <ListItemIcon sx={drawerIconSx}><InventoryIcon /></ListItemIcon>
+                <ListItemText primary="Inventario" />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/ventas/chips")}>
+                <ListItemIcon sx={drawerIconSx}><SimCardIcon /></ListItemIcon>
+                <ListItemText primary="Chips" />
+              </ListItemButton>
             </>
           )}
 
+          {/* ── ASESOR ────────────────────────────────────────────────────────── */}
           {rolToken === "asesor" && (
             <>
-              <Button sx={navBtnSx} component={Link} to="/nominaEmpleado">Nómina</Button>
-              <Button sx={navBtnSx} component={Link} to="/ventas" startIcon={<ConfirmationNumberIcon />}>Ticket</Button>
-              <Button sx={navBtnSx} component={Link} to="/comisiones/usuario">Comisiones</Button>
-              <Button sx={navBtnSx} component={Link} to="/ventas/chips">Chips</Button>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/nominaEmpleado")}>
+                <ListItemIcon sx={drawerIconSx}><PaymentsIcon /></ListItemIcon>
+                <ListItemText primary="Nómina" />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/ventas")}>
+                <ListItemIcon sx={drawerIconSx}><ConfirmationNumberIcon /></ListItemIcon>
+                <ListItemText primary="Ticket" />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/comisiones/usuario")}>
+                <ListItemIcon sx={drawerIconSx}><MonetizationOnIcon /></ListItemIcon>
+                <ListItemText primary="Comisiones" />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/ventas/chips")}>
+                <ListItemIcon sx={drawerIconSx}><SimCardIcon /></ListItemIcon>
+                <ListItemText primary="Chips" />
+              </ListItemButton>
             </>
           )}
 
+          {/* ── DIRECCIÓN ─────────────────────────────────────────────────────── */}
           {rolToken === "direccion" && (
-            <Button sx={{ ...navBtnSx, color: "#f97316", fontWeight: 700 }} component={Link} to="/direccion">
-              Cortes
-            </Button>
+            <ListItemButton sx={drawerItemSx} onClick={() => navegar("/direccion")}>
+              <ListItemIcon sx={{ ...drawerIconSx, color: "#f97316" }}><ContentCutIcon /></ListItemIcon>
+              <ListItemText primary="Cortes" primaryTypographyProps={{ color: "#f97316", fontWeight: 700 }} />
+            </ListItemButton>
           )}
 
-          {/* ASISTENCIA: asesor/encargado con módulo (no Cadenas) + admin/direccion */}
-          {(
-            ((rolToken === "asesor" || rolToken === "encargado") && modulo && modulo !== "Cadenas") ||
-            rolToken === "admin" ||
-            rolToken === "direccion"
-          ) && (
-            <Button sx={navBtnSx} component={Link} to="/asistencia">
-              ASISTENCIA
-            </Button>
+          {/* ── ASISTENCIA (condicional) ───────────────────────────────────────── */}
+          {mostrarAsistencia && (
+            <ListItemButton sx={drawerItemSx} onClick={() => navegar("/asistencia")}>
+              <ListItemIcon sx={drawerIconSx}><AccessTimeIcon /></ListItemIcon>
+              <ListItemText primary="ASISTENCIA" primaryTypographyProps={{ fontWeight: 700 }} />
+            </ListItemButton>
           )}
 
-          <Button
+          <Divider sx={{ my: 1 }} />
+
+          {/* ── CERRAR SESIÓN ─────────────────────────────────────────────────── */}
+          <ListItemButton
             sx={{
-              ...navBtnSx,
-              ml: 1,
-              border: "1px solid rgba(249,115,22,0.35)",
-              borderRadius: 1,
+              ...drawerItemSx,
+              color: "#dc2626",
               "&:hover": {
-                color: "#ffffff",
-                backgroundColor: "#f97316",
-                border: "1px solid #f97316",
+                bgcolor: "rgba(220,38,38,0.08)",
+                color: "#dc2626",
+                "& .MuiListItemIcon-root": { color: "#dc2626" },
               },
             }}
-            onClick={cerrarSesion}
+            onClick={() => { setDrawerOpen(false); cerrarSesion(); }}
           >
-            Cerrar sesión
-          </Button>
-        </Box>
-      </Toolbar>
-    </AppBar>
+            <ListItemIcon sx={{ ...drawerIconSx, color: "#dc2626" }}><LogoutIcon /></ListItemIcon>
+            <ListItemText primary="Cerrar sesión" primaryTypographyProps={{ fontWeight: 600 }} />
+          </ListItemButton>
+
+        </List>
+      </Drawer>
+    </>
   );
 };
 
