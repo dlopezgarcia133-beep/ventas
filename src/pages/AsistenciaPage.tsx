@@ -1,0 +1,801 @@
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Snackbar,
+  Switch,
+  Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tabs,
+  TextField,
+  Typography,
+} from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
+import axios from "axios";
+import * as XLSX from "xlsx";
+
+const API = process.env.REACT_APP_API_URL ?? "";
+const token = () => localStorage.getItem("token") ?? "";
+const authH = () => ({ Authorization: `Bearer ${token()}` });
+
+// ── Tipos ─────────────────────────────────────────────────────────────────────
+
+interface AsistenciaResumen {
+  fecha: string;
+  entrada: string | null;
+  salida: string | null;
+  horas_trabajadas: number;
+  foto_entrada_url: string | null;
+  foto_salida_url: string | null;
+  dentro_de_zona_entrada: boolean | null;
+  dentro_de_zona_salida: boolean | null;
+  distancia_metros_entrada: number | null;
+  distancia_metros_salida: number | null;
+  username?: string;
+  modulo_id?: number;
+  modulo_nombre?: string;
+}
+
+interface CheckResponse {
+  id: number;
+  dentro_de_zona: boolean;
+  distancia_metros: number | null;
+  tipo: string;
+}
+
+interface Notificacion {
+  id: number;
+  usuario_id: number;
+  username: string;
+  modulo_id: number | null;
+  mensaje: string;
+  distancia_metros: number | null;
+  leida: boolean;
+  creada_at: string;
+}
+
+interface ModuloConUbicacion {
+  id: number;
+  nombre: string;
+  latitud: number | null;
+  longitud: number | null;
+  radio_metros: number;
+}
+
+interface UsuarioBasico {
+  id: number;
+  username: string;
+  modulo: { id: number; nombre: string } | null;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const fileToBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve((reader.result as string).split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+const formatHora = (iso: string | null) => {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+};
+
+const formatFecha = (iso: string) => {
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+};
+
+const mesActual = () => {
+  const hoy = new Date();
+  return { y: hoy.getFullYear(), m: hoy.getMonth() };
+};
+
+// ── FotoThumb: miniatura con click para ampliar ───────────────────────────────
+
+const FotoThumb: React.FC<{ url: string | null }> = ({ url }) => {
+  const [open, setOpen] = useState(false);
+  if (!url) return <span style={{ color: "#94a3b8" }}>—</span>;
+  return (
+    <>
+      <img
+        src={url}
+        alt="foto"
+        style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 4, cursor: "pointer" }}
+        onClick={() => setOpen(true)}
+      />
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md">
+        <DialogContent sx={{ p: 1 }}>
+          <img src={url} alt="foto grande" style={{ maxWidth: "80vw", maxHeight: "80vh" }} />
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
+// ── ZonaChip ─────────────────────────────────────────────────────────────────
+
+const ZonaChip: React.FC<{ dentro: boolean | null }> = ({ dentro }) => {
+  if (dentro === null) return <span style={{ color: "#94a3b8" }}>—</span>;
+  return dentro ? (
+    <Chip icon={<CheckCircleIcon />} label="En zona" color="success" size="small" />
+  ) : (
+    <Chip icon={<WarningAmberIcon />} label="Fuera" color="warning" size="small" />
+  );
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// VISTA ASESOR / ENCARGADO
+// ═════════════════════════════════════════════════════════════════════════════
+
+const VistaEmpleado: React.FC = () => {
+  const [ahora, setAhora] = useState(new Date());
+  const [cargando, setCargando] = useState(false);
+  const [historial, setHistorial] = useState<AsistenciaResumen[]>([]);
+  const [mes, setMes] = useState(mesActual());
+  const [snack, setSnack] = useState<{ msg: string; sev: "success" | "error" | "warning" } | null>(null);
+  const [fotoUrl, setFotoUrl] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const pendingRef = useRef<{ tipo: "entrada" | "salida"; lat: number; lng: number } | null>(null);
+
+  // Reloj en tiempo real
+  useEffect(() => {
+    const t = setInterval(() => setAhora(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const cargarHistorial = useCallback(async () => {
+    const { y, m } = mes;
+    const desde = `${y}-${String(m + 1).padStart(2, "0")}-01`;
+    const ultimo = new Date(y, m + 1, 0).getDate();
+    const hasta = `${y}-${String(m + 1).padStart(2, "0")}-${ultimo}`;
+    try {
+      const { data } = await axios.get<AsistenciaResumen[]>(
+        `${API}/asistencia/mi-historial?desde=${desde}&hasta=${hasta}`,
+        { headers: authH() }
+      );
+      setHistorial(data.sort((a, b) => b.fecha.localeCompare(a.fecha)));
+    } catch {
+      // silencioso
+    }
+  }, [mes]);
+
+  useEffect(() => { cargarHistorial(); }, [cargarHistorial]);
+
+  // 1️⃣ Usuario hace click en CHECK-IN / CHECK-OUT
+  const handleCheck = (tipo: "entrada" | "salida") => {
+    if (!navigator.geolocation) {
+      setSnack({ msg: "Tu navegador no soporta geolocalización", sev: "error" });
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        pendingRef.current = { tipo, lat: pos.coords.latitude, lng: pos.coords.longitude };
+        fileInputRef.current?.click();
+      },
+      () => setSnack({ msg: "Necesitas permitir ubicación para registrar asistencia", sev: "error" })
+    );
+  };
+
+  // 2️⃣ Usuario seleccionó foto → enviar
+  const handleFoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !pendingRef.current) return;
+
+    setCargando(true);
+    try {
+      const b64 = await fileToBase64(file);
+      const { tipo, lat, lng } = pendingRef.current;
+
+      const { data } = await axios.post<CheckResponse>(
+        `${API}/asistencia/check`,
+        { tipo, latitud: lat, longitud: lng, foto_base64: b64 },
+        { headers: authH() }
+      );
+
+      if (!data.dentro_de_zona) {
+        setSnack({
+          msg: `Registrado, pero FUERA DE ZONA — a ${Math.round(data.distancia_metros ?? 0)} metros del módulo`,
+          sev: "warning",
+        });
+      } else {
+        setSnack({ msg: `${tipo === "entrada" ? "CHECK-IN" : "CHECK-OUT"} registrado ✓`, sev: "success" });
+      }
+      cargarHistorial();
+    } catch {
+      setSnack({ msg: "Error al registrar asistencia. Intenta de nuevo.", sev: "error" });
+    } finally {
+      setCargando(false);
+      pendingRef.current = null;
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const totalHoras = historial.reduce((s, r) => s + r.horas_trabajadas, 0);
+  const meses = Array.from({ length: 12 }, (_, i) => i);
+  const anios = [new Date().getFullYear() - 1, new Date().getFullYear()];
+  const nombresMes = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+
+  return (
+    <Box sx={{ maxWidth: 900, mx: "auto", p: 3 }}>
+      {/* Título y reloj */}
+      <Typography variant="h4" fontWeight={700} color="primary" gutterBottom>
+        REGISTRO DE ASISTENCIA
+      </Typography>
+      <Typography variant="h5" sx={{ mb: 3, color: "#64748b", fontFamily: "monospace" }}>
+        {ahora.toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+        &nbsp;—&nbsp;
+        {ahora.toLocaleTimeString("es-MX")}
+      </Typography>
+
+      {/* Botones CHECK-IN / CHECK-OUT */}
+      <Box display="flex" gap={2} mb={4}>
+        <Button
+          variant="contained"
+          size="large"
+          disabled={cargando}
+          onClick={() => handleCheck("entrada")}
+          startIcon={<AccessTimeIcon />}
+          sx={{
+            flex: 1, py: 3, fontSize: 18, fontWeight: 700,
+            bgcolor: "#16a34a", "&:hover": { bgcolor: "#15803d" },
+          }}
+        >
+          CHECK-IN (ENTRADA)
+        </Button>
+        <Button
+          variant="contained"
+          size="large"
+          disabled={cargando}
+          onClick={() => handleCheck("salida")}
+          startIcon={<AccessTimeIcon />}
+          sx={{
+            flex: 1, py: 3, fontSize: 18, fontWeight: 700,
+            bgcolor: "#FF6600", "&:hover": { bgcolor: "#ea5c00" },
+          }}
+        >
+          CHECK-OUT (SALIDA)
+        </Button>
+      </Box>
+
+      {cargando && <Box textAlign="center" mb={2}><CircularProgress /></Box>}
+
+      {/* Input oculto para cámara frontal */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="user"
+        style={{ display: "none" }}
+        onChange={handleFoto}
+      />
+
+      {/* ── Historial ── */}
+      <Typography variant="h6" fontWeight={600} mb={1}>Mi historial</Typography>
+
+      <Box display="flex" gap={2} mb={2}>
+        <FormControl size="small">
+          <InputLabel>Mes</InputLabel>
+          <Select
+            label="Mes"
+            value={mes.m}
+            onChange={(e) => setMes((p) => ({ ...p, m: Number(e.target.value) }))}
+            sx={{ minWidth: 100 }}
+          >
+            {meses.map((i) => <MenuItem key={i} value={i}>{nombresMes[i]}</MenuItem>)}
+          </Select>
+        </FormControl>
+        <FormControl size="small">
+          <InputLabel>Año</InputLabel>
+          <Select
+            label="Año"
+            value={mes.y}
+            onChange={(e) => setMes((p) => ({ ...p, y: Number(e.target.value) }))}
+            sx={{ minWidth: 90 }}
+          >
+            {anios.map((y) => <MenuItem key={y} value={y}>{y}</MenuItem>)}
+          </Select>
+        </FormControl>
+      </Box>
+
+      <TableContainer component={Paper} elevation={1}>
+        <Table size="small">
+          <TableHead>
+            <TableRow sx={{ bgcolor: "#f8fafc" }}>
+              {["Fecha","Entrada","Foto E","Salida","Foto S","Horas","Estado"].map((h) => (
+                <TableCell key={h} sx={{ fontWeight: 700, color: "#FF6600" }}>{h}</TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {historial.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ color: "#94a3b8", py: 3 }}>
+                  Sin registros para este período
+                </TableCell>
+              </TableRow>
+            )}
+            {historial.map((r) => {
+              const fueraAlguno = r.dentro_de_zona_entrada === false || r.dentro_de_zona_salida === false;
+              return (
+                <TableRow key={r.fecha} sx={{ bgcolor: fueraAlguno ? "#fff7ed" : undefined }}>
+                  <TableCell>{formatFecha(r.fecha)}</TableCell>
+                  <TableCell>{formatHora(r.entrada)}</TableCell>
+                  <TableCell><FotoThumb url={r.foto_entrada_url} /></TableCell>
+                  <TableCell>{formatHora(r.salida)}</TableCell>
+                  <TableCell><FotoThumb url={r.foto_salida_url} /></TableCell>
+                  <TableCell>{r.horas_trabajadas.toFixed(2)} h</TableCell>
+                  <TableCell>
+                    {fueraAlguno
+                      ? <Chip icon={<WarningAmberIcon />} label="Fuera de zona" color="warning" size="small" />
+                      : <Chip icon={<CheckCircleIcon />} label="En zona" color="success" size="small" />}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+            {historial.length > 0 && (
+              <TableRow sx={{ bgcolor: "#f1f5f9" }}>
+                <TableCell colSpan={5} sx={{ fontWeight: 700 }}>Total del mes</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{totalHoras.toFixed(2)} h</TableCell>
+                <TableCell />
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Snackbar open={!!snack} autoHideDuration={5000} onClose={() => setSnack(null)}>
+        <Alert severity={snack?.sev} onClose={() => setSnack(null)} sx={{ width: "100%" }}>
+          {snack?.msg}
+        </Alert>
+      </Snackbar>
+    </Box>
+  );
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TAB REGISTROS (admin)
+// ═════════════════════════════════════════════════════════════════════════════
+
+const TabRegistros: React.FC = () => {
+  const [registros, setRegistros] = useState<AsistenciaResumen[]>([]);
+  const [usuarios, setUsuarios] = useState<UsuarioBasico[]>([]);
+  const [modulos, setModulos] = useState<ModuloConUbicacion[]>([]);
+  const [filtros, setFiltros] = useState({
+    usuario_id: "", modulo_id: "", desde: "", hasta: "",
+  });
+  const [cargando, setCargando] = useState(false);
+
+  useEffect(() => {
+    axios.get<UsuarioBasico[]>(`${API}/usuarios/all`, { headers: authH() })
+      .then(({ data }) => setUsuarios(data)).catch(() => {});
+    axios.get<ModuloConUbicacion[]>(`${API}/modulos/con-ubicacion`, { headers: authH() })
+      .then(({ data }) => setModulos(data)).catch(() => {});
+  }, []);
+
+  const buscar = async () => {
+    setCargando(true);
+    const params = new URLSearchParams();
+    if (filtros.usuario_id) params.set("usuario_id", filtros.usuario_id);
+    if (filtros.modulo_id) params.set("modulo_id", filtros.modulo_id);
+    if (filtros.desde) params.set("desde", filtros.desde);
+    if (filtros.hasta) params.set("hasta", filtros.hasta);
+    try {
+      const { data } = await axios.get<AsistenciaResumen[]>(
+        `${API}/asistencia/admin?${params}`,
+        { headers: authH() }
+      );
+      setRegistros(data.sort((a, b) => b.fecha.localeCompare(a.fecha)));
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const exportarExcel = () => {
+    const filas = registros.map((r) => ({
+      Usuario: r.username ?? "",
+      Módulo: r.modulo_nombre ?? "",
+      Fecha: formatFecha(r.fecha),
+      Entrada: formatHora(r.entrada),
+      Salida: formatHora(r.salida),
+      "Horas trabajadas": r.horas_trabajadas.toFixed(2),
+      Estado:
+        r.dentro_de_zona_entrada === false || r.dentro_de_zona_salida === false
+          ? "Fuera de zona"
+          : "En zona",
+    }));
+    const ws = XLSX.utils.json_to_sheet(filas);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Asistencia");
+    XLSX.writeFile(wb, `asistencia_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
+
+  const totalHoras = registros.reduce((s, r) => s + r.horas_trabajadas, 0);
+
+  return (
+    <Box>
+      {/* Filtros */}
+      <Box display="flex" flexWrap="wrap" gap={2} mb={2}>
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel>Usuario</InputLabel>
+          <Select
+            label="Usuario"
+            value={filtros.usuario_id}
+            onChange={(e) => setFiltros((p) => ({ ...p, usuario_id: e.target.value as string }))}
+          >
+            <MenuItem value="">Todos</MenuItem>
+            {usuarios.map((u) => <MenuItem key={u.id} value={String(u.id)}>{u.username}</MenuItem>)}
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel>Módulo</InputLabel>
+          <Select
+            label="Módulo"
+            value={filtros.modulo_id}
+            onChange={(e) => setFiltros((p) => ({ ...p, modulo_id: e.target.value as string }))}
+          >
+            <MenuItem value="">Todos</MenuItem>
+            {modulos.map((m) => <MenuItem key={m.id} value={String(m.id)}>{m.nombre}</MenuItem>)}
+          </Select>
+        </FormControl>
+        <TextField
+          size="small" type="date" label="Desde" InputLabelProps={{ shrink: true }}
+          value={filtros.desde}
+          onChange={(e) => setFiltros((p) => ({ ...p, desde: e.target.value }))}
+        />
+        <TextField
+          size="small" type="date" label="Hasta" InputLabelProps={{ shrink: true }}
+          value={filtros.hasta}
+          onChange={(e) => setFiltros((p) => ({ ...p, hasta: e.target.value }))}
+        />
+        <Button variant="contained" onClick={buscar} disabled={cargando}
+          sx={{ bgcolor: "#FF6600", "&:hover": { bgcolor: "#ea5c00" } }}>
+          BUSCAR
+        </Button>
+        {registros.length > 0 && (
+          <Button variant="outlined" onClick={exportarExcel}>Descargar Excel</Button>
+        )}
+      </Box>
+
+      {cargando ? (
+        <Box textAlign="center" py={4}><CircularProgress /></Box>
+      ) : (
+        <TableContainer component={Paper} elevation={1}>
+          <Table size="small">
+            <TableHead>
+              <TableRow sx={{ bgcolor: "#f8fafc" }}>
+                {["Usuario","Módulo","Fecha","Entrada","Foto E","Salida","Foto S","Horas","Estado"].map((h) => (
+                  <TableCell key={h} sx={{ fontWeight: 700, color: "#FF6600" }}>{h}</TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {registros.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={9} align="center" sx={{ color: "#94a3b8", py: 3 }}>
+                    Usa los filtros y presiona BUSCAR
+                  </TableCell>
+                </TableRow>
+              )}
+              {registros.map((r, i) => {
+                const fuera = r.dentro_de_zona_entrada === false || r.dentro_de_zona_salida === false;
+                return (
+                  <TableRow key={i} sx={{ bgcolor: fuera ? "#fff7ed" : undefined }}>
+                    <TableCell>{r.username}</TableCell>
+                    <TableCell>{r.modulo_nombre}</TableCell>
+                    <TableCell>{formatFecha(r.fecha)}</TableCell>
+                    <TableCell>{formatHora(r.entrada)}</TableCell>
+                    <TableCell><FotoThumb url={r.foto_entrada_url} /></TableCell>
+                    <TableCell>{formatHora(r.salida)}</TableCell>
+                    <TableCell><FotoThumb url={r.foto_salida_url} /></TableCell>
+                    <TableCell>{r.horas_trabajadas.toFixed(2)} h</TableCell>
+                    <TableCell>
+                      <ZonaChip dentro={fuera ? false : true} />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+              {registros.length > 0 && (
+                <TableRow sx={{ bgcolor: "#f1f5f9" }}>
+                  <TableCell colSpan={7} sx={{ fontWeight: 700 }}>Total general</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{totalHoras.toFixed(2)} h</TableCell>
+                  <TableCell />
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+    </Box>
+  );
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TAB CONFIGURAR MÓDULOS (admin)
+// ═════════════════════════════════════════════════════════════════════════════
+
+const TabModulos: React.FC = () => {
+  const [modulos, setModulos] = useState<ModuloConUbicacion[]>([]);
+  const [edicion, setEdicion] = useState<Record<number, Partial<ModuloConUbicacion>>>({});
+  const [guardando, setGuardando] = useState<number | null>(null);
+  const [snack, setSnack] = useState<string | null>(null);
+
+  useEffect(() => {
+    axios.get<ModuloConUbicacion[]>(`${API}/modulos/con-ubicacion`, { headers: authH() })
+      .then(({ data }) => setModulos(data)).catch(() => {});
+  }, []);
+
+  const campo = (id: number, field: keyof ModuloConUbicacion) =>
+    (edicion[id]?.[field] ?? modulos.find((m) => m.id === id)?.[field] ?? "") as string | number;
+
+  const setField = (id: number, field: keyof ModuloConUbicacion, val: string) =>
+    setEdicion((p) => ({ ...p, [id]: { ...p[id], [field]: val === "" ? null : Number(val) } }));
+
+  const usarMiUbicacion = (id: number) => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) =>
+        setEdicion((p) => ({
+          ...p,
+          [id]: { ...p[id], latitud: pos.coords.latitude, longitud: pos.coords.longitude },
+        })),
+      () => alert("No se pudo obtener la ubicación")
+    );
+  };
+
+  const guardar = async (id: number) => {
+    const data = edicion[id];
+    if (!data) return;
+    setGuardando(id);
+    try {
+      await axios.put(
+        `${API}/modulos/${id}/ubicacion`,
+        {
+          latitud: data.latitud ?? null,
+          longitud: data.longitud ?? null,
+          radio_metros: data.radio_metros ?? 100,
+        },
+        { headers: authH() }
+      );
+      setSnack("Guardado correctamente");
+      setModulos((prev) =>
+        prev.map((m) => (m.id === id ? { ...m, ...data } : m))
+      );
+    } catch {
+      setSnack("Error al guardar");
+    } finally {
+      setGuardando(null);
+    }
+  };
+
+  return (
+    <Box>
+      <Typography variant="body2" color="text.secondary" mb={2}>
+        Configura las coordenadas de cada módulo para validar asistencia por geolocalización.
+      </Typography>
+      <TableContainer component={Paper} elevation={1}>
+        <Table size="small">
+          <TableHead>
+            <TableRow sx={{ bgcolor: "#f8fafc" }}>
+              {["Módulo","Latitud","Longitud","Radio (m)","Acciones"].map((h) => (
+                <TableCell key={h} sx={{ fontWeight: 700, color: "#FF6600" }}>{h}</TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {modulos.map((m) => (
+              <TableRow key={m.id}>
+                <TableCell sx={{ fontWeight: 600 }}>{m.nombre}</TableCell>
+                <TableCell>
+                  <TextField
+                    size="small" type="number" sx={{ width: 130 }}
+                    value={campo(m.id, "latitud")}
+                    onChange={(e) => setField(m.id, "latitud", e.target.value)}
+                    inputProps={{ step: "0.000001" }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    size="small" type="number" sx={{ width: 130 }}
+                    value={campo(m.id, "longitud")}
+                    onChange={(e) => setField(m.id, "longitud", e.target.value)}
+                    inputProps={{ step: "0.000001" }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    size="small" type="number" sx={{ width: 90 }}
+                    value={campo(m.id, "radio_metros")}
+                    onChange={(e) => setField(m.id, "radio_metros", e.target.value)}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Box display="flex" gap={1}>
+                    <Button
+                      size="small" variant="contained"
+                      disabled={guardando === m.id}
+                      onClick={() => guardar(m.id)}
+                      sx={{ bgcolor: "#FF6600", "&:hover": { bgcolor: "#ea5c00" } }}
+                    >
+                      {guardando === m.id ? <CircularProgress size={16} /> : "GUARDAR"}
+                    </Button>
+                    <Button
+                      size="small" variant="outlined" startIcon={<LocationOnIcon />}
+                      onClick={() => usarMiUbicacion(m.id)}
+                    >
+                      Mi ubicación
+                    </Button>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Snackbar open={!!snack} autoHideDuration={3000} onClose={() => setSnack(null)}>
+        <Alert severity="success" onClose={() => setSnack(null)}>{snack}</Alert>
+      </Snackbar>
+    </Box>
+  );
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TAB ALERTAS (admin)
+// ═════════════════════════════════════════════════════════════════════════════
+
+const TabAlertas: React.FC = () => {
+  const [notifs, setNotifs] = useState<Notificacion[]>([]);
+  const [soloNoLeidas, setSoloNoLeidas] = useState(true);
+  const [cargando, setCargando] = useState(false);
+
+  const cargar = useCallback(async () => {
+    setCargando(true);
+    try {
+      const { data } = await axios.get<Notificacion[]>(
+        `${API}/asistencia/notificaciones?solo_no_leidas=${soloNoLeidas}`,
+        { headers: authH() }
+      );
+      setNotifs(data);
+    } finally {
+      setCargando(false);
+    }
+  }, [soloNoLeidas]);
+
+  useEffect(() => { cargar(); }, [cargar]);
+
+  const marcarLeida = async (id: number) => {
+    await axios.put(`${API}/asistencia/notificaciones/${id}/marcar-leida`, {}, { headers: authH() });
+    setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, leida: true } : n)));
+  };
+
+  return (
+    <Box>
+      <Box display="flex" alignItems="center" gap={1} mb={2}>
+        <Typography>Solo no leídas</Typography>
+        <Switch checked={soloNoLeidas} onChange={(e) => setSoloNoLeidas(e.target.checked)} />
+        <Typography color="text.secondary" variant="body2">
+          {soloNoLeidas ? "Mostrando no leídas" : "Mostrando todas"}
+        </Typography>
+      </Box>
+
+      {cargando ? (
+        <Box textAlign="center" py={4}><CircularProgress /></Box>
+      ) : notifs.length === 0 ? (
+        <Alert severity="info">Sin alertas {soloNoLeidas ? "no leídas" : ""}</Alert>
+      ) : (
+        <Box display="flex" flexDirection="column" gap={2}>
+          {notifs.map((n) => (
+            <Card
+              key={n.id}
+              sx={{
+                borderLeft: `4px solid ${n.leida ? "#94a3b8" : "#ef4444"}`,
+                bgcolor: n.leida ? "#f8fafc" : "#fff1f2",
+              }}
+            >
+              <CardContent>
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+                  <Box>
+                    <Box display="flex" alignItems="center" gap={1} mb={0.5}>
+                      <NotificationsActiveIcon sx={{ color: n.leida ? "#94a3b8" : "#ef4444" }} />
+                      <Typography fontWeight={700}>{n.username}</Typography>
+                      {!n.leida && <Chip label="Nueva" color="error" size="small" />}
+                    </Box>
+                    <Typography variant="body1" mb={0.5}>{n.mensaje}</Typography>
+                    {n.distancia_metros && (
+                      <Typography variant="body2" color="text.secondary">
+                        Distancia: {Math.round(n.distancia_metros)} m
+                      </Typography>
+                    )}
+                    <Typography variant="caption" color="text.secondary">
+                      {new Date(n.creada_at).toLocaleString("es-MX")}
+                    </Typography>
+                  </Box>
+                  {!n.leida && (
+                    <Button size="small" variant="outlined" onClick={() => marcarLeida(n.id)}>
+                      Marcar leída
+                    </Button>
+                  )}
+                </Box>
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// VISTA ADMIN / DIRECCION
+// ═════════════════════════════════════════════════════════════════════════════
+
+const VistaAdmin: React.FC = () => {
+  const [tab, setTab] = useState(0);
+
+  return (
+    <Box sx={{ maxWidth: 1100, mx: "auto", p: 3 }}>
+      <Typography variant="h4" fontWeight={700} color="primary" gutterBottom>
+        REGISTRO DE ASISTENCIA — Administración
+      </Typography>
+      <Tabs
+        value={tab}
+        onChange={(_, v) => setTab(v)}
+        sx={{ mb: 3, borderBottom: "1px solid #e2e8f0" }}
+        TabIndicatorProps={{ sx: { bgcolor: "#FF6600" } }}
+      >
+        <Tab label="Registros" />
+        <Tab label="Configurar Módulos" />
+        <Tab label="Alertas" />
+      </Tabs>
+
+      {tab === 0 && <TabRegistros />}
+      {tab === 1 && <TabModulos />}
+      {tab === 2 && <TabAlertas />}
+    </Box>
+  );
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// COMPONENTE PRINCIPAL
+// ═════════════════════════════════════════════════════════════════════════════
+
+const AsistenciaPage: React.FC = () => {
+  const rol = localStorage.getItem("rol") ?? "";
+
+  if (rol === "asesor" || rol === "encargado") return <VistaEmpleado />;
+  if (rol === "admin" || rol === "direccion") return <VistaAdmin />;
+
+  return (
+    <Box textAlign="center" mt={8}>
+      <Typography color="error">No tienes permiso para acceder a esta página.</Typography>
+    </Box>
+  );
+};
+
+export default AsistenciaPage;

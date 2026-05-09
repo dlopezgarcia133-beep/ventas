@@ -195,6 +195,17 @@ const Navbar = () => {
             </Button>
           )}
 
+          {/* ASISTENCIA: asesor/encargado con módulo (no Cadenas) + admin/direccion */}
+          {(
+            ((rolToken === "asesor" || rolToken === "encargado") && modulo && modulo !== "Cadenas") ||
+            rolToken === "admin" ||
+            rolToken === "direccion"
+          ) && (
+            <Button sx={navBtnSx} component={Link} to="/asistencia">
+              ASISTENCIA
+            </Button>
+          )}
+
           <Button
             sx={{
               ...navBtnSx,
