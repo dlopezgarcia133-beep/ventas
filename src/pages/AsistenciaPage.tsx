@@ -33,6 +33,7 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
+import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import * as XLSX from "xlsx";
 
@@ -91,14 +92,6 @@ interface UsuarioBasico {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-const fileToBase64 = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve((reader.result as string).split(",")[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 
 const formatHora = (iso: string | null) => {
   if (!iso) return "—";
@@ -159,12 +152,12 @@ const VistaEmpleado: React.FC = () => {
   const [historial, setHistorial] = useState<AsistenciaResumen[]>([]);
   const [mes, setMes] = useState(mesActual());
   const [snack, setSnack] = useState<{ msg: string; sev: "success" | "error" | "warning" } | null>(null);
-  const [fotoUrl, setFotoUrl] = useState<string | null>(null);
+  const [camaraAbierta, setCamaraAbierta] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const pendingRef = useRef<{ tipo: "entrada" | "salida"; lat: number; lng: number } | null>(null);
 
-  // Reloj en tiempo real
   useEffect(() => {
     const t = setInterval(() => setAhora(new Date()), 1000);
     return () => clearInterval(t);
@@ -188,7 +181,12 @@ const VistaEmpleado: React.FC = () => {
 
   useEffect(() => { cargarHistorial(); }, [cargarHistorial]);
 
-  // 1️⃣ Usuario hace click en CHECK-IN / CHECK-OUT
+  const cerrarCamara = () => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    setCamaraAbierta(false);
+  };
+
   const handleCheck = (tipo: "entrada" | "salida") => {
     if (!navigator.geolocation) {
       setSnack({ msg: "Tu navegador no soporta geolocalización", sev: "error" });
@@ -197,22 +195,49 @@ const VistaEmpleado: React.FC = () => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         pendingRef.current = { tipo, lat: pos.coords.latitude, lng: pos.coords.longitude };
-        fileInputRef.current?.click();
+        setCamaraAbierta(true);
       },
       () => setSnack({ msg: "Necesitas permitir ubicación para registrar asistencia", sev: "error" })
     );
   };
 
-  // 2️⃣ Usuario seleccionó foto → enviar
-  const handleFoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !pendingRef.current) return;
+  const iniciarStream = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+    } catch (err: any) {
+      cerrarCamara();
+      if (err.name === "NotAllowedError") {
+        setSnack({
+          msg: "Cámara bloqueada. Ve a Configuración → Chrome → Cámara y activa el permiso",
+          sev: "error",
+        });
+      } else {
+        setSnack({ msg: "No se pudo acceder a la cámara", sev: "error" });
+      }
+    }
+  };
 
+  const tomarFoto = async () => {
+    if (!videoRef.current || !pendingRef.current) return;
+    const video = videoRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    canvas.getContext("2d")?.drawImage(video, 0, 0);
+    const b64 = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
+
+    cerrarCamara();
     setCargando(true);
     try {
-      const b64 = await fileToBase64(file);
       const { tipo, lat, lng } = pendingRef.current;
-
       const { data } = await axios.post<CheckResponse>(
         `${API}/asistencia/check`,
         { tipo, latitud: lat, longitud: lng, foto_base64: b64 },
@@ -233,7 +258,6 @@ const VistaEmpleado: React.FC = () => {
     } finally {
       setCargando(false);
       pendingRef.current = null;
-      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -244,7 +268,6 @@ const VistaEmpleado: React.FC = () => {
 
   return (
     <Box sx={{ maxWidth: 900, mx: "auto", p: 3 }}>
-      {/* Título y reloj */}
       <Typography variant="h4" fontWeight={700} color="primary" gutterBottom>
         REGISTRO DE ASISTENCIA
       </Typography>
@@ -254,7 +277,6 @@ const VistaEmpleado: React.FC = () => {
         {ahora.toLocaleTimeString("es-MX")}
       </Typography>
 
-      {/* Botones CHECK-IN / CHECK-OUT */}
       <Box display="flex" gap={2} mb={4}>
         <Button
           variant="contained"
@@ -286,15 +308,51 @@ const VistaEmpleado: React.FC = () => {
 
       {cargando && <Box textAlign="center" mb={2}><CircularProgress /></Box>}
 
-      {/* Input oculto para cámara frontal */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        capture="user"
-        style={{ display: "none" }}
-        onChange={handleFoto}
-      />
+      {/* Dialog de cámara fullscreen */}
+      <Dialog
+        fullScreen
+        open={camaraAbierta}
+        onClose={cerrarCamara}
+        TransitionProps={{ onEntered: iniciarStream }}
+      >
+        <Box
+          sx={{
+            bgcolor: "#000",
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 2,
+            p: 2,
+            position: "relative",
+          }}
+        >
+          <Box sx={{ position: "absolute", top: 16, right: 16 }}>
+            <IconButton onClick={cerrarCamara} sx={{ color: "#fff" }}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            style={{ width: "100%", maxWidth: 480, borderRadius: 8, background: "#111" }}
+          />
+          <Button
+            variant="contained"
+            size="large"
+            onClick={tomarFoto}
+            sx={{
+              bgcolor: "#FF6600", "&:hover": { bgcolor: "#ea5c00" },
+              fontSize: 18, fontWeight: 700, px: 6, py: 2,
+            }}
+          >
+            TOMAR FOTO
+          </Button>
+        </Box>
+      </Dialog>
 
       {/* ── Historial ── */}
       <Typography variant="h6" fontWeight={600} mb={1}>Mi historial</Typography>
