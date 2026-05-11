@@ -3,8 +3,6 @@ import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
   Chip,
   CircularProgress,
   Dialog,
@@ -13,7 +11,6 @@ import {
   DialogTitle,
   Divider,
   FormControl,
-  Grid,
   InputLabel,
   MenuItem,
   Paper,
@@ -69,65 +66,6 @@ interface CortePendiente {
   total_general: number;
 }
 
-// ─── CortePendienteCard ───────────────────────────────────────────────────────
-
-const CortePendienteCard: React.FC<{ c: CortePendiente; onAbrir: () => void }> = ({ c, onAbrir }) => (
-  <Card
-    sx={{
-      bgcolor: '#FFF3E0',
-      border: '1.5px solid #FF6600',
-      borderRadius: 2,
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-    }}
-  >
-    <CardContent sx={{ p: 2.5, flex: 1, display: 'flex', flexDirection: 'column' }}>
-      <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
-        <Typography variant="h6" fontWeight={800} color="#c2410c" sx={{ fontSize: { xs: 18, sm: 20 } }}>
-          {c.modulo_nombre}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.3 }}>
-          {fmtFecha(c.fecha)}
-        </Typography>
-      </Box>
-
-      <Typography
-        fontWeight={800}
-        color="#FF6600"
-        sx={{ fontSize: { xs: 26, sm: 30 }, mb: 1.5, letterSpacing: -0.5 }}
-      >
-        {fmt$(c.total_general)}
-      </Typography>
-
-      <Typography variant="body2" color="#555" sx={{ mb: 0.5 }}>
-        Efectivo: {fmt$(c.total_efectivo)}
-      </Typography>
-      <Typography variant="body2" color="#555" sx={{ mb: 2.5 }}>
-        Tarjeta: {fmt$(c.total_tarjeta)}
-      </Typography>
-
-      <Box sx={{ mt: 'auto' }}>
-        <Button
-          variant="contained"
-          fullWidth
-          endIcon={<ArrowForwardIcon />}
-          onClick={onAbrir}
-          sx={{
-            bgcolor: '#FF6600',
-            '&:hover': { bgcolor: '#ea5c00' },
-            fontWeight: 700,
-            fontSize: 15,
-            minHeight: 48,
-            borderRadius: 1.5,
-          }}
-        >
-          REVISAR
-        </Button>
-      </Box>
-    </CardContent>
-  </Card>
-);
 
 // ─── DireccionPage ────────────────────────────────────────────────────────────
 
@@ -276,13 +214,83 @@ const DireccionPage: React.FC = () => {
           ✅ Todos los cortes están revisados al día
         </Alert>
       ) : (
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          {pendientes.map((c) => (
-            <Grid item xs={12} sm={6} md={4} key={c.id}>
-              <CortePendienteCard c={c} onAbrir={() => abrirCortePendiente(c)} />
-            </Grid>
+        <Box
+          sx={{
+            maxHeight: 600,
+            overflowY: 'auto',
+            border: '1px solid #e2e8f0',
+            borderRadius: 2,
+            mb: 3,
+          }}
+        >
+          {pendientes.map((c, idx) => (
+            <Box
+              key={c.id}
+              onClick={() => abrirCortePendiente(c)}
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                alignItems: { xs: 'stretch', sm: 'center' },
+                minHeight: 56,
+                px: 2,
+                py: { xs: 1.5, sm: 1 },
+                bgcolor: '#FFF8F0',
+                borderBottom: idx < pendientes.length - 1 ? '1px solid #e2e8f0' : 'none',
+                cursor: 'pointer',
+                gap: { xs: 0.5, sm: 1 },
+                '&:hover': { bgcolor: '#FFF3E0' },
+              }}
+            >
+              {/* Izquierda: módulo + fecha */}
+              <Box sx={{ flex: { sm: '0 0 40%' }, minWidth: 0 }}>
+                <Typography fontWeight={700} fontSize={{ xs: 16, sm: 15 }} color="#c2410c">
+                  {c.modulo_nombre}
+                </Typography>
+                <Typography fontSize={12} color="text.secondary">
+                  {fmtFecha(c.fecha)}
+                </Typography>
+              </Box>
+
+              {/* Centro: total + desglose */}
+              <Box sx={{ flex: { sm: '0 0 35%' }, minWidth: 0 }}>
+                <Typography fontWeight={800} fontSize={{ xs: 20, sm: 17 }} color="#FF6600" lineHeight={1.2}>
+                  {fmt$(c.total_general)}
+                </Typography>
+                <Typography fontSize={11} color="#888" noWrap>
+                  Ef: {fmt$(c.total_efectivo)} · Ta: {fmt$(c.total_tarjeta)}
+                </Typography>
+              </Box>
+
+              {/* Derecha: botón */}
+              <Box
+                sx={{
+                  flex: { sm: '0 0 25%' },
+                  display: 'flex',
+                  justifyContent: { xs: 'stretch', sm: 'flex-end' },
+                  mt: { xs: 1, sm: 0 },
+                }}
+              >
+                <Button
+                  variant="contained"
+                  endIcon={<ArrowForwardIcon />}
+                  onClick={(e) => { e.stopPropagation(); abrirCortePendiente(c); }}
+                  sx={{
+                    bgcolor: '#FF6600',
+                    '&:hover': { bgcolor: '#ea5c00' },
+                    fontWeight: 700,
+                    fontSize: 13,
+                    minHeight: { xs: 44, sm: 36 },
+                    width: { xs: '100%', sm: 'auto' },
+                    borderRadius: 1.5,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  REVISAR
+                </Button>
+              </Box>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       )}
 
       <Divider sx={{ my: 3 }} />
