@@ -45,7 +45,7 @@ interface EstData {
   resumen_general: { total_ventas_mxn: number; total_telefonos: number; total_chips: number; total_accesorios: number; total_planes: number; };
   telefonos: { total: number; contado: CM; payjoy: CM; paguitos: CM; sin_clasificar: CM; };
   accesorios: { total_unidades: number; monto_total: number; top_5_productos: { producto: string; cantidad: number; monto: number }[]; };
-  chips: { total: number; por_tipo: { tipo_chip: string; cantidad: number }[]; por_monto_recarga: { monto: number; cantidad: number }[]; };
+  chips: { total: number; por_tipo: { tipo_chip: string; cantidad: number }[]; por_monto_recarga: { monto: string; cantidad: number }[]; };
   planes: { total: number; por_tramite: { tramite: string; cantidad: number }[]; por_plan: { plan: string; cantidad: number }[]; };
   por_modulo: { modulo: string; total_mxn: number; telefonos: number; chips: number; accesorios: number }[];
   ventas_por_dia: { dia: number; total: number }[];
@@ -377,7 +377,7 @@ const EstadisticasPage: React.FC = () => {
                         sx={{ py: 0.5, px: 1, bgcolor: '#f8fafc', borderRadius: 1 }}
                       >
                         <Typography fontSize={13} fontWeight={600}>
-                          ${fmtN(item.monto)}
+                          {item.monto}
                         </Typography>
                         <Typography fontSize={13} fontWeight={700} color="#3b82f6">
                           {fmtN(item.cantidad)}
