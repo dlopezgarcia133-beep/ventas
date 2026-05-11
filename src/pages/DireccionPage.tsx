@@ -131,7 +131,8 @@ const DireccionPage: React.FC = () => {
             >
               <MenuItem value="" disabled>Seleccionar módulo</MenuItem>
               {modulos
-                .filter((m) => !["V2", "Cadenas C.", "MI2", "BO"].includes(m.nombre))
+                .filter((m) => !["V2", "Cadenas C.", "MI2", "BO", "prueba"].includes(m.nombre))
+                .sort((a, b) => a.nombre.localeCompare(b.nombre, undefined, { sensitivity: "base" }))
                 .map((m) => (
                   <MenuItem key={m.id} value={String(m.id)}>{m.nombre}</MenuItem>
                 ))}
