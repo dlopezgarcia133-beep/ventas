@@ -352,6 +352,9 @@ const CortePage = () => {
   const [filtroModulo, setFiltroModulo] = useState('');
   const [filtroFecha, setFiltroFecha] = useState('');
 
+  // ── notificación corte revisado ───────────────────────────────────────────
+  const [notifCorte, setNotifCorte] = useState<any | null>(null);
+
   // ── encargado left-column state ───────────────────────────────────────────
   const [resumen, setResumen] = useState<any>(null);
   const [chips, setChips] = useState<any[]>([]);
@@ -500,6 +503,44 @@ const CortePage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rolToken]);
 
+  // ── notificación corte revisado (encargado) ──────────────────────────────
+  useEffect(() => {
+    if (rolToken !== 'encargado' || !corteHoy?.modulo_id) return;
+    axios
+      .get(`${API}/asistencia/notificaciones?solo_no_leidas=true`, config)
+      .then(({ data }) => {
+        const n = data.find(
+          (x: any) =>
+            x.mensaje?.toLowerCase().includes('corte') &&
+            x.modulo_id === corteHoy.modulo_id,
+        );
+        setNotifCorte(n ?? null);
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [corteHoy?.modulo_id]);
+
+  // ── notificación corte revisado (admin) ──────────────────────────────────
+  useEffect(() => {
+    if (rolToken !== 'admin') return;
+    axios
+      .get(`${API}/asistencia/notificaciones?solo_no_leidas=true`, config)
+      .then(({ data }) => {
+        const n = data.find((x: any) => x.mensaje?.toLowerCase().includes('corte'));
+        setNotifCorte(n ?? null);
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rolToken]);
+
+  const dismissNotifCorte = () => {
+    if (!notifCorte) return;
+    axios
+      .put(`${API}/asistencia/notificaciones/${notifCorte.id}/marcar-leida`, {}, config)
+      .catch(() => {});
+    setNotifCorte(null);
+  };
+
   // ── midnight auto-send ────────────────────────────────────────────────────
   useEffect(() => {
     if (rolToken !== 'encargado' || corteEnviado) return;
@@ -594,6 +635,11 @@ const CortePage = () => {
     return (
       <Box sx={{ p: 4 }}>
         <Typography variant="h4" gutterBottom>Cortes Registrados</Typography>
+        {notifCorte && (
+          <Alert severity="success" onClose={dismissNotifCorte} sx={{ mb: 2, fontSize: 14 }}>
+            {notifCorte.mensaje}
+          </Alert>
+        )}
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid item xs={12} md={6}>
             <FormControl fullWidth>
@@ -649,6 +695,13 @@ const CortePage = () => {
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 720, mx: 'auto' }}>
+
+      {/* Notificación corte revisado */}
+      {notifCorte && (
+        <Alert severity="success" onClose={dismissNotifCorte} sx={{ mb: 2, fontSize: 14 }}>
+          {notifCorte.mensaje}
+        </Alert>
+      )}
 
       {/* Título */}
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>

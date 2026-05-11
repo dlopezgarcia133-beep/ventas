@@ -1,15 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
   Box,
   Button,
+  Card,
+  CardContent,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
   FormControl,
+  Grid,
   InputLabel,
   MenuItem,
   Paper,
   Select,
+  Snackbar,
   Stack,
   Table,
   TableBody,
@@ -22,11 +31,13 @@ import {
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import axios from 'axios';
 
 const HOY = new Date().toLocaleDateString('en-CA');
+const MODULOS_OCULTOS = ['V2', 'Cadenas C.', 'MI2', 'BO', 'prueba'];
 
-// ─── Style helpers (idénticos a CortePage) ───────────────────────────────────
+// ─── Style helpers ────────────────────────────────────────────────────────────
 const thStyle: React.CSSProperties = {
   padding: 8,
   borderBottom: '1px solid #e2e8f0',
@@ -39,23 +50,125 @@ const tdStyle: React.CSSProperties = { padding: '6px 8px', borderBottom: '1px so
 const tdR: React.CSSProperties = { ...tdStyle, textAlign: 'right' };
 
 const getTotal = (v: any) => v.total ?? (v.precio_unitario || 0) * (v.cantidad || 1);
-
 const capitalize = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '—');
+const fmt$ = (n: number) => `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmtFecha = (iso: string) => {
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+};
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface CortePendiente {
+  id: number;
+  modulo_id: number;
+  modulo_nombre: string;
+  fecha: string;
+  total_efectivo: number;
+  total_tarjeta: number;
+  total_general: number;
+}
+
+// ─── CortePendienteCard ───────────────────────────────────────────────────────
+
+const CortePendienteCard: React.FC<{ c: CortePendiente; onAbrir: () => void }> = ({ c, onAbrir }) => (
+  <Card
+    sx={{
+      bgcolor: '#FFF3E0',
+      border: '1.5px solid #FF6600',
+      borderRadius: 2,
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+    }}
+  >
+    <CardContent sx={{ p: 2.5, flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
+        <Typography variant="h6" fontWeight={800} color="#c2410c" sx={{ fontSize: { xs: 18, sm: 20 } }}>
+          {c.modulo_nombre}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.3 }}>
+          {fmtFecha(c.fecha)}
+        </Typography>
+      </Box>
+
+      <Typography
+        fontWeight={800}
+        color="#FF6600"
+        sx={{ fontSize: { xs: 26, sm: 30 }, mb: 1.5, letterSpacing: -0.5 }}
+      >
+        {fmt$(c.total_general)}
+      </Typography>
+
+      <Typography variant="body2" color="#555" sx={{ mb: 0.5 }}>
+        Efectivo: {fmt$(c.total_efectivo)}
+      </Typography>
+      <Typography variant="body2" color="#555" sx={{ mb: 2.5 }}>
+        Tarjeta: {fmt$(c.total_tarjeta)}
+      </Typography>
+
+      <Box sx={{ mt: 'auto' }}>
+        <Button
+          variant="contained"
+          fullWidth
+          endIcon={<ArrowForwardIcon />}
+          onClick={onAbrir}
+          sx={{
+            bgcolor: '#FF6600',
+            '&:hover': { bgcolor: '#ea5c00' },
+            fontWeight: 700,
+            fontSize: 15,
+            minHeight: 48,
+            borderRadius: 1.5,
+          }}
+        >
+          REVISAR
+        </Button>
+      </Box>
+    </CardContent>
+  </Card>
+);
 
 // ─── DireccionPage ────────────────────────────────────────────────────────────
+
 const DireccionPage: React.FC = () => {
   const token = localStorage.getItem('token');
   const config = { headers: { Authorization: `Bearer ${token}` } };
   const API = process.env.REACT_APP_API_URL;
 
+  // Panel A — pendientes
+  const [pendientes, setPendientes] = useState<CortePendiente[]>([]);
+  const [loadingPendientes, setLoadingPendientes] = useState(false);
+
+  // Panel B — filtro
   const [modulos, setModulos] = useState<any[]>([]);
-  const [moduloId, setModuloId] = useState('');   // string para MUI Select
+  const [moduloId, setModuloId] = useState('');
   const [fecha, setFecha] = useState(HOY);
-  const [corte, setCorte] = useState<any>(null);
-  const [sinCorte, setSinCorte] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sinCorte, setSinCorte] = useState(false);
+
+  // Panel C — detalle
+  const [corte, setCorte] = useState<any>(null);
+  const [dialogConfirm, setDialogConfirm] = useState(false);
+  const [marcando, setMarcando] = useState(false);
+  const [snack, setSnack] = useState<{ msg: string; sev: 'success' | 'error' } | null>(null);
+
+  // ── cargar módulos y pendientes al montar ─────────────────────────────────
+  const cargarPendientes = useCallback(async () => {
+    setLoadingPendientes(true);
+    try {
+      const { data } = await axios.get(`${API}/direccion/cortes-pendientes`, config);
+      setPendientes(data);
+    } catch {
+      /* silencioso */
+    } finally {
+      setLoadingPendientes(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
+    cargarPendientes();
     axios
       .get(`${API}/registro/modulos`, config)
       .then((r) => setModulos(r.data))
@@ -63,15 +176,16 @@ const DireccionPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const buscar = async () => {
-    if (!moduloId || !fecha) return;
+  // ── fetch corte detail ────────────────────────────────────────────────────
+  const fetchCorte = async (mId: string, f: string) => {
+    if (!mId || !f) return;
     setLoading(true);
     setSinCorte(false);
     setCorte(null);
     try {
       const res = await axios.get(`${API}/direccion/cortes`, {
         ...config,
-        params: { modulo_id: Number(moduloId), fecha },
+        params: { modulo_id: Number(mId), fecha: f },
       });
       if (res.data) {
         setCorte(res.data);
@@ -85,22 +199,52 @@ const DireccionPage: React.FC = () => {
     }
   };
 
-  // ── derived ──────────────────────────────────────────────────────────────────
+  const buscar = () => fetchCorte(moduloId, fecha);
+
+  const abrirCortePendiente = (c: CortePendiente) => {
+    const mId = String(c.modulo_id);
+    setModuloId(mId);
+    setFecha(c.fecha);
+    fetchCorte(mId, c.fecha);
+    setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 400);
+  };
+
+  // ── marcar revisado ───────────────────────────────────────────────────────
+  const marcarRevisado = async () => {
+    if (!corte) return;
+    setMarcando(true);
+    try {
+      const { data } = await axios.put(
+        `${API}/direccion/cortes/${corte.id}/marcar-revisado`,
+        {},
+        config,
+      );
+      setCorte((prev: any) => ({ ...prev, ...data }));
+      setSnack({ msg: 'Corte marcado como revisado correctamente', sev: 'success' });
+      setDialogConfirm(false);
+      cargarPendientes();
+    } catch {
+      setSnack({ msg: 'Error al marcar como revisado', sev: 'error' });
+    } finally {
+      setMarcando(false);
+    }
+  };
+
+  // ── derived values ────────────────────────────────────────────────────────
   const ventas: any[] = corte?.ventas ?? [];
   const ventasAcc = ventas.filter((v) => v.tipo_producto === 'accesorios');
   const ventasTel = ventas.filter((v) => v.tipo_producto === 'telefono');
 
-  // Totales calculados desde ventas individuales (igual que CortePage)
   const ef_acc = ventasAcc.filter((v) => v.metodo_pago?.toLowerCase() === 'efectivo').reduce((s: number, v: any) => s + getTotal(v), 0);
   const ta_acc = ventasAcc.filter((v) => v.metodo_pago?.toLowerCase() === 'tarjeta').reduce((s: number, v: any) => s + getTotal(v), 0);
   const ef_tel = ventasTel.filter((v) => v.metodo_pago?.toLowerCase() === 'efectivo').reduce((s: number, v: any) => s + getTotal(v), 0);
   const ta_tel = ventasTel.filter((v) => v.metodo_pago?.toLowerCase() === 'tarjeta').reduce((s: number, v: any) => s + getTotal(v), 0);
-  const rec    = corte?.adicional_recargas   ?? 0;
-  const trans  = corte?.adicional_transporte ?? 0;
-  const otr    = corte?.adicional_otros      ?? 0;
-  const may    = corte?.adicional_mayoreo    ?? 0;
+  const rec  = corte?.adicional_recargas   ?? 0;
+  const trans = corte?.adicional_transporte ?? 0;
+  const otr  = corte?.adicional_otros      ?? 0;
+  const may  = corte?.adicional_mayoreo    ?? 0;
   const totalAdicional = rec + trans + otr + may;
-  const sal    = corte?.salida_efectivo      ?? 0;
+  const sal  = corte?.salida_efectivo      ?? 0;
   const subtotalAcc = ventasAcc.reduce((s: number, v: any) => s + getTotal(v), 0);
   const subtotalTel = ventasTel.reduce((s: number, v: any) => s + getTotal(v), 0);
   const total_efectivo_final = ef_acc + ef_tel + totalAdicional - sal;
@@ -111,14 +255,47 @@ const DireccionPage: React.FC = () => {
   return (
     <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 720, mx: 'auto' }}>
 
-      {/* ── Título ────────────────────────────────────────────────────────── */}
-      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
+      {/* ══════════════════════════════════════════════════════════ */}
+      {/* PANEL A — Cortes pendientes                               */}
+      {/* ══════════════════════════════════════════════════════════ */}
+      <Typography variant="h5" fontWeight={700} sx={{ mb: 0.5 }}>
+        📋 Cortes pendientes de revisar
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        {loadingPendientes
+          ? 'Cargando…'
+          : `${pendientes.length} corte${pendientes.length !== 1 ? 's' : ''} esperando tu revisión`}
+      </Typography>
+
+      {loadingPendientes ? (
+        <Box textAlign="center" py={3}>
+          <CircularProgress sx={{ color: '#FF6600' }} />
+        </Box>
+      ) : pendientes.length === 0 ? (
+        <Alert severity="success" sx={{ mb: 3, fontSize: 15 }}>
+          ✅ Todos los cortes están revisados al día
+        </Alert>
+      ) : (
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          {pendientes.map((c) => (
+            <Grid item xs={12} sm={6} md={4} key={c.id}>
+              <CortePendienteCard c={c} onAbrir={() => abrirCortePendiente(c)} />
+            </Grid>
+          ))}
+        </Grid>
+      )}
+
+      <Divider sx={{ my: 3 }} />
+
+      {/* ══════════════════════════════════════════════════════════ */}
+      {/* PANEL B — Filtro                                          */}
+      {/* ══════════════════════════════════════════════════════════ */}
+      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
         <Typography variant="h5" fontWeight={700}>Revisión de Corte</Typography>
         {corte?.enviado && <Chip label="ENVIADO" color="success" />}
         {corte && !corte.enviado && <Chip label="BORRADOR" color="warning" />}
       </Stack>
 
-      {/* ── Filtros ───────────────────────────────────────────────────────── */}
       <Paper sx={{ p: 2, mb: 2 }}>
         <Stack spacing={1.5} direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }}>
           <FormControl size="small" sx={{ flex: 1 }}>
@@ -131,8 +308,8 @@ const DireccionPage: React.FC = () => {
             >
               <MenuItem value="" disabled>Seleccionar módulo</MenuItem>
               {modulos
-                .filter((m) => !["V2", "Cadenas C.", "MI2", "BO", "prueba"].includes(m.nombre))
-                .sort((a, b) => a.nombre.localeCompare(b.nombre, undefined, { sensitivity: "base" }))
+                .filter((m) => !MODULOS_OCULTOS.includes(m.nombre))
+                .sort((a, b) => a.nombre.localeCompare(b.nombre, undefined, { sensitivity: 'base' }))
                 .map((m) => (
                   <MenuItem key={m.id} value={String(m.id)}>{m.nombre}</MenuItem>
                 ))}
@@ -150,28 +327,29 @@ const DireccionPage: React.FC = () => {
             variant="contained" size="small"
             onClick={buscar}
             disabled={!moduloId || !fecha || loading}
-            sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' }, fontWeight: 700, whiteSpace: 'nowrap' }}
+            sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' }, fontWeight: 700, whiteSpace: 'nowrap', minHeight: 40 }}
           >
             {loading ? <CircularProgress size={18} sx={{ color: 'white' }} /> : 'Buscar'}
           </Button>
         </Stack>
       </Paper>
 
-      {/* ── Sin datos ─────────────────────────────────────────────────────── */}
       {sinCorte && !loading && (
         <Alert severity="info" sx={{ mb: 2 }}>
           Sin corte registrado para <strong>{moduloNombre}</strong> el <strong>{fecha}</strong>.
         </Alert>
       )}
 
+      {/* ══════════════════════════════════════════════════════════ */}
+      {/* PANEL C — Detalle del corte                               */}
+      {/* ══════════════════════════════════════════════════════════ */}
       {corte && (
         <>
-          {/* Subtítulo */}
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             {moduloNombre} — {corte.fecha}
           </Typography>
 
-          {/* ── 2 · Chips del día ───────────────────────────────────────── */}
+          {/* Chips */}
           <Paper sx={{ mb: 2, overflow: 'hidden' }}>
             <Box sx={{ px: 2, py: 1.5, bgcolor: '#f0fdf4', borderBottom: '1px solid #bbf7d0' }}>
               <Typography fontWeight={700} fontSize={14} color="#15803d">
@@ -208,7 +386,7 @@ const DireccionPage: React.FC = () => {
             )}
           </Paper>
 
-          {/* ── 3 · Teléfonos del día ───────────────────────────────────── */}
+          {/* Teléfonos */}
           <Paper sx={{ mb: 2, overflow: 'hidden' }}>
             <Box sx={{ px: 2, py: 1.5, bgcolor: '#eff6ff', borderBottom: '1px solid #bfdbfe' }}>
               <Typography fontWeight={700} fontSize={14} color="#1d4ed8">
@@ -226,7 +404,7 @@ const DireccionPage: React.FC = () => {
                     <tr>
                       <th style={thStyle}>Modelo</th>
                       <th style={thStyle}>Tipo</th>
-                      <th style={thStyle}>Método de pago</th>
+                      <th style={thStyle}>Método</th>
                       <th style={{ ...thStyle, textAlign: 'right' }}>Precio</th>
                     </tr>
                   </thead>
@@ -249,7 +427,7 @@ const DireccionPage: React.FC = () => {
             )}
           </Paper>
 
-          {/* ── 4 · Accesorios del día ──────────────────────────────────── */}
+          {/* Accesorios */}
           <Paper sx={{ mb: 2, overflow: 'hidden' }}>
             <Box sx={{ px: 2, py: 1.5, bgcolor: '#fff7ed', borderBottom: '1px solid #fed7aa' }}>
               <Typography fontWeight={700} fontSize={14} color="#c2410c">
@@ -266,7 +444,7 @@ const DireccionPage: React.FC = () => {
                   <thead>
                     <tr>
                       <th style={thStyle}>Descripción</th>
-                      <th style={{ ...thStyle, textAlign: 'right' }}>Cantidad</th>
+                      <th style={{ ...thStyle, textAlign: 'right' }}>Cant.</th>
                       <th style={{ ...thStyle, textAlign: 'right' }}>Precio Prom.</th>
                       <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
                     </tr>
@@ -301,7 +479,7 @@ const DireccionPage: React.FC = () => {
             )}
           </Paper>
 
-          {/* ── 5 · Montos Adicionales ──────────────────────────────────── */}
+          {/* Montos Adicionales */}
           <Paper sx={{ mb: 2, overflow: 'hidden', borderRadius: 2, bgcolor: 'white' }}>
             <Box sx={{ px: 2, py: 1.5, bgcolor: '#FF6600', display: 'flex', alignItems: 'center', gap: 1 }}>
               <MonetizationOnIcon sx={{ color: 'white', fontSize: 20 }} />
@@ -311,17 +489,15 @@ const DireccionPage: React.FC = () => {
             </Box>
             <Box sx={{ p: 2 }}>
               {[
-                { label: 'Recargas Telcel',  val: rec   },
-                { label: 'Recargas YOVOY',   val: trans  },
-                { label: 'Centro de Pagos',  val: otr   },
+                { label: 'Recargas Telcel', val: rec   },
+                { label: 'Recargas YOVOY',  val: trans  },
+                { label: 'Centro de Pagos', val: otr   },
               ].map(({ label, val }) => (
                 <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.8, borderBottom: '1px solid #f0f0f0' }}>
                   <Typography fontSize={13} color="#555">{label}</Typography>
                   <Typography fontSize={13} fontWeight={600} color="#222">${val.toFixed(2)}</Typography>
                 </Box>
               ))}
-
-              {/* Mayoreo */}
               <Box sx={{ border: '1.5px solid #FFD1A9', borderRadius: 2, p: 1.5, mt: 1, mb: 1, bgcolor: '#fff8f3' }}>
                 <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#FF6600', letterSpacing: 0.5, mb: 0.5 }}>
                   RECARGAS MAYOREO
@@ -337,8 +513,6 @@ const DireccionPage: React.FC = () => {
                   </Box>
                 )}
               </Box>
-
-              {/* Total */}
               <Box sx={{ bgcolor: '#fff3e0', border: '1px solid #FFD1A9', borderRadius: 2, px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography fontWeight={600} color="#cc4400" fontSize={13}>Total Montos Adicionales</Typography>
                 <Typography fontWeight={800} color="#FF6600" fontSize={22}>${totalAdicional.toFixed(2)}</Typography>
@@ -346,7 +520,7 @@ const DireccionPage: React.FC = () => {
             </Box>
           </Paper>
 
-          {/* ── 6 · Salida de Efectivo ──────────────────────────────────── */}
+          {/* Salida de Efectivo */}
           <Paper sx={{ mb: 2, overflow: 'hidden', borderRadius: 2, bgcolor: 'white' }}>
             <Box sx={{ px: 2, py: 1.5, bgcolor: '#b71c1c', display: 'flex', alignItems: 'center', gap: 1 }}>
               <TrendingDownIcon sx={{ color: 'white', fontSize: 20 }} />
@@ -370,7 +544,7 @@ const DireccionPage: React.FC = () => {
             </Box>
           </Paper>
 
-          {/* ── 7 · Totales Finales ─────────────────────────────────────── */}
+          {/* Totales Finales */}
           <Paper sx={{ mb: 3, overflow: 'hidden', borderRadius: 2, bgcolor: 'white' }}>
             <Box sx={{ px: 2, py: 1.5, bgcolor: '#1a2744', display: 'flex', alignItems: 'center', gap: 1 }}>
               <ReceiptLongIcon sx={{ color: '#FF6600', fontSize: 20 }} />
@@ -378,7 +552,6 @@ const DireccionPage: React.FC = () => {
                 TOTALES FINALES
               </Typography>
             </Box>
-
             <Table size="small" sx={{ tableLayout: 'fixed', width: '100%' }}>
               <TableHead>
                 <TableRow sx={{ bgcolor: '#f5f5f5' }}>
@@ -388,16 +561,16 @@ const DireccionPage: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                <TableRow sx={{ bgcolor: 'white' }}>
-                  <TableCell sx={{ fontSize: 13, border: 'none', py: 1, pl: 2, color: '#333' }}>Accesorios</TableCell>
-                  <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 1, color: '#222' }}>${ef_acc.toFixed(2)}</TableCell>
-                  <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 1, pr: 2, color: '#222' }}>${ta_acc.toFixed(2)}</TableCell>
-                </TableRow>
-                <TableRow sx={{ bgcolor: '#fafafa' }}>
-                  <TableCell sx={{ fontSize: 13, border: 'none', py: 1, pl: 2, color: '#333' }}>Teléfonos</TableCell>
-                  <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 1, color: '#222' }}>${ef_tel.toFixed(2)}</TableCell>
-                  <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 1, pr: 2, color: '#222' }}>${ta_tel.toFixed(2)}</TableCell>
-                </TableRow>
+                {[
+                  { label: 'Accesorios', ef: ef_acc, ta: ta_acc },
+                  { label: 'Teléfonos',  ef: ef_tel, ta: ta_tel },
+                ].map(({ label, ef, ta }) => (
+                  <TableRow key={label} sx={{ bgcolor: label === 'Teléfonos' ? '#fafafa' : 'white' }}>
+                    <TableCell sx={{ fontSize: 13, border: 'none', py: 1, pl: 2, color: '#333' }}>{label}</TableCell>
+                    <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 1, color: '#222' }}>${ef.toFixed(2)}</TableCell>
+                    <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 1, pr: 2, color: '#222' }}>${ta.toFixed(2)}</TableCell>
+                  </TableRow>
+                ))}
                 <TableRow sx={{ bgcolor: 'white' }}>
                   <TableCell sx={{ fontSize: 13, border: 'none', py: 1, pl: 2, color: '#333' }}>Recargas</TableCell>
                   <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 1, color: '#222' }}>${totalAdicional.toFixed(2)}</TableCell>
@@ -426,8 +599,74 @@ const DireccionPage: React.FC = () => {
               </TableBody>
             </Table>
           </Paper>
+
+          {/* ── Botón MARCAR REVISADO / Estado revisado ─────────────────── */}
+          {corte.revisado_direccion ? (
+            <Alert
+              severity="success"
+              sx={{ mb: 3, fontSize: 15, borderRadius: 2 }}
+            >
+              ✅ Corte revisado por <strong>{corte.revisado_por}</strong> el{' '}
+              {new Date(corte.revisado_at).toLocaleString('es-MX', {
+                timeZone: 'America/Mexico_City',
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit',
+              })}
+            </Alert>
+          ) : (
+            <Button
+              variant="contained"
+              fullWidth
+              size="large"
+              onClick={() => setDialogConfirm(true)}
+              sx={{
+                bgcolor: '#FF6600',
+                '&:hover': { bgcolor: '#ea5c00' },
+                fontWeight: 700,
+                fontSize: { xs: 15, sm: 17 },
+                minHeight: 56,
+                mb: 3,
+                borderRadius: 2,
+              }}
+            >
+              ✅ MARCAR CORTE COMO REVISADO
+            </Button>
+          )}
         </>
       )}
+
+      {/* ── Confirmation Dialog ───────────────────────────────────── */}
+      <Dialog open={dialogConfirm} onClose={() => !marcando && setDialogConfirm(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>¿Confirmar revisión?</DialogTitle>
+        <DialogContent>
+          <Typography>¿Confirmas que ya revisaste este corte?</Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+          <Button
+            onClick={() => setDialogConfirm(false)}
+            disabled={marcando}
+            variant="outlined"
+            sx={{ minHeight: 44, flex: 1 }}
+          >
+            NO
+          </Button>
+          <Button
+            variant="contained"
+            onClick={marcarRevisado}
+            disabled={marcando}
+            sx={{ bgcolor: '#FF6600', '&:hover': { bgcolor: '#ea5c00' }, minHeight: 44, flex: 1, fontWeight: 700 }}
+          >
+            {marcando ? <CircularProgress size={20} sx={{ color: 'white' }} /> : 'SÍ, CONFIRMAR'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Snackbar ─────────────────────────────────────────────── */}
+      <Snackbar open={!!snack} autoHideDuration={4000} onClose={() => setSnack(null)}>
+        <Alert severity={snack?.sev} variant="filled" onClose={() => setSnack(null)} sx={{ width: '100%' }}>
+          {snack?.msg}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
