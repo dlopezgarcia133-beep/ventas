@@ -117,7 +117,7 @@ interface UsuarioBasico {
 const formatHora = (iso: string | null) => {
   if (!iso) return "—";
   const d = new Date(iso);
-  return d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", timeZone: "America/Mexico_City" });
 };
 
 const formatFecha = (iso: string) => {
@@ -277,8 +277,12 @@ const VistaEmpleado: React.FC = () => {
         setSnack({ msg: `${tipo === "entrada" ? "CHECK-IN" : "CHECK-OUT"} registrado ✓`, sev: "success" });
       }
       cargarHistorial();
-    } catch {
-      setSnack({ msg: "Error al registrar asistencia. Intenta de nuevo.", sev: "error" });
+    } catch (err: any) {
+      const detalle = err?.response?.data?.detail;
+      setSnack({
+        msg: detalle ?? "Error al registrar asistencia. Intenta de nuevo.",
+        sev: "error",
+      });
     } finally {
       setCargando(false);
       pendingRef.current = null;
