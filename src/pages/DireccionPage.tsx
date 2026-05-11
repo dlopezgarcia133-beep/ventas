@@ -130,9 +130,11 @@ const DireccionPage: React.FC = () => {
               displayEmpty
             >
               <MenuItem value="" disabled>Seleccionar módulo</MenuItem>
-              {modulos.map((m) => (
-                <MenuItem key={m.id} value={String(m.id)}>{m.nombre}</MenuItem>
-              ))}
+              {modulos
+                .filter((m) => !["V2", "Cadenas C.", "MI2", "BO"].includes(m.nombre))
+                .map((m) => (
+                  <MenuItem key={m.id} value={String(m.id)}>{m.nombre}</MenuItem>
+                ))}
             </Select>
           </FormControl>
 
