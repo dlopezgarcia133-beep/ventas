@@ -780,7 +780,10 @@ const TabPromotores: React.FC = () => {
 
   useEffect(() => {
     axios.get<PromotorConUbicacion[]>(`${API}/promotores/con-ubicacion`, { headers: authH() })
-      .then(({ data }) => setPromotores(data)).catch(() => {});
+      .then(({ data }) => {
+        const codigoNum = (u: string) => parseInt(u.replace(/^C/, "").split("-")[0], 10) || 0;
+        setPromotores(data.sort((a, b) => codigoNum(a.username) - codigoNum(b.username)));
+      }).catch(() => {});
   }, []);
 
   const campo = (id: number, field: keyof PromotorConUbicacion) =>
