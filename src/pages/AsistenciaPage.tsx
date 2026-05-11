@@ -68,6 +68,7 @@ interface AsistenciaResumen {
   username?: string;
   modulo_id?: number;
   modulo_nombre?: string;
+  lugar_trabajo?: string | null;
 }
 
 interface CheckResponse {
@@ -94,6 +95,15 @@ interface ModuloConUbicacion {
   latitud: number | null;
   longitud: number | null;
   radio_metros: number;
+}
+
+interface PromotorConUbicacion {
+  id: number;
+  username: string;
+  lugar_trabajo: string | null;
+  latitud_promotor: number | null;
+  longitud_promotor: number | null;
+  radio_metros_promotor: number;
 }
 
 interface UsuarioBasico {
@@ -580,7 +590,7 @@ const TabRegistros: React.FC = () => {
           <Table size="small">
             <TableHead>
               <TableRow sx={{ bgcolor: "#f8fafc" }}>
-                {["Usuario","Módulo","Fecha","Entrada","Foto E","Salida","Foto S","Horas","Estado E","Estado S"].map((h) => (
+                {["Usuario","Módulo","Lugar","Fecha","Entrada","Foto E","Salida","Foto S","Horas","Estado E","Estado S"].map((h) => (
                   <TableCell key={h} sx={{ fontWeight: 700, color: "#FF6600" }}>{h}</TableCell>
                 ))}
               </TableRow>
@@ -588,7 +598,7 @@ const TabRegistros: React.FC = () => {
             <TableBody>
               {registros.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={10} align="center" sx={{ color: "#94a3b8", py: 3 }}>
+                  <TableCell colSpan={11} align="center" sx={{ color: "#94a3b8", py: 3 }}>
                     Usa los filtros y presiona BUSCAR
                   </TableCell>
                 </TableRow>
@@ -599,6 +609,9 @@ const TabRegistros: React.FC = () => {
                   <TableRow key={i} sx={{ bgcolor: fuera ? "#fff7ed" : undefined }}>
                     <TableCell>{r.username}</TableCell>
                     <TableCell>{r.modulo_nombre}</TableCell>
+                    <TableCell sx={{ color: r.lugar_trabajo ? undefined : "#94a3b8" }}>
+                      {r.lugar_trabajo ?? "—"}
+                    </TableCell>
                     <TableCell>{formatFecha(r.fecha)}</TableCell>
                     <TableCell>{formatHora(r.entrada)}</TableCell>
                     <TableCell><FotoThumb url={r.foto_entrada_url} /></TableCell>
@@ -612,7 +625,7 @@ const TabRegistros: React.FC = () => {
               })}
               {registros.length > 0 && (
                 <TableRow sx={{ bgcolor: "#f1f5f9" }}>
-                  <TableCell colSpan={7} sx={{ fontWeight: 700 }}>Total general</TableCell>
+                  <TableCell colSpan={8} sx={{ fontWeight: 700 }}>Total general</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>{totalHoras.toFixed(2)} h</TableCell>
                   <TableCell /><TableCell />
                 </TableRow>
@@ -755,6 +768,173 @@ const TabModulos: React.FC = () => {
 };
 
 // ═════════════════════════════════════════════════════════════════════════════
+// TAB CONFIGURAR PROMOTORES (admin)
+// ═════════════════════════════════════════════════════════════════════════════
+
+const TabPromotores: React.FC = () => {
+  const [promotores, setPromotores] = useState<PromotorConUbicacion[]>([]);
+  const [edicion, setEdicion] = useState<Record<number, Partial<PromotorConUbicacion>>>({});
+  const [guardando, setGuardando] = useState<number | null>(null);
+  const [snack, setSnack] = useState<{ msg: string; sev: "success" | "error" } | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+
+  useEffect(() => {
+    axios.get<PromotorConUbicacion[]>(`${API}/promotores/con-ubicacion`, { headers: authH() })
+      .then(({ data }) => setPromotores(data)).catch(() => {});
+  }, []);
+
+  const campo = (id: number, field: keyof PromotorConUbicacion) =>
+    (edicion[id]?.[field] ?? promotores.find((p) => p.id === id)?.[field] ?? "") as string | number;
+
+  const setField = (id: number, field: keyof PromotorConUbicacion, val: string) =>
+    setEdicion((prev) => ({
+      ...prev,
+      [id]: {
+        ...prev[id],
+        [field]: field === "lugar_trabajo" ? val : (val === "" ? null : Number(val)),
+      },
+    }));
+
+  const usarMiUbicacion = (id: number) => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) =>
+        setEdicion((prev) => ({
+          ...prev,
+          [id]: { ...prev[id], latitud_promotor: pos.coords.latitude, longitud_promotor: pos.coords.longitude },
+        })),
+      () => alert("No se pudo obtener la ubicación")
+    );
+  };
+
+  const guardar = async (id: number) => {
+    const data = edicion[id];
+    if (!data) return;
+    const promotor = promotores.find((p) => p.id === id);
+    setGuardando(id);
+    try {
+      await axios.put(
+        `${API}/promotores/${id}/ubicacion`,
+        {
+          lugar_trabajo: data.lugar_trabajo ?? promotor?.lugar_trabajo ?? "",
+          latitud_promotor: data.latitud_promotor ?? promotor?.latitud_promotor ?? 0,
+          longitud_promotor: data.longitud_promotor ?? promotor?.longitud_promotor ?? 0,
+          radio_metros_promotor: data.radio_metros_promotor ?? promotor?.radio_metros_promotor ?? 100,
+        },
+        { headers: authH() }
+      );
+      setSnack({ msg: "Guardado correctamente", sev: "success" });
+      setPromotores((prev) => prev.map((p) => (p.id === id ? { ...p, ...data } : p)));
+    } catch {
+      setSnack({ msg: "Error al guardar", sev: "error" });
+    } finally {
+      setGuardando(null);
+    }
+  };
+
+  const filtrados = promotores.filter((p) => {
+    const q = busqueda.toLowerCase();
+    return (
+      p.username.toLowerCase().includes(q) ||
+      (p.lugar_trabajo ?? "").toLowerCase().includes(q)
+    );
+  });
+
+  return (
+    <Box>
+      <Typography variant="body2" color="text.secondary" mb={1}>
+        Cada promotor trabaja en una tienda diferente (Walmart, Coppel, Chedraui, etc.) y se valida
+        su asistencia contra esas coordenadas.
+      </Typography>
+      <TextField
+        size="small"
+        placeholder="Buscar por promotor o lugar de trabajo…"
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+        sx={{ mb: 2, width: 320 }}
+      />
+      <TableContainer component={Paper} elevation={1}>
+        <Table size="small">
+          <TableHead>
+            <TableRow sx={{ bgcolor: "#f8fafc" }}>
+              {["Promotor","Lugar de trabajo","Latitud","Longitud","Radio (m)","Acciones"].map((h) => (
+                <TableCell key={h} sx={{ fontWeight: 700, color: "#FF6600" }}>{h}</TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filtrados.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} align="center" sx={{ color: "#94a3b8", py: 3 }}>
+                  Sin promotores encontrados
+                </TableCell>
+              </TableRow>
+            )}
+            {filtrados.map((p) => (
+              <TableRow key={p.id}>
+                <TableCell sx={{ fontWeight: 600 }}>{p.username}</TableCell>
+                <TableCell>
+                  <TextField
+                    size="small" sx={{ width: 180 }}
+                    value={campo(p.id, "lugar_trabajo") as string}
+                    placeholder="Ej. Walmart Mariano Hidalgo"
+                    onChange={(e) => setField(p.id, "lugar_trabajo", e.target.value)}
+                  />
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    size="small" type="number" sx={{ width: 130 }}
+                    value={campo(p.id, "latitud_promotor")}
+                    onChange={(e) => setField(p.id, "latitud_promotor", e.target.value)}
+                    inputProps={{ step: "0.000001" }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    size="small" type="number" sx={{ width: 130 }}
+                    value={campo(p.id, "longitud_promotor")}
+                    onChange={(e) => setField(p.id, "longitud_promotor", e.target.value)}
+                    inputProps={{ step: "0.000001" }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    size="small" type="number" sx={{ width: 90 }}
+                    value={campo(p.id, "radio_metros_promotor")}
+                    onChange={(e) => setField(p.id, "radio_metros_promotor", e.target.value)}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Box display="flex" gap={1}>
+                    <Button
+                      size="small" variant="contained"
+                      disabled={guardando === p.id}
+                      onClick={() => guardar(p.id)}
+                      sx={{ bgcolor: "#FF6600", "&:hover": { bgcolor: "#ea5c00" } }}
+                    >
+                      {guardando === p.id ? <CircularProgress size={16} /> : "GUARDAR"}
+                    </Button>
+                    <Button
+                      size="small" variant="outlined" startIcon={<LocationOnIcon />}
+                      onClick={() => usarMiUbicacion(p.id)}
+                    >
+                      Mi ubicación
+                    </Button>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Snackbar open={!!snack} autoHideDuration={3000} onClose={() => setSnack(null)}>
+        <Alert severity={snack?.sev} onClose={() => setSnack(null)}>{snack?.msg}</Alert>
+      </Snackbar>
+    </Box>
+  );
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
 // TAB ALERTAS (admin)
 // ═════════════════════════════════════════════════════════════════════════════
 
@@ -848,7 +1028,7 @@ const VistaAdmin: React.FC = () => {
   const [tab, setTab] = useState(0);
 
   return (
-    <Box sx={{ maxWidth: 1100, mx: "auto", p: 3 }}>
+    <Box sx={{ maxWidth: 1200, mx: "auto", p: 3 }}>
       <Typography variant="h4" fontWeight={700} color="primary" gutterBottom>
         REGISTRO DE ASISTENCIA — Administración
       </Typography>
@@ -860,12 +1040,21 @@ const VistaAdmin: React.FC = () => {
       >
         <Tab label="Registros" />
         <Tab label="Configurar Módulos" />
+        <Tab label="Configurar Promotores" />
         <Tab label="Alertas" />
       </Tabs>
 
       {tab === 0 && <TabRegistros />}
       {tab === 1 && <TabModulos />}
-      {tab === 2 && <TabAlertas />}
+      {tab === 2 && (
+        <Box>
+          <Typography variant="h6" fontWeight={600} mb={2}>
+            Configura la ubicación de cada promotor de Cadenas
+          </Typography>
+          <TabPromotores />
+        </Box>
+      )}
+      {tab === 3 && <TabAlertas />}
     </Box>
   );
 };
