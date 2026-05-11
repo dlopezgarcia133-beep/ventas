@@ -210,6 +210,9 @@ const Navbar = () => {
                   <Button sx={navBtnSx} component={Link} to="/quien-tiene">
                     QUIEN TIENE
                   </Button>
+                  <Button sx={navBtnSx} component={Link} to="/estadisticas">
+                    ESTADÍSTICAS
+                  </Button>
                 </>
               )}
 
@@ -250,6 +253,9 @@ const Navbar = () => {
                 <>
                   <Button sx={{ ...navBtnSx, color: "#f97316", fontWeight: 700 }} component={Link} to="/direccion">
                     Cortes
+                  </Button>
+                  <Button sx={navBtnSx} component={Link} to="/estadisticas">
+                    ESTADÍSTICAS
                   </Button>
                   <Button sx={navBtnSx} component={Link} to="/quien-tiene">
                     QUIEN TIENE
@@ -399,6 +405,10 @@ const Navbar = () => {
                 <ListItemIcon sx={drawerIconSx}><ManageSearchIcon /></ListItemIcon>
                 <ListItemText primary="QUIEN TIENE" primaryTypographyProps={{ fontWeight: 700 }} />
               </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/estadisticas")}>
+                <ListItemIcon sx={drawerIconSx}><BarChartIcon /></ListItemIcon>
+                <ListItemText primary="ESTADÍSTICAS" primaryTypographyProps={{ fontWeight: 700 }} />
+              </ListItemButton>
             </>
           )}
 
@@ -498,6 +508,10 @@ const Navbar = () => {
               <ListItemButton sx={drawerItemSx} onClick={() => navegar("/direccion")}>
                 <ListItemIcon sx={{ ...drawerIconSx, color: "#f97316" }}><ContentCutIcon /></ListItemIcon>
                 <ListItemText primary="Cortes" primaryTypographyProps={{ color: "#f97316", fontWeight: 700 }} />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/estadisticas")}>
+                <ListItemIcon sx={drawerIconSx}><BarChartIcon /></ListItemIcon>
+                <ListItemText primary="ESTADÍSTICAS" primaryTypographyProps={{ fontWeight: 700 }} />
               </ListItemButton>
               <ListItemButton sx={drawerItemSx} onClick={() => navegar("/quien-tiene")}>
                 <ListItemIcon sx={drawerIconSx}><ManageSearchIcon /></ListItemIcon>
