@@ -515,7 +515,17 @@ const TabRegistros: React.FC = () => {
         `${API}/asistencia/admin?${params}`,
         { headers: authH() }
       );
-      setRegistros(data.sort((a, b) => b.fecha.localeCompare(a.fecha)));
+      const ordenarRegistros = (arr: AsistenciaResumen[]) =>
+        [...arr].sort((a, b) => {
+          const modA = a.modulo_nombre ?? "￿";
+          const modB = b.modulo_nombre ?? "￿";
+          if (modA !== modB) return modA.localeCompare(modB);
+          const entA = a.entrada ? new Date(a.entrada).getTime() : Infinity;
+          const entB = b.entrada ? new Date(b.entrada).getTime() : Infinity;
+          if (entA !== entB) return entA - entB;
+          return (a.username ?? "").localeCompare(b.username ?? "");
+        });
+      setRegistros(ordenarRegistros(data));
     } finally {
       setCargando(false);
     }
