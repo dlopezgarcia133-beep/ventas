@@ -23,6 +23,7 @@ import ListAltIcon from "@mui/icons-material/ListAlt";
 import SimCardIcon from "@mui/icons-material/SimCard";
 import MoveToInboxIcon from "@mui/icons-material/MoveToInbox";
 import SignalCellular4BarIcon from "@mui/icons-material/SignalCellular4Bar";
+import ManageSearchIcon from "@mui/icons-material/ManageSearch";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../ATO.jpeg";
 import { obtenerRolDesdeToken } from "./Token";
@@ -206,6 +207,9 @@ const Navbar = () => {
                   <Button sx={navBtnSx} component={Link} to="/clineas">
                     C LÍNEAS
                   </Button>
+                  <Button sx={navBtnSx} component={Link} to="/quien-tiene">
+                    QUIEN TIENE
+                  </Button>
                 </>
               )}
 
@@ -243,9 +247,14 @@ const Navbar = () => {
               )}
 
               {rolToken === "direccion" && (
-                <Button sx={{ ...navBtnSx, color: "#f97316", fontWeight: 700 }} component={Link} to="/direccion">
-                  Cortes
-                </Button>
+                <>
+                  <Button sx={{ ...navBtnSx, color: "#f97316", fontWeight: 700 }} component={Link} to="/direccion">
+                    Cortes
+                  </Button>
+                  <Button sx={navBtnSx} component={Link} to="/quien-tiene">
+                    QUIEN TIENE
+                  </Button>
+                </>
               )}
 
               {/* ASISTENCIA: asesor/encargado con módulo (no Cadenas) + admin/direccion */}
@@ -386,6 +395,10 @@ const Navbar = () => {
                 <ListItemIcon sx={drawerIconSx}><SignalCellular4BarIcon /></ListItemIcon>
                 <ListItemText primary="C LÍNEAS" primaryTypographyProps={{ fontWeight: 700 }} />
               </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/quien-tiene")}>
+                <ListItemIcon sx={drawerIconSx}><ManageSearchIcon /></ListItemIcon>
+                <ListItemText primary="QUIEN TIENE" primaryTypographyProps={{ fontWeight: 700 }} />
+              </ListItemButton>
             </>
           )}
 
@@ -481,10 +494,16 @@ const Navbar = () => {
 
           {/* ── DIRECCIÓN ─────────────────────────────────────────────────────── */}
           {rolToken === "direccion" && (
-            <ListItemButton sx={drawerItemSx} onClick={() => navegar("/direccion")}>
-              <ListItemIcon sx={{ ...drawerIconSx, color: "#f97316" }}><ContentCutIcon /></ListItemIcon>
-              <ListItemText primary="Cortes" primaryTypographyProps={{ color: "#f97316", fontWeight: 700 }} />
-            </ListItemButton>
+            <>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/direccion")}>
+                <ListItemIcon sx={{ ...drawerIconSx, color: "#f97316" }}><ContentCutIcon /></ListItemIcon>
+                <ListItemText primary="Cortes" primaryTypographyProps={{ color: "#f97316", fontWeight: 700 }} />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/quien-tiene")}>
+                <ListItemIcon sx={drawerIconSx}><ManageSearchIcon /></ListItemIcon>
+                <ListItemText primary="QUIEN TIENE" primaryTypographyProps={{ fontWeight: 700 }} />
+              </ListItemButton>
+            </>
           )}
 
           {/* ── ASISTENCIA (condicional) ───────────────────────────────────────── */}
