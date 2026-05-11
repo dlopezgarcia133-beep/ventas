@@ -172,7 +172,7 @@ const VistaEmpleado: React.FC = () => {
   const [cargando, setCargando] = useState(false);
   const [historial, setHistorial] = useState<AsistenciaResumen[]>([]);
   const [mes, setMes] = useState(mesActual());
-  const [snack, setSnack] = useState<{ msg: string; sev: "success" | "error" | "warning" } | null>(null);
+  const [snack, setSnack] = useState<{ msg: string; sev: "success" | "error" | "warning"; autoHide?: boolean } | null>(null);
   const [camaraAbierta, setCamaraAbierta] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -278,11 +278,17 @@ const VistaEmpleado: React.FC = () => {
       }
       cargarHistorial();
     } catch (err: any) {
-      const detalle = err?.response?.data?.detail;
-      setSnack({
-        msg: detalle ?? "Error al registrar asistencia. Intenta de nuevo.",
-        sev: "error",
-      });
+      const detail = err?.response?.data?.detail;
+      if (detail && typeof detail === "object" && detail.codigo) {
+        const sev = detail.codigo === "SIN_CHECKIN" ? "error" : "warning";
+        setSnack({ msg: detail.mensaje, sev, autoHide: false });
+      } else {
+        setSnack({
+          msg: typeof detail === "string" ? detail : "Error al registrar asistencia. Intenta de nuevo.",
+          sev: "error",
+          autoHide: true,
+        });
+      }
     } finally {
       setCargando(false);
       pendingRef.current = null;
@@ -474,8 +480,8 @@ const VistaEmpleado: React.FC = () => {
         </Table>
       </TableContainer>
 
-      <Snackbar open={!!snack} autoHideDuration={5000} onClose={() => setSnack(null)}>
-        <Alert severity={snack?.sev} onClose={() => setSnack(null)} sx={{ width: "100%" }}>
+      <Snackbar open={!!snack} autoHideDuration={snack?.autoHide === false ? null : 5000} onClose={() => setSnack(null)}>
+        <Alert severity={snack?.sev} variant="filled" onClose={() => setSnack(null)} sx={{ width: "100%", fontSize: 15 }}>
           {snack?.msg}
         </Alert>
       </Snackbar>
