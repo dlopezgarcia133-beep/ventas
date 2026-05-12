@@ -12,6 +12,7 @@ import {
   TableRow,
   TextField,
   Button,
+  Tooltip as MuiTooltip,
   Typography,
   useMediaQuery,
   useTheme,
@@ -48,7 +49,20 @@ interface EstData {
   accesorios: { total_unidades: number; monto_total: number; top_5_productos: { producto: string; cantidad: number; monto: number }[]; };
   chips: { total: number; por_tipo: { tipo_chip: string; cantidad: number }[]; por_monto_recarga: { monto: string; cantidad: number }[]; };
   planes: { total: number; por_tramite: { tramite: string; cantidad: number }[]; por_plan: { plan: string; cantidad: number }[]; };
-  por_modulo: { modulo: string; total_mxn: number; telefonos: number; chips: number; accesorios: number }[];
+  por_modulo: {
+    modulo: string;
+    total_mxn: number;
+    telefonos_contado: number;
+    telefonos_payjoy: number;
+    telefonos_paguitos: number;
+    telefonos_total: number;
+    chips: number;
+    accesorios: number;
+    planes: number;
+    promedio_historico: number;
+    meta_proporcional: number;
+    productividad_pct: number | null;
+  }[];
   ventas_por_dia: { dia: number; total: number }[];
   telefonos_por_modulo: { modulo: string; total_telefonos: number; monto_total: number; contado: number; payjoy: number; paguitos: number }[];
 }
@@ -559,41 +573,97 @@ const EstadisticasPage: React.FC = () => {
               </Box>
             )}
 
-            <Table size="small">
-              <TableHead>
-                <TableRow sx={{ bgcolor: '#f8fafc' }}>
-                  {['Módulo', 'Total MXN', 'Teléfonos', 'Chips', 'Accesorios'].map((h, i) => (
-                    <TableCell
-                      key={h}
-                      align={i === 0 ? 'left' : 'right'}
-                      sx={{ fontWeight: 700, color: '#FF6600', fontSize: 12 }}
-                    >
-                      {h}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {(data.por_modulo ?? []).map((m) => (
-                  <TableRow key={m.modulo} hover>
-                    <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>{m.modulo}</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 700, fontSize: 13, color: '#15803d' }}>
-                      {fmt$(m.total_mxn)}
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontSize: 13 }}>{fmtN(m.telefonos)}</TableCell>
-                    <TableCell align="right" sx={{ fontSize: 13 }}>{fmtN(m.chips)}</TableCell>
-                    <TableCell align="right" sx={{ fontSize: 13 }}>{fmtN(m.accesorios)}</TableCell>
+            <Box sx={{ overflowX: 'auto' }}>
+              <Table size="small" sx={{ minWidth: 900 }}>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                    {['Módulo', 'Total MXN', 'Contado', 'Payjoy', 'Paguitos', 'Total Tels', 'Chips', 'Accesorios', 'Planes', 'Productividad'].map((h, i) => (
+                      <TableCell
+                        key={h}
+                        align={i === 0 ? 'left' : 'right'}
+                        sx={{ fontWeight: 700, color: '#FF6600', fontSize: 11, whiteSpace: 'nowrap' }}
+                      >
+                        {h}
+                      </TableCell>
+                    ))}
                   </TableRow>
-                ))}
-                {(data.por_modulo ?? []).length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} sx={{ textAlign: 'center', color: '#94a3b8', py: 3 }}>
-                      Sin datos
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                </TableHead>
+                <TableBody>
+                  {(data.por_modulo ?? []).map((mod, idx) => {
+                    const isTop = idx === 0;
+                    const prodColor =
+                      mod.productividad_pct === null
+                        ? '#94a3b8'
+                        : mod.productividad_pct >= 100
+                        ? '#4CAF50'
+                        : mod.productividad_pct >= 70
+                        ? '#FF9800'
+                        : '#F44336';
+                    const prodLabel =
+                      mod.productividad_pct === null
+                        ? 'N/A'
+                        : `${mod.productividad_pct.toFixed(1)}%`;
+                    const hoy = new Date();
+                    const [mesY, mesM] = data.mes.split('-').map(Number);
+                    const esMesActual = hoy.getFullYear() === mesY && hoy.getMonth() + 1 === mesM;
+                    const diaRef = esMesActual ? hoy.getDate() : new Date(mesY, mesM, 0).getDate();
+                    const diasTotales = new Date(mesY, mesM, 0).getDate();
+                    const prodTooltip = mod.productividad_pct !== null
+                      ? `Promedio últimos 12 meses: ${fmt$(mod.promedio_historico)}\nMeta proporcional al día ${diaRef} de ${diasTotales}: ${fmt$(mod.meta_proporcional)}\nVendido hasta hoy: ${fmt$(mod.total_mxn)}`
+                      : 'Sin historial de los últimos 12 meses';
+                    return (
+                      <TableRow key={mod.modulo} hover sx={isTop ? { bgcolor: '#fff7ed' } : {}}>
+                        <TableCell sx={{ fontWeight: isTop ? 800 : 600, fontSize: 13, whiteSpace: 'nowrap' }}>
+                          {mod.modulo}
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 700, fontSize: 13, color: '#15803d' }}>
+                          {fmt$(mod.total_mxn)}
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontSize: 12, color: '#22c55e' }}>
+                          {fmtN(mod.telefonos_contado)}
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontSize: 12, color: '#f97316' }}>
+                          {fmtN(mod.telefonos_payjoy)}
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontSize: 12, color: '#3b82f6' }}>
+                          {fmtN(mod.telefonos_paguitos)}
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontSize: 12, fontWeight: 600 }}>
+                          {fmtN(mod.telefonos_total)}
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontSize: 12 }}>{fmtN(mod.chips)}</TableCell>
+                        <TableCell align="right" sx={{ fontSize: 12 }}>{fmtN(mod.accesorios)}</TableCell>
+                        <TableCell align="right" sx={{ fontSize: 12 }}>{fmtN(mod.planes)}</TableCell>
+                        <TableCell align="right">
+                          <MuiTooltip
+                            title={<span style={{ whiteSpace: 'pre-line', fontSize: 12 }}>{prodTooltip}</span>}
+                            arrow
+                            placement="left"
+                          >
+                            <Typography
+                              component="span"
+                              fontWeight={700}
+                              fontSize={12}
+                              color={prodColor}
+                              sx={{ cursor: 'default' }}
+                            >
+                              {prodLabel}
+                            </Typography>
+                          </MuiTooltip>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {(data.por_modulo ?? []).length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={10} sx={{ textAlign: 'center', color: '#94a3b8', py: 3 }}>
+                        Sin datos
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </Box>
           </Paper>
 
           {/* ── S7: TENDENCIA DEL MES ────────────────────────────────────── */}
