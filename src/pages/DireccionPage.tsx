@@ -37,18 +37,20 @@ const MODULOS_OCULTOS = ['V2', 'Cadenas C.', 'MI2', 'BO', 'prueba'];
 
 // ─── Style helpers ────────────────────────────────────────────────────────────
 const thStyle: React.CSSProperties = {
-  padding: '6px 10px',
+  padding: '3px 8px',
   borderBottom: '1px solid #e5e5e5',
-  color: '#333',
+  color: '#444',
   fontWeight: 700,
   background: '#f5f5f5',
   textAlign: 'left',
-  fontSize: 12,
+  fontSize: 11,
+  lineHeight: 1.2,
 };
 const tdStyle: React.CSSProperties = {
-  padding: '6px 10px',
+  padding: '4px 8px',
   borderBottom: '1px solid #e5e5e5',
-  fontSize: 13,
+  fontSize: 12,
+  lineHeight: 1.2,
 };
 const tdR: React.CSSProperties = { ...tdStyle, textAlign: 'right' };
 
@@ -60,20 +62,40 @@ const fmtFecha = (iso: string) => {
   return `${d}/${m}/${y}`;
 };
 
-// ─── Section header helper ────────────────────────────────────────────────────
-const sectionHeader = (label: string, icon?: React.ReactNode) => (
-  <Box sx={{ px: 2, py: 1.2, bgcolor: '#f5f5f5', borderBottom: '1px solid #e5e5e5', display: 'flex', alignItems: 'center', gap: 1 }}>
+// ─── Section header / footer helpers ─────────────────────────────────────────
+type SectionConfig = { bg: string; color: string; border: string };
+
+const SECTION_CHIPS:    SectionConfig = { bg: '#E8F5E9', color: '#2E7D32', border: '#C8E6C9' };
+const SECTION_TELS:     SectionConfig = { bg: '#E3F2FD', color: '#1565C0', border: '#BBDEFB' };
+const SECTION_ACC:      SectionConfig = { bg: '#FFF3E0', color: '#E65100', border: '#FFE0B2' };
+const SECTION_MONTOS:   SectionConfig = { bg: '#FFF3E0', color: '#FF6B00', border: '#FFD7A0' };
+const SECTION_SALIDA:   SectionConfig = { bg: '#c62828', color: '#ffffff', border: '#c62828' };
+const SECTION_TOTALES:  SectionConfig = { bg: '#1a2744', color: '#ffffff', border: '#1a2744' };
+
+const sectionHeader = (label: string, cfg: SectionConfig, icon?: React.ReactNode) => (
+  <Box sx={{
+    px: '12px', py: '6px',
+    bgcolor: cfg.bg,
+    borderBottom: `1px solid ${cfg.border}`,
+    display: 'flex', alignItems: 'center', gap: 0.75,
+    minHeight: 32,
+  }}>
     {icon}
-    <Typography fontWeight={700} fontSize={13} color="#1a1a2e" letterSpacing={0.3}>
+    <Typography fontWeight={700} fontSize={13} color={cfg.color} letterSpacing={0.2} lineHeight={1.2}>
       {label}
     </Typography>
   </Box>
 );
 
-const sectionFooter = (label: string, value: React.ReactNode) => (
-  <Box sx={{ px: 2, py: 1, bgcolor: '#f5f5f5', borderTop: '1px solid #e5e5e5', display: 'flex', justifyContent: 'space-between' }}>
-    <Typography variant="body2" fontWeight={700} color="#333">{label}</Typography>
-    <Typography variant="body2" fontWeight={700} color="#333">{value}</Typography>
+const sectionFooter = (label: string, value: React.ReactNode, cfg: SectionConfig) => (
+  <Box sx={{
+    px: '12px', py: '5px',
+    bgcolor: cfg.bg,
+    borderTop: `1px solid ${cfg.border}`,
+    display: 'flex', justifyContent: 'space-between',
+  }}>
+    <Typography fontSize={12} fontWeight={700} color={cfg.color}>{label}</Typography>
+    <Typography fontSize={12} fontWeight={700} color={cfg.color}>{value}</Typography>
   </Box>
 );
 
@@ -225,18 +247,17 @@ const DireccionPage: React.FC = () => {
 
   const moduloNombre = modulos.find((m) => String(m.id) === moduloId)?.nombre ?? '';
 
-  // ── JSX fragments reusados en mobile y desktop ────────────────────────────
-
+  // ── Panel B: filtro ───────────────────────────────────────────────────────
   const panelFiltro = (
     <>
-      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-        <Typography variant="h5" fontWeight={700}>Revisión de Corte</Typography>
+      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1.5 }}>
+        <Typography variant="h6" fontWeight={700} fontSize={16}>Revisión de Corte</Typography>
         {corte?.enviado && <Chip label="ENVIADO" color="success" size="small" />}
         {corte && !corte.enviado && <Chip label="BORRADOR" color="warning" size="small" />}
       </Stack>
 
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Stack spacing={1.5} direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }}>
+      <Paper sx={{ p: 1.5, mb: 1.5 }}>
+        <Stack spacing={1} direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }}>
           <FormControl size="small" sx={{ flex: 1 }}>
             <InputLabel>Módulo</InputLabel>
             <Select
@@ -266,9 +287,9 @@ const DireccionPage: React.FC = () => {
             variant="contained" size="small"
             onClick={buscar}
             disabled={!moduloId || !fecha || loading}
-            sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' }, fontWeight: 700, whiteSpace: 'nowrap', minHeight: 40 }}
+            sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' }, fontWeight: 700, whiteSpace: 'nowrap', minHeight: 38 }}
           >
-            {loading ? <CircularProgress size={18} sx={{ color: 'white' }} /> : 'Buscar'}
+            {loading ? <CircularProgress size={16} sx={{ color: 'white' }} /> : 'Buscar'}
           </Button>
         </Stack>
       </Paper>
@@ -276,23 +297,24 @@ const DireccionPage: React.FC = () => {
   );
 
   const sinCorteAlert = (
-    <Alert severity="info" sx={{ mb: 2 }}>
+    <Alert severity="info" sx={{ mb: 1.5, py: 0.5, fontSize: 13 }}>
       Sin corte registrado para <strong>{moduloNombre}</strong> el <strong>{fecha}</strong>.
     </Alert>
   );
 
+  // ── Panel C: detalle ──────────────────────────────────────────────────────
   const panelDetalle = corte ? (
     <>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, fontSize: 13 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontSize: 12 }}>
         {moduloNombre} — {corte.fecha}
       </Typography>
 
       {/* Chips */}
-      <Paper sx={{ mb: 1.5, overflow: 'hidden' }}>
-        {sectionHeader(`Chips del día (${corte.chips_count ?? 0})`)}
+      <Paper sx={{ mb: '8px', overflow: 'hidden' }}>
+        {sectionHeader(`Chips del día (${corte.chips_count ?? 0})`, SECTION_CHIPS)}
         {!corte.chips_por_tipo || Object.keys(corte.chips_por_tipo).length === 0 ? (
-          <Box px={2} py={1.5}>
-            <Typography variant="body2" color="text.secondary" fontSize={13}>Sin chips para esta fecha</Typography>
+          <Box px="12px" py="6px">
+            <Typography fontSize={12} color="text.secondary">Sin chips para esta fecha</Typography>
           </Box>
         ) : (
           <>
@@ -312,17 +334,17 @@ const DireccionPage: React.FC = () => {
                 ))}
               </tbody>
             </Box>
-            {sectionFooter('Total chips', corte.chips_count)}
+            {sectionFooter('Total chips', corte.chips_count, SECTION_CHIPS)}
           </>
         )}
       </Paper>
 
       {/* Teléfonos */}
-      <Paper sx={{ mb: 1.5, overflow: 'hidden' }}>
-        {sectionHeader(`Teléfonos del día (${ventasTel.length})`)}
+      <Paper sx={{ mb: '8px', overflow: 'hidden' }}>
+        {sectionHeader(`Teléfonos del día (${ventasTel.length})`, SECTION_TELS)}
         {ventasTel.length === 0 ? (
-          <Box px={2} py={1.5}>
-            <Typography variant="body2" color="text.secondary" fontSize={13}>Sin teléfonos para esta fecha</Typography>
+          <Box px="12px" py="6px">
+            <Typography fontSize={12} color="text.secondary">Sin teléfonos para esta fecha</Typography>
           </Box>
         ) : (
           <>
@@ -338,7 +360,7 @@ const DireccionPage: React.FC = () => {
               <tbody>
                 {ventasTel.map((v) => (
                   <tr key={v.id}>
-                    <td style={{ ...tdStyle, maxWidth: 220 }}>{v.producto}</td>
+                    <td style={{ ...tdStyle, maxWidth: 200 }}>{v.producto}</td>
                     <td style={tdStyle}>{capitalize(v.tipo_venta || '')}</td>
                     <td style={tdStyle}>{capitalize(v.metodo_pago || '')}</td>
                     <td style={tdR}>${getTotal(v).toFixed(2)}</td>
@@ -346,17 +368,17 @@ const DireccionPage: React.FC = () => {
                 ))}
               </tbody>
             </Box>
-            {sectionFooter('Total teléfonos', `$${subtotalTel.toFixed(2)}`)}
+            {sectionFooter('Total teléfonos', `$${subtotalTel.toFixed(2)}`, SECTION_TELS)}
           </>
         )}
       </Paper>
 
       {/* Accesorios */}
-      <Paper sx={{ mb: 1.5, overflow: 'hidden' }}>
-        {sectionHeader(`Accesorios del día (${ventasAcc.length})`)}
+      <Paper sx={{ mb: '8px', overflow: 'hidden' }}>
+        {sectionHeader(`Accesorios del día (${ventasAcc.length})`, SECTION_ACC)}
         {ventasAcc.length === 0 ? (
-          <Box px={2} py={1.5}>
-            <Typography variant="body2" color="text.secondary" fontSize={13}>Sin accesorios para esta fecha</Typography>
+          <Box px="12px" py="6px">
+            <Typography fontSize={12} color="text.secondary">Sin accesorios para esta fecha</Typography>
           </Box>
         ) : (
           <>
@@ -365,7 +387,7 @@ const DireccionPage: React.FC = () => {
                 <tr>
                   <th style={thStyle}>Descripción</th>
                   <th style={{ ...thStyle, textAlign: 'right' }}>Cant.</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>Precio Prom.</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>P. Prom.</th>
                   <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
                 </tr>
               </thead>
@@ -383,7 +405,7 @@ const DireccionPage: React.FC = () => {
                   )
                 ).map((g) => (
                   <tr key={g.producto + g.precio}>
-                    <td style={{ ...tdStyle, maxWidth: 260 }}>{g.producto}</td>
+                    <td style={{ ...tdStyle, maxWidth: 240 }}>{g.producto}</td>
                     <td style={tdR}>{g.cantidad}</td>
                     <td style={tdR}>${(g.total / g.cantidad).toFixed(2)}</td>
                     <td style={tdR}>${g.total.toFixed(2)}</td>
@@ -391,85 +413,85 @@ const DireccionPage: React.FC = () => {
                 ))}
               </tbody>
             </Box>
-            {sectionFooter('Total accesorios', `$${subtotalAcc.toFixed(2)}`)}
+            {sectionFooter('Total accesorios', `$${subtotalAcc.toFixed(2)}`, SECTION_ACC)}
           </>
         )}
       </Paper>
 
       {/* Montos Adicionales */}
-      <Paper sx={{ mb: 1.5, overflow: 'hidden', borderRadius: 2 }}>
-        {sectionHeader('MONTOS ADICIONALES', <MonetizationOnIcon sx={{ color: '#FF6600', fontSize: 16 }} />)}
-        <Box sx={{ p: 2 }}>
+      <Paper sx={{ mb: '8px', overflow: 'hidden', borderRadius: 1 }}>
+        {sectionHeader('MONTOS ADICIONALES', SECTION_MONTOS,
+          <MonetizationOnIcon sx={{ color: SECTION_MONTOS.color, fontSize: 15 }} />
+        )}
+        <Box sx={{ px: '12px', py: '6px' }}>
           {[
             { label: 'Recargas Telcel', val: rec   },
             { label: 'Recargas YOVOY',  val: trans  },
             { label: 'Centro de Pagos', val: otr   },
           ].map(({ label, val }) => (
-            <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.6, borderBottom: '1px solid #f0f0f0' }}>
-              <Typography fontSize={13} color="#555">{label}</Typography>
-              <Typography fontSize={13} fontWeight={600} color="#222">${val.toFixed(2)}</Typography>
+            <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', py: '3px', borderBottom: '1px solid #f0f0f0' }}>
+              <Typography fontSize={12} color="#555">{label}</Typography>
+              <Typography fontSize={12} fontWeight={600} color="#222">${val.toFixed(2)}</Typography>
             </Box>
           ))}
-          <Box sx={{ border: '1px solid #e5e5e5', borderRadius: 1.5, p: 1.5, mt: 1, mb: 1, bgcolor: '#fafafa' }}>
-            <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#555', letterSpacing: 0.5, mb: 0.5 }}>
+
+          {/* Mayoreo */}
+          <Box sx={{ border: '1px solid #FFD7A0', borderRadius: 1, px: '10px', py: '5px', mt: '6px', mb: '6px', bgcolor: '#fffaf5' }}>
+            <Typography sx={{ fontSize: 10, fontWeight: 700, color: '#FF6B00', letterSpacing: 0.5, mb: '2px' }}>
               RECARGAS MAYOREO
             </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.4 }}>
-              <Typography fontSize={13} color="#555">Cantidad</Typography>
-              <Typography fontSize={13} fontWeight={600} color="#333">${may.toFixed(2)}</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Typography fontSize={12} color="#555">Cantidad</Typography>
+              <Typography fontSize={12} fontWeight={600} color="#333">${may.toFixed(2)}</Typography>
             </Box>
             {corte.adicional_mayoreo_para && (
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.4 }}>
-                <Typography fontSize={13} color="#555">Para quién</Typography>
-                <Typography fontSize={13} fontWeight={600} color="#222">{corte.adicional_mayoreo_para}</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography fontSize={12} color="#555">Para quién</Typography>
+                <Typography fontSize={12} fontWeight={600} color="#222">{corte.adicional_mayoreo_para}</Typography>
               </Box>
             )}
           </Box>
-          <Box sx={{ bgcolor: '#f5f5f5', border: '1px solid #e5e5e5', borderRadius: 1.5, px: 2, py: 1.2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography fontWeight={600} color="#333" fontSize={13}>Total Montos Adicionales</Typography>
-            <Typography fontWeight={800} color="#1a1a2e" fontSize={20}>${totalAdicional.toFixed(2)}</Typography>
+
+          {/* Total adicional */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#FFF3E0', border: '1px solid #FFD7A0', borderRadius: 1, px: '10px', py: '5px' }}>
+            <Typography fontWeight={600} color="#E65100" fontSize={12}>Total Adicional</Typography>
+            <Typography fontWeight={800} color="#FF6B00" fontSize={16}>${totalAdicional.toFixed(2)}</Typography>
           </Box>
         </Box>
       </Paper>
 
       {/* Salida de Efectivo */}
-      <Paper sx={{ mb: 1.5, overflow: 'hidden', borderRadius: 2 }}>
-        <Box sx={{ px: 2, py: 1.2, bgcolor: '#b71c1c', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <TrendingDownIcon sx={{ color: 'white', fontSize: 16 }} />
-          <Typography fontWeight={700} fontSize={13} color="white" letterSpacing={0.3}>
-            SALIDA DE EFECTIVO
-          </Typography>
-        </Box>
-        <Box sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.6, borderBottom: '1px solid #f0f0f0' }}>
-            <Typography fontSize={13} color="#555">Monto de salida</Typography>
-            <Typography fontSize={13} fontWeight={600} color={sal > 0 ? '#b71c1c' : '#222'}>
+      <Paper sx={{ mb: '8px', overflow: 'hidden', borderRadius: 1 }}>
+        {sectionHeader('SALIDA DE EFECTIVO', SECTION_SALIDA,
+          <TrendingDownIcon sx={{ color: '#ffffff', fontSize: 15 }} />
+        )}
+        <Box sx={{ px: '12px', py: '6px' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', py: '3px' }}>
+            <Typography fontSize={12} color="#555">Monto de salida</Typography>
+            <Typography fontSize={12} fontWeight={600} color={sal > 0 ? '#b71c1c' : '#222'}>
               {sal > 0 ? `-$${sal.toFixed(2)}` : `$${sal.toFixed(2)}`}
             </Typography>
           </Box>
           {corte.nota_salida && (
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.6 }}>
-              <Typography fontSize={13} color="#555">Nota</Typography>
-              <Typography fontSize={13} color="#333">{corte.nota_salida}</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', py: '3px' }}>
+              <Typography fontSize={12} color="#555">Nota</Typography>
+              <Typography fontSize={12} color="#333">{corte.nota_salida}</Typography>
             </Box>
           )}
         </Box>
       </Paper>
 
       {/* Totales Finales */}
-      <Paper sx={{ mb: 2, overflow: 'hidden', borderRadius: 2 }}>
-        <Box sx={{ px: 2, py: 1.2, bgcolor: '#1a2744', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <ReceiptLongIcon sx={{ color: '#FF6600', fontSize: 16 }} />
-          <Typography fontWeight={700} fontSize={13} color="white" letterSpacing={0.3}>
-            TOTALES FINALES
-          </Typography>
-        </Box>
+      <Paper sx={{ mb: '8px', overflow: 'hidden', borderRadius: 1 }}>
+        {sectionHeader('TOTALES FINALES', SECTION_TOTALES,
+          <ReceiptLongIcon sx={{ color: '#FF6600', fontSize: 15 }} />
+        )}
         <Table size="small" sx={{ tableLayout: 'fixed', width: '100%' }}>
           <TableHead>
             <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-              <TableCell sx={{ fontWeight: 700, fontSize: 11, color: '#555', border: 'none', py: 0.8, pl: 2, width: '44%', letterSpacing: 0.5 }}>CONCEPTO</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 700, fontSize: 11, color: '#555', border: 'none', py: 0.8, width: '28%', letterSpacing: 0.5 }}>EFECTIVO</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 700, fontSize: 11, color: '#555', border: 'none', py: 0.8, pr: 2, width: '28%', letterSpacing: 0.5 }}>TARJETA</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: 10, color: '#555', border: 'none', py: '3px', pl: '12px', width: '44%', letterSpacing: 0.4 }}>CONCEPTO</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700, fontSize: 10, color: '#555', border: 'none', py: '3px', width: '28%', letterSpacing: 0.4 }}>EFECTIVO</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700, fontSize: 10, color: '#555', border: 'none', py: '3px', pr: '12px', width: '28%', letterSpacing: 0.4 }}>TARJETA</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -478,35 +500,35 @@ const DireccionPage: React.FC = () => {
               { label: 'Teléfonos',  ef: ef_tel, ta: ta_tel },
             ].map(({ label, ef, ta }) => (
               <TableRow key={label} sx={{ bgcolor: label === 'Teléfonos' ? '#fafafa' : 'white' }}>
-                <TableCell sx={{ fontSize: 13, border: 'none', py: 0.8, pl: 2, color: '#333' }}>{label}</TableCell>
-                <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 0.8, color: '#222' }}>${ef.toFixed(2)}</TableCell>
-                <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 0.8, pr: 2, color: '#222' }}>${ta.toFixed(2)}</TableCell>
+                <TableCell sx={{ fontSize: 12, border: 'none', py: '3px', pl: '12px', color: '#333', lineHeight: 1.2 }}>{label}</TableCell>
+                <TableCell align="right" sx={{ fontSize: 12, border: 'none', py: '3px', color: '#222', lineHeight: 1.2 }}>${ef.toFixed(2)}</TableCell>
+                <TableCell align="right" sx={{ fontSize: 12, border: 'none', py: '3px', pr: '12px', color: '#222', lineHeight: 1.2 }}>${ta.toFixed(2)}</TableCell>
               </TableRow>
             ))}
             <TableRow sx={{ bgcolor: 'white' }}>
-              <TableCell sx={{ fontSize: 13, border: 'none', py: 0.8, pl: 2, color: '#333' }}>Recargas</TableCell>
-              <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 0.8, color: '#222' }}>${totalAdicional.toFixed(2)}</TableCell>
-              <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 0.8, pr: 2, color: '#aaa' }}>—</TableCell>
+              <TableCell sx={{ fontSize: 12, border: 'none', py: '3px', pl: '12px', color: '#333', lineHeight: 1.2 }}>Recargas</TableCell>
+              <TableCell align="right" sx={{ fontSize: 12, border: 'none', py: '3px', color: '#222', lineHeight: 1.2 }}>${totalAdicional.toFixed(2)}</TableCell>
+              <TableCell align="right" sx={{ fontSize: 12, border: 'none', py: '3px', pr: '12px', color: '#aaa', lineHeight: 1.2 }}>—</TableCell>
             </TableRow>
             <TableRow sx={{ bgcolor: '#fafafa' }}>
-              <TableCell sx={{ fontSize: 13, border: 'none', py: 0.8, pl: 2, color: '#333' }}>Salidas</TableCell>
-              <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 0.8, color: sal > 0 ? '#d32f2f' : '#222' }}>
+              <TableCell sx={{ fontSize: 12, border: 'none', py: '3px', pl: '12px', color: '#333', lineHeight: 1.2 }}>Salidas</TableCell>
+              <TableCell align="right" sx={{ fontSize: 12, border: 'none', py: '3px', color: sal > 0 ? '#d32f2f' : '#222', lineHeight: 1.2 }}>
                 {sal > 0 ? `-$${sal.toFixed(2)}` : `$${sal.toFixed(2)}`}
               </TableCell>
-              <TableCell align="right" sx={{ fontSize: 13, border: 'none', py: 0.8, pr: 2, color: '#aaa' }}>—</TableCell>
+              <TableCell align="right" sx={{ fontSize: 12, border: 'none', py: '3px', pr: '12px', color: '#aaa', lineHeight: 1.2 }}>—</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={3} sx={{ border: 'none', p: 0, borderTop: '2px solid #eee' }} />
+              <TableCell colSpan={3} sx={{ border: 'none', p: 0, borderTop: '1px solid #e5e5e5' }} />
             </TableRow>
             <TableRow sx={{ bgcolor: '#e8f5e9' }}>
-              <TableCell sx={{ fontWeight: 700, fontSize: 13, border: 'none', py: 1.2, pl: 2, color: '#2e7d32' }}>TOTAL EFECTIVO</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 800, fontSize: 18, border: 'none', py: 1.2, color: '#2e7d32' }}>${total_efectivo_final.toFixed(2)}</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: 12, border: 'none', py: '5px', pl: '12px', color: '#2e7d32', lineHeight: 1.2 }}>TOTAL EFECTIVO</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 800, fontSize: 16, border: 'none', py: '5px', color: '#2e7d32', lineHeight: 1.2 }}>${total_efectivo_final.toFixed(2)}</TableCell>
               <TableCell sx={{ border: 'none', bgcolor: '#e8f5e9' }} />
             </TableRow>
             <TableRow sx={{ bgcolor: '#eff6ff' }}>
-              <TableCell sx={{ fontWeight: 700, fontSize: 13, border: 'none', py: 1.2, pl: 2, color: '#1d4ed8' }}>TOTAL TARJETA</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: 12, border: 'none', py: '5px', pl: '12px', color: '#1d4ed8', lineHeight: 1.2 }}>TOTAL TARJETA</TableCell>
               <TableCell sx={{ border: 'none', bgcolor: '#eff6ff' }} />
-              <TableCell align="right" sx={{ fontWeight: 800, fontSize: 18, border: 'none', py: 1.2, pr: 2, color: '#1d4ed8' }}>${total_tarjeta.toFixed(2)}</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 800, fontSize: 16, border: 'none', py: '5px', pr: '12px', color: '#1d4ed8', lineHeight: 1.2 }}>${total_tarjeta.toFixed(2)}</TableCell>
             </TableRow>
           </TableBody>
         </Table>
@@ -514,8 +536,8 @@ const DireccionPage: React.FC = () => {
 
       {/* Botón MARCAR REVISADO */}
       {corte.revisado_direccion ? (
-        <Alert severity="success" sx={{ mb: 2, fontSize: 14, borderRadius: 2 }}>
-          ✅ Corte revisado por <strong>{corte.revisado_por}</strong> el{' '}
+        <Alert severity="success" sx={{ mb: 1, py: 0.5, fontSize: 13, borderRadius: 1 }}>
+          ✅ Revisado por <strong>{corte.revisado_por}</strong>{' '}
           {new Date(corte.revisado_at).toLocaleString('es-MX', {
             timeZone: 'America/Mexico_City',
             day: '2-digit', month: '2-digit', year: 'numeric',
@@ -526,16 +548,16 @@ const DireccionPage: React.FC = () => {
         <Button
           variant="contained"
           fullWidth
-          size="large"
           onClick={() => setDialogConfirm(true)}
           sx={{
-            bgcolor: '#FF6600',
-            '&:hover': { bgcolor: '#ea5c00' },
+            bgcolor: '#2e7d32',
+            '&:hover': { bgcolor: '#1b5e20' },
             fontWeight: 700,
-            fontSize: { xs: 14, sm: 16 },
-            minHeight: 52,
-            mb: 2,
-            borderRadius: 2,
+            fontSize: 13,
+            minHeight: 36,
+            maxHeight: 36,
+            mb: 1,
+            borderRadius: 1.5,
           }}
         >
           ✅ MARCAR CORTE COMO REVISADO
@@ -568,30 +590,30 @@ const DireccionPage: React.FC = () => {
             mb: { xs: 3, lg: 0 },
           }}
         >
-          <Typography variant="h5" fontWeight={700} sx={{ mb: 0.5 }}>
+          <Typography variant="h6" fontWeight={700} fontSize={16} sx={{ mb: 0.5 }}>
             📋 Cortes pendientes de revisar
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, fontSize: 13 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontSize: 12 }}>
             {loadingPendientes
               ? 'Cargando…'
-              : `${pendientes.length} corte${pendientes.length !== 1 ? 's' : ''} esperando tu revisión`}
+              : `${pendientes.length} corte${pendientes.length !== 1 ? 's' : ''} esperando revisión`}
           </Typography>
 
           {loadingPendientes ? (
             <Box textAlign="center" py={3}>
-              <CircularProgress sx={{ color: '#FF6600' }} size={32} />
+              <CircularProgress sx={{ color: '#FF6600' }} size={28} />
             </Box>
           ) : pendientes.length === 0 ? (
-            <Alert severity="success" sx={{ mb: 2, fontSize: 14 }}>
+            <Alert severity="success" sx={{ fontSize: 13, py: 0.5 }}>
               ✅ Todos los cortes están revisados al día
             </Alert>
           ) : (
             <Box
               sx={{
                 overflowY: 'auto',
-                maxHeight: { xs: 600, lg: '100%' },
+                maxHeight: { xs: 400, lg: '100%' },
                 border: '1px solid #e5e5e5',
-                borderRadius: 2,
+                borderRadius: 1.5,
               }}
             >
               {pendientes.map((c, idx) => (
@@ -602,12 +624,12 @@ const DireccionPage: React.FC = () => {
                     display: 'flex',
                     flexDirection: { xs: 'column', sm: 'row' },
                     alignItems: { xs: 'stretch', sm: 'center' },
-                    px: 2,
-                    py: '8px',
+                    px: '12px',
+                    py: '6px',
                     bgcolor: '#ffffff',
                     borderBottom: idx < pendientes.length - 1 ? '1px solid #e5e5e5' : 'none',
                     cursor: 'pointer',
-                    gap: 0.5,
+                    gap: '4px',
                     '&:hover': { bgcolor: '#f5f5f5' },
                   }}
                 >
@@ -616,17 +638,17 @@ const DireccionPage: React.FC = () => {
                     <Typography fontWeight={700} fontSize={14} color="#1a1a2e" lineHeight={1.3}>
                       {c.modulo_nombre}
                     </Typography>
-                    <Typography fontSize={11} color="#888">
+                    <Typography fontSize={11} color="#888" lineHeight={1.2}>
                       {fmtFecha(c.fecha)}
                     </Typography>
                   </Box>
 
                   {/* Monto + desglose */}
                   <Box sx={{ flex: { sm: '0 0 37%' }, minWidth: 0 }}>
-                    <Typography fontWeight={700} fontSize={16} color="#333" lineHeight={1.2}>
+                    <Typography fontWeight={700} fontSize={15} color="#333" lineHeight={1.2}>
                       {fmt$(c.total_general)}
                     </Typography>
-                    <Typography fontSize={11} color="#888" noWrap>
+                    <Typography fontSize={11} color="#888" noWrap lineHeight={1.2}>
                       Ef: {fmt$(c.total_efectivo)} · Ta: {fmt$(c.total_tarjeta)}
                     </Typography>
                   </Box>
@@ -637,23 +659,23 @@ const DireccionPage: React.FC = () => {
                       flex: { sm: '0 0 25%' },
                       display: 'flex',
                       justifyContent: { xs: 'stretch', sm: 'flex-end' },
-                      mt: { xs: 0.5, sm: 0 },
+                      mt: { xs: '4px', sm: 0 },
                     }}
                   >
                     <Button
                       variant="contained"
-                      endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+                      endIcon={<ArrowForwardIcon sx={{ fontSize: 12 }} />}
                       onClick={(e) => { e.stopPropagation(); abrirCortePendiente(c); }}
                       sx={{
                         bgcolor: '#FF6600',
                         '&:hover': { bgcolor: '#ea5c00' },
                         fontWeight: 700,
-                        fontSize: 12,
-                        py: '6px',
-                        px: '12px',
-                        minHeight: { xs: 36, sm: 30 },
+                        fontSize: 11,
+                        py: '4px',
+                        px: '10px',
+                        minHeight: { xs: 32, sm: 26 },
                         width: { xs: '100%', sm: 'auto' },
-                        borderRadius: 1.5,
+                        borderRadius: 1,
                         whiteSpace: 'nowrap',
                       }}
                     >
@@ -676,7 +698,7 @@ const DireccionPage: React.FC = () => {
 
           {/* -- MOBILE (xs a lg): filtro siempre visible, detalle debajo -- */}
           <Box sx={{ display: { xs: 'block', lg: 'none' } }}>
-            <Divider sx={{ mb: 3 }} />
+            <Divider sx={{ mb: 2 }} />
             {panelFiltro}
             {sinCorte && !loading && sinCorteAlert}
             {panelDetalle}
@@ -685,24 +707,23 @@ const DireccionPage: React.FC = () => {
           {/* -- DESKTOP (lg+): ESTADO A (filtro) o ESTADO B (detalle) -- */}
           <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
             {!mostrarDetalle ? (
-              /* ESTADO A — Filtro */
               <>
                 {panelFiltro}
                 {sinCorte && !loading && sinCorteAlert}
               </>
             ) : (
-              /* ESTADO B — Detalle */
               <>
                 <Button
-                  startIcon={<ArrowBackIcon sx={{ fontSize: 14 }} />}
+                  startIcon={<ArrowBackIcon sx={{ fontSize: 13 }} />}
                   onClick={volverAlFiltro}
                   size="small"
                   sx={{
-                    mb: 2,
+                    mb: 1.5,
                     color: '#666',
                     fontWeight: 500,
-                    fontSize: 13,
+                    fontSize: 12,
                     textTransform: 'none',
+                    py: '3px',
                     '&:hover': { bgcolor: '#f5f5f5', color: '#333' },
                   }}
                 >
@@ -710,13 +731,12 @@ const DireccionPage: React.FC = () => {
                 </Button>
 
                 {loading && (
-                  <Box textAlign="center" py={6}>
-                    <CircularProgress sx={{ color: '#FF6600' }} size={32} />
+                  <Box textAlign="center" py={4}>
+                    <CircularProgress sx={{ color: '#FF6600' }} size={28} />
                   </Box>
                 )}
 
                 {sinCorte && !loading && sinCorteAlert}
-
                 {panelDetalle}
               </>
             )}
@@ -727,16 +747,16 @@ const DireccionPage: React.FC = () => {
 
       {/* ── Confirmation Dialog ───────────────────────────────────── */}
       <Dialog open={dialogConfirm} onClose={() => !marcando && setDialogConfirm(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>¿Confirmar revisión?</DialogTitle>
-        <DialogContent>
-          <Typography>¿Confirmas que ya revisaste este corte?</Typography>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: 16, pb: 1 }}>¿Confirmar revisión?</DialogTitle>
+        <DialogContent sx={{ pt: '8px !important' }}>
+          <Typography fontSize={14}>¿Confirmas que ya revisaste este corte?</Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
           <Button
             onClick={() => setDialogConfirm(false)}
             disabled={marcando}
             variant="outlined"
-            sx={{ minHeight: 44, flex: 1 }}
+            sx={{ minHeight: 36, flex: 1, fontSize: 13 }}
           >
             NO
           </Button>
@@ -744,9 +764,9 @@ const DireccionPage: React.FC = () => {
             variant="contained"
             onClick={marcarRevisado}
             disabled={marcando}
-            sx={{ bgcolor: '#FF6600', '&:hover': { bgcolor: '#ea5c00' }, minHeight: 44, flex: 1, fontWeight: 700 }}
+            sx={{ bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' }, minHeight: 36, flex: 1, fontWeight: 700, fontSize: 13 }}
           >
-            {marcando ? <CircularProgress size={20} sx={{ color: 'white' }} /> : 'SÍ, CONFIRMAR'}
+            {marcando ? <CircularProgress size={18} sx={{ color: 'white' }} /> : 'SÍ, CONFIRMAR'}
           </Button>
         </DialogActions>
       </Dialog>
