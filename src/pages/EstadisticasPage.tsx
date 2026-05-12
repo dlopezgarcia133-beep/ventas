@@ -23,6 +23,7 @@ import {
   Pie,
   Cell,
   Tooltip,
+  Legend,
   BarChart,
   Bar,
   XAxis,
@@ -49,6 +50,7 @@ interface EstData {
   planes: { total: number; por_tramite: { tramite: string; cantidad: number }[]; por_plan: { plan: string; cantidad: number }[]; };
   por_modulo: { modulo: string; total_mxn: number; telefonos: number; chips: number; accesorios: number }[];
   ventas_por_dia: { dia: number; total: number }[];
+  telefonos_por_modulo: { modulo: string; total_telefonos: number; monto_total: number; contado: number; payjoy: number; paguitos: number }[];
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -660,6 +662,127 @@ const EstadisticasPage: React.FC = () => {
                 ))}
             </Box>
           </Paper>
+
+          {/* ── S8: TELÉFONOS POR MÓDULO ─────────────────────────────────── */}
+          {data.telefonos_por_modulo.length > 0 && (() => {
+            const totales = data.telefonos_por_modulo.reduce(
+              (acc, m) => ({
+                total: acc.total + m.total_telefonos,
+                monto: acc.monto + m.monto_total,
+                contado: acc.contado + m.contado,
+                payjoy: acc.payjoy + m.payjoy,
+                paguitos: acc.paguitos + m.paguitos,
+              }),
+              { total: 0, monto: 0, contado: 0, payjoy: 0, paguitos: 0 },
+            );
+            const topModulo = data.telefonos_por_modulo[0]?.modulo;
+
+            return (
+              <Paper elevation={0} sx={{ ...cardSx, mt: 3 }}>
+                <Typography variant="h6" fontWeight={700} mb={2}>
+                  📱 Ventas de teléfonos por módulo
+                </Typography>
+
+                <Grid container spacing={2} alignItems="flex-start">
+
+                  {/* Gráfica apilada — desktop only */}
+                  <Grid item xs={12} md={7} sx={{ display: { xs: 'none', md: 'block' } }}>
+                    <Box sx={{ height: 300 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={data.telefonos_por_modulo}
+                          margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                          <XAxis dataKey="modulo" tick={{ fontSize: 12 }} />
+                          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                          <Tooltip
+                            contentStyle={{ fontSize: 13, borderRadius: 8 }}
+                            formatter={(v: any, name: any) => [fmtN(Number(v)), name]}
+                          />
+                          <Legend wrapperStyle={{ fontSize: 13 }} />
+                          <Bar dataKey="contado" name="Contado" fill="#22c55e" stackId="a" />
+                          <Bar dataKey="payjoy" name="Payjoy" fill="#f97316" stackId="a" />
+                          <Bar
+                            dataKey="paguitos"
+                            name="Paguitos"
+                            fill="#3b82f6"
+                            stackId="a"
+                            radius={[4, 4, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </Box>
+                  </Grid>
+
+                  {/* Tabla desglose */}
+                  <Grid item xs={12} md={5}>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                          {['Módulo', 'Total', 'Contado', 'Payjoy', 'Paguitos', 'Monto $'].map((h, i) => (
+                            <TableCell
+                              key={h}
+                              align={i === 0 ? 'left' : 'right'}
+                              sx={{ fontWeight: 700, color: '#FF6600', fontSize: 11, py: 0.8, px: 1 }}
+                            >
+                              {h}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {data.telefonos_por_modulo.map((m) => {
+                          const isTop = m.modulo === topModulo;
+                          return (
+                            <TableRow key={m.modulo} hover>
+                              <TableCell sx={{ fontWeight: isTop ? 800 : 600, fontSize: 13, py: 0.8, px: 1 }}>
+                                {m.modulo}
+                              </TableCell>
+                              <TableCell align="right" sx={{ fontWeight: isTop ? 800 : 700, fontSize: 13, color: '#15803d', py: 0.8, px: 1 }}>
+                                {fmtN(m.total_telefonos)}
+                              </TableCell>
+                              <TableCell align="right" sx={{ fontWeight: isTop ? 700 : 400, fontSize: 12, color: '#22c55e', py: 0.8, px: 1 }}>
+                                {fmtN(m.contado)}
+                              </TableCell>
+                              <TableCell align="right" sx={{ fontWeight: isTop ? 700 : 400, fontSize: 12, color: '#f97316', py: 0.8, px: 1 }}>
+                                {fmtN(m.payjoy)}
+                              </TableCell>
+                              <TableCell align="right" sx={{ fontWeight: isTop ? 700 : 400, fontSize: 12, color: '#3b82f6', py: 0.8, px: 1 }}>
+                                {fmtN(m.paguitos)}
+                              </TableCell>
+                              <TableCell align="right" sx={{ fontWeight: isTop ? 700 : 400, fontSize: 12, py: 0.8, px: 1 }}>
+                                {fmt$(m.monto_total)}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                        {/* Fila de totales */}
+                        <TableRow sx={{ bgcolor: '#f8fafc', borderTop: '2px solid #e2e8f0' }}>
+                          <TableCell sx={{ fontWeight: 800, fontSize: 12, py: 0.8, px: 1 }}>TOTAL</TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 800, fontSize: 13, color: '#15803d', py: 0.8, px: 1 }}>
+                            {fmtN(totales.total)}
+                          </TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 700, fontSize: 12, color: '#22c55e', py: 0.8, px: 1 }}>
+                            {fmtN(totales.contado)}
+                          </TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 700, fontSize: 12, color: '#f97316', py: 0.8, px: 1 }}>
+                            {fmtN(totales.payjoy)}
+                          </TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 700, fontSize: 12, color: '#3b82f6', py: 0.8, px: 1 }}>
+                            {fmtN(totales.paguitos)}
+                          </TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 700, fontSize: 12, py: 0.8, px: 1 }}>
+                            {fmt$(totales.monto)}
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </Grid>
+                </Grid>
+              </Paper>
+            );
+          })()}
         </>
       )}
     </Box>
