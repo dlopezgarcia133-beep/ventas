@@ -765,6 +765,14 @@ def validar_chip(
     if chip.validado:
         raise HTTPException(status_code=400, detail="Ya ha sido validado")
 
+    if chip.tipo_chip == "Tarjetas PayJoy":
+        chip.validado = True
+        chip.comision_pagada = True
+        chip.comision = 50.00
+        db.commit()
+        db.refresh(chip)
+        return chip
+
     tipo = chip.tipo_chip
     monto = int(chip.monto_recarga)
 

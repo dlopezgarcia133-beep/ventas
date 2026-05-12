@@ -30,6 +30,18 @@ const colWidthsAdmin = ["160px", "130px", "130px", "80px", "100px", "120px", "15
 // Anchos fijos — tabla asesor/encargado
 const colWidthsUser  = ["160px", "130px", "130px", "80px", "100px", "150px", "36px"];
 
+const COMISION_POR_TIPO: Record<string, number> = {
+  "Chip Equipo":          15,
+  "Chip Express":          5,
+  "Portabilidad":         50,
+  "Chip Cero/Libre":      25,
+  "Chip Preactivado":     35,
+  "Chip Coppel":          10,
+  "Portabilidad Coppel":  25,
+  "Porta Otras cadenas":  50,
+  "Tarjetas PayJoy":      50,
+};
+
 const ChipsAdmin = () => {
   const [chips, setChips]                     = useState<VentaChip[]>([]);
   const [usuarios, setUsuarios]               = useState<Usuario[]>([]);
@@ -191,13 +203,20 @@ const ChipsAdmin = () => {
                           ) : chip.validado ? (
                             <Typography sx={{ fontSize: 12, color: "green" }}>${chip.comision}</Typography>
                           ) : (
-                            <Checkbox
-                              size="small"
-                              checked={chip.validado}
-                              onChange={() => validarChip(chip.id, chip.tipo_chip, chip.comision_manual)}
-                              disabled={chip.validado}
-                              color="success"
-                            />
+                            <Box sx={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                              {COMISION_POR_TIPO[chip.tipo_chip] !== undefined && (
+                                <Typography sx={{ fontSize: 11, color: "#64748b" }}>
+                                  ${COMISION_POR_TIPO[chip.tipo_chip]}
+                                </Typography>
+                              )}
+                              <Checkbox
+                                size="small"
+                                checked={chip.validado}
+                                onChange={() => validarChip(chip.id, chip.tipo_chip, chip.comision_manual)}
+                                disabled={chip.validado}
+                                color="success"
+                              />
+                            </Box>
                           )}
                         </TableCell>
 

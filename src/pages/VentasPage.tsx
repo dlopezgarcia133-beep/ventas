@@ -224,6 +224,7 @@ const COMISIONES_EKT: ComisionChip[] = [
   { tipo: 'Chip Cero / Libre / EKT',            comision: '$25' },
   { tipo: 'Chip Preactivado / Otras Cadenas',   comision: '$35' },
   { tipo: 'Portabilidad / EKT / Otras Cadenas', comision: '$50' },
+  { tipo: 'Tarjetas PayJoy',                    comision: '$50' },
 ];
 
 const COMISIONES_COPPEL: ComisionChip[] = [
