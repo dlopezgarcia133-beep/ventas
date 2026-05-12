@@ -130,8 +130,6 @@ const TiempoRealPage: React.FC = () => {
 
   useEffect(() => {
     cargar();
-    const interval = setInterval(cargar, 60_000);
-    return () => clearInterval(interval);
   }, [cargar]);
 
   if (!data && !loading && !error)
