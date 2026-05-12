@@ -62,6 +62,7 @@ interface EstData {
     promedio_historico: number;
     meta_proporcional: number;
     productividad_pct: number | null;
+    meses_considerados: number;
   }[];
   ventas_por_dia: { dia: number; total: number }[];
   telefonos_por_modulo: { modulo: string; total_telefonos: number; monto_total: number; contado: number; payjoy: number; paguitos: number }[];
@@ -609,8 +610,8 @@ const EstadisticasPage: React.FC = () => {
                     const diaRef = esMesActual ? hoy.getDate() : new Date(mesY, mesM, 0).getDate();
                     const diasTotales = new Date(mesY, mesM, 0).getDate();
                     const prodTooltip = mod.productividad_pct !== null
-                      ? `Promedio últimos 12 meses: ${fmt$(mod.promedio_historico)}\nMeta proporcional al día ${diaRef} de ${diasTotales}: ${fmt$(mod.meta_proporcional)}\nVendido hasta hoy: ${fmt$(mod.total_mxn)}`
-                      : 'Sin historial de los últimos 12 meses';
+                      ? `Promedio últimos ${mod.meses_considerados} meses operativos: ${fmt$(mod.promedio_historico)}\nMeta proporcional al día ${diaRef} de ${diasTotales}: ${fmt$(mod.meta_proporcional)}\nVendido hasta hoy: ${fmt$(mod.total_mxn)}`
+                      : 'Sin meses operativos en los últimos 12 meses (mín. 100 ventas/mes)';
                     return (
                       <TableRow key={mod.modulo} hover sx={isTop ? { bgcolor: '#fff7ed' } : {}}>
                         <TableCell sx={{ fontWeight: isTop ? 800 : 600, fontSize: 13, whiteSpace: 'nowrap' }}>
