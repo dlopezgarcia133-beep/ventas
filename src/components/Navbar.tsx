@@ -24,6 +24,7 @@ import SimCardIcon from "@mui/icons-material/SimCard";
 import MoveToInboxIcon from "@mui/icons-material/MoveToInbox";
 import SignalCellular4BarIcon from "@mui/icons-material/SignalCellular4Bar";
 import ManageSearchIcon from "@mui/icons-material/ManageSearch";
+import BoltIcon from "@mui/icons-material/Bolt";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../ATO.jpeg";
 import { obtenerRolDesdeToken } from "./Token";
@@ -210,6 +211,9 @@ const Navbar = () => {
                   <Button sx={navBtnSx} component={Link} to="/quien-tiene">
                     QUIEN TIENE
                   </Button>
+                  <Button sx={navBtnSx} component={Link} to="/tiempo-real">
+                    ⚡ TIEMPO REAL
+                  </Button>
                   <Button sx={navBtnSx} component={Link} to="/estadisticas">
                     ESTADÍSTICAS
                   </Button>
@@ -259,6 +263,9 @@ const Navbar = () => {
                   </Button>
                   <Button sx={navBtnSx} component={Link} to="/quien-tiene">
                     QUIEN TIENE
+                  </Button>
+                  <Button sx={navBtnSx} component={Link} to="/tiempo-real">
+                    ⚡ TIEMPO REAL
                   </Button>
                 </>
               )}
@@ -405,6 +412,10 @@ const Navbar = () => {
                 <ListItemIcon sx={drawerIconSx}><ManageSearchIcon /></ListItemIcon>
                 <ListItemText primary="QUIEN TIENE" primaryTypographyProps={{ fontWeight: 700 }} />
               </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/tiempo-real")}>
+                <ListItemIcon sx={drawerIconSx}><BoltIcon /></ListItemIcon>
+                <ListItemText primary="⚡ TIEMPO REAL" primaryTypographyProps={{ fontWeight: 700 }} />
+              </ListItemButton>
               <ListItemButton sx={drawerItemSx} onClick={() => navegar("/estadisticas")}>
                 <ListItemIcon sx={drawerIconSx}><BarChartIcon /></ListItemIcon>
                 <ListItemText primary="ESTADÍSTICAS" primaryTypographyProps={{ fontWeight: 700 }} />
@@ -516,6 +527,10 @@ const Navbar = () => {
               <ListItemButton sx={drawerItemSx} onClick={() => navegar("/quien-tiene")}>
                 <ListItemIcon sx={drawerIconSx}><ManageSearchIcon /></ListItemIcon>
                 <ListItemText primary="QUIEN TIENE" primaryTypographyProps={{ fontWeight: 700 }} />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/tiempo-real")}>
+                <ListItemIcon sx={drawerIconSx}><BoltIcon /></ListItemIcon>
+                <ListItemText primary="⚡ TIEMPO REAL" primaryTypographyProps={{ fontWeight: 700 }} />
               </ListItemButton>
             </>
           )}
