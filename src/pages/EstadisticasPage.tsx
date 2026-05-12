@@ -112,6 +112,8 @@ const EstadisticasPage: React.FC = () => {
     cargar(mes);
   }, [mes, cargar]);
 
+  if (!data && !loading && !error) return <CircularProgress sx={{ color: '#FF6600', display: 'block', mx: 'auto', mt: 10 }} size={52} />;
+
   return (
     <Box sx={{ maxWidth: 1400, mx: 'auto', p: { xs: 2, md: 3 } }}>
 
@@ -336,10 +338,10 @@ const EstadisticasPage: React.FC = () => {
                   {/* Por tipo — barras horizontales */}
                   <Grid item xs={12} sm={7}>
                     <p style={sectionLabel}>POR TIPO DE CHIP</p>
-                    {data.chips.por_tipo.length === 0 && (
+                    {(data.chips.por_tipo ?? []).length === 0 && (
                       <Typography fontSize={12} color="text.secondary">Sin datos</Typography>
                     )}
-                    {data.chips.por_tipo.map((item) => {
+                    {(data.chips.por_tipo ?? []).map((item) => {
                       const barW = data.chips.total > 0
                         ? `${Math.round((item.cantidad / data.chips.total) * 100)}%`
                         : '0%';
@@ -366,10 +368,10 @@ const EstadisticasPage: React.FC = () => {
                   {/* Por monto de recarga */}
                   <Grid item xs={12} sm={5}>
                     <p style={sectionLabel}>POR MONTO DE RECARGA</p>
-                    {data.chips.por_monto_recarga.length === 0 && (
+                    {(data.chips.por_monto_recarga ?? []).length === 0 && (
                       <Typography fontSize={12} color="text.secondary">Sin datos</Typography>
                     )}
-                    {data.chips.por_monto_recarga.map((item) => (
+                    {(data.chips.por_monto_recarga ?? []).map((item) => (
                       <Box
                         key={item.monto}
                         display="flex"
@@ -405,10 +407,10 @@ const EstadisticasPage: React.FC = () => {
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
                     <p style={sectionLabel}>POR TRÁMITE</p>
-                    {data.planes.por_tramite.length === 0 && (
+                    {(data.planes.por_tramite ?? []).length === 0 && (
                       <Typography fontSize={12} color="text.secondary">Sin datos</Typography>
                     )}
-                    {data.planes.por_tramite.map((item) => (
+                    {(data.planes.por_tramite ?? []).map((item) => (
                       <Box
                         key={item.tramite}
                         display="flex"
@@ -432,10 +434,10 @@ const EstadisticasPage: React.FC = () => {
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <p style={sectionLabel}>POR PLAN</p>
-                    {data.planes.por_plan.length === 0 && (
+                    {(data.planes.por_plan ?? []).length === 0 && (
                       <Typography fontSize={12} color="text.secondary">Sin datos</Typography>
                     )}
-                    {data.planes.por_plan.map((item) => (
+                    {(data.planes.por_plan ?? []).map((item) => (
                       <Box
                         key={item.plan}
                         display="flex"
@@ -497,7 +499,7 @@ const EstadisticasPage: React.FC = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {data.accesorios.top_5_productos.map((p, i) => (
+                    {(data.accesorios.top_5_productos ?? []).map((p, i) => (
                       <TableRow key={p.producto} hover>
                         <TableCell sx={{ py: 0.8, pl: 0, fontWeight: 700, color: '#94a3b8', fontSize: 12 }}>
                           {i + 1}
@@ -511,7 +513,7 @@ const EstadisticasPage: React.FC = () => {
                         </TableCell>
                       </TableRow>
                     ))}
-                    {data.accesorios.top_5_productos.length === 0 && (
+                    {(data.accesorios.top_5_productos ?? []).length === 0 && (
                       <TableRow>
                         <TableCell
                           colSpan={4}
@@ -534,11 +536,11 @@ const EstadisticasPage: React.FC = () => {
             </Typography>
 
             {/* Bar chart — desktop only */}
-            {isDesktop && data.por_modulo.length > 0 && (
+            {isDesktop && (data.por_modulo ?? []).length > 0 && (
               <Box sx={{ height: 280, mb: 3 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
-                    data={data.por_modulo}
+                    data={data.por_modulo ?? []}
                     margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -572,7 +574,7 @@ const EstadisticasPage: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {data.por_modulo.map((m) => (
+                {(data.por_modulo ?? []).map((m) => (
                   <TableRow key={m.modulo} hover>
                     <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>{m.modulo}</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 700, fontSize: 13, color: '#15803d' }}>
@@ -583,7 +585,7 @@ const EstadisticasPage: React.FC = () => {
                     <TableCell align="right" sx={{ fontSize: 13 }}>{fmtN(m.accesorios)}</TableCell>
                   </TableRow>
                 ))}
-                {data.por_modulo.length === 0 && (
+                {(data.por_modulo ?? []).length === 0 && (
                   <TableRow>
                     <TableCell colSpan={5} sx={{ textAlign: 'center', color: '#94a3b8', py: 3 }}>
                       Sin datos
@@ -604,7 +606,7 @@ const EstadisticasPage: React.FC = () => {
             <Box sx={{ height: 300, display: { xs: 'none', sm: 'block' } }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
-                  data={data.ventas_por_dia}
+                  data={data.ventas_por_dia ?? []}
                   margin={{ top: 5, right: 25, left: 20, bottom: 10 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -640,7 +642,7 @@ const EstadisticasPage: React.FC = () => {
                 Gráfica disponible en pantallas más grandes
               </Typography>
               <p style={sectionLabel}>TOP 5 DÍAS CON MÁS VENTAS</p>
-              {[...data.ventas_por_dia]
+              {[...(data.ventas_por_dia ?? [])]
                 .filter((d) => d.total > 0)
                 .sort((a, b) => b.total - a.total)
                 .slice(0, 5)
@@ -664,8 +666,8 @@ const EstadisticasPage: React.FC = () => {
           </Paper>
 
           {/* ── S8: TELÉFONOS POR MÓDULO ─────────────────────────────────── */}
-          {data.telefonos_por_modulo.length > 0 && (() => {
-            const totales = data.telefonos_por_modulo.reduce(
+          {(data.telefonos_por_modulo ?? []).length > 0 && (() => {
+            const totales = (data.telefonos_por_modulo ?? []).reduce(
               (acc, m) => ({
                 total: acc.total + m.total_telefonos,
                 monto: acc.monto + m.monto_total,
@@ -675,7 +677,7 @@ const EstadisticasPage: React.FC = () => {
               }),
               { total: 0, monto: 0, contado: 0, payjoy: 0, paguitos: 0 },
             );
-            const topModulo = data.telefonos_por_modulo[0]?.modulo;
+            const topModulo = (data.telefonos_por_modulo ?? [])[0]?.modulo;
 
             return (
               <Paper elevation={0} sx={{ ...cardSx, mt: 3 }}>
@@ -690,7 +692,7 @@ const EstadisticasPage: React.FC = () => {
                     <Box sx={{ height: 300 }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
-                          data={data.telefonos_por_modulo}
+                          data={data.telefonos_por_modulo ?? []}
                           margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -732,7 +734,7 @@ const EstadisticasPage: React.FC = () => {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {data.telefonos_por_modulo.map((m) => {
+                        {(data.telefonos_por_modulo ?? []).map((m) => {
                           const isTop = m.modulo === topModulo;
                           return (
                             <TableRow key={m.modulo} hover>
