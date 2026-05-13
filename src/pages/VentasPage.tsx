@@ -306,6 +306,7 @@ const FormularioVentaMultiple = () => {
   const [metodoPago, setMetodoPago] = useState('');
   const [telefono, settelefono] = useState('');
   const [carrito, setCarrito] = useState<ProductoEnVenta[]>([]);
+  const [montoDividido, setMontoDividido] = useState({ efectivo: '', tarjeta: '' });
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
 
   const [tipoVenta, setTipoVenta] = useState<'accesorio' | 'chip' | 'telefono'>(esCadenas ? 'chip' : 'accesorio');
@@ -572,16 +573,58 @@ const FormularioVentaMultiple = () => {
   // ── Acciones ─────────────────────────────────────────────────────────────
   const agregarAlCarrito = () => {
     if (!producto || precio === null || cantidad <= 0) return;
-    const nuevo: ProductoEnVenta = {
-      producto, cantidad, precio_unitario: precio, id: 0, nombre: '', tipo_producto: 'accesorios',
-    };
-    setCarrito([...carrito, nuevo]);
+    setCarrito([...carrito, { producto, cantidad, precio_unitario: precio, id: 0, nombre: '', tipo_producto: 'accesorios' }]);
     setProducto('');
     setCantidad(1);
     setPrecio(null);
   };
 
   const enviarCarrito = async () => {
+    if (carrito.length === 0) return;
+    const totalCarrito = carrito.reduce((a, p) => a + p.precio_unitario * p.cantidad, 0);
+
+    if (metodoPago === 'dividido') {
+      const ef = parseFloat(montoDividido.efectivo);
+      const ta = parseFloat(montoDividido.tarjeta);
+      if (isNaN(ef) || ef <= 0 || isNaN(ta) || ta <= 0) {
+        setMensaje({ tipo: 'error', texto: 'Ambos montos deben ser mayores a $0.' });
+        return;
+      }
+      if (Math.abs(ef + ta - totalCarrito) > 0.01) {
+        setMensaje({ tipo: 'error', texto: `La suma ($${(ef + ta).toFixed(2)}) no coincide con el total del carrito ($${totalCarrito.toFixed(2)}).` });
+        return;
+      }
+      const pctEf = ef / totalCarrito;
+      const pctTa = ta / totalCarrito;
+      const makeItems = (pct: number, skip: boolean) =>
+        carrito.map(item => ({
+          producto: item.producto,
+          cantidad: item.cantidad,
+          precio_unitario: Math.round(item.precio_unitario * pct * 100) / 100,
+          tipo_producto: item.tipo_producto,
+          skip_comision: skip,
+        }));
+      const [resEf, resTa] = await Promise.allSettled([
+        axios.post(`${process.env.REACT_APP_API_URL}/ventas/ventas/multiples`, { productos: makeItems(pctEf, false), telefono_cliente: telefono, metodo_pago: 'efectivo' }, config),
+        axios.post(`${process.env.REACT_APP_API_URL}/ventas/ventas/multiples`, { productos: makeItems(pctTa, true),  telefono_cliente: telefono, metodo_pago: 'tarjeta'  }, config),
+      ]);
+      const okEf = resEf.status === 'fulfilled';
+      const okTa = resTa.status === 'fulfilled';
+      if (okEf && okTa) {
+        setMensaje({ tipo: 'success', texto: 'Venta registrada con éxito.' });
+        setCarrito([]); settelefono(''); setMetodoPago(''); setMontoDividido({ efectivo: '', tarjeta: '' });
+        if (rol === 'asesor') { fetchVentas(); fetchComisionesHoy(); }
+      } else if (okEf && !okTa) {
+        setMensaje({ tipo: 'error', texto: 'Se guardó la parte en efectivo pero falló la parte en tarjeta. Verifica antes de continuar.' });
+      } else if (!okEf && okTa) {
+        setMensaje({ tipo: 'error', texto: 'Se guardó la parte en tarjeta pero falló la parte en efectivo. Verifica antes de continuar.' });
+      } else {
+        const detail = (resEf as PromiseRejectedResult).reason?.response?.data?.detail;
+        setMensaje({ tipo: 'error', texto: typeof detail === 'string' ? detail : 'Error al registrar la venta en ambos métodos.' });
+      }
+      return;
+    }
+
     try {
       await axios.post(
         `${process.env.REACT_APP_API_URL}/ventas/ventas/multiples`,
@@ -589,8 +632,7 @@ const FormularioVentaMultiple = () => {
         config,
       );
       setMensaje({ tipo: 'success', texto: 'Venta registrada con éxito.' });
-      setCarrito([]);
-      settelefono('');
+      setCarrito([]); settelefono(''); setMetodoPago(''); setMontoDividido({ efectivo: '', tarjeta: '' });
       if (rol === 'asesor') { fetchVentas(); fetchComisionesHoy(); }
     } catch (err: any) {
       setMensaje({ tipo: 'error', texto: err?.response?.data?.detail || 'Error al registrar la venta' });
@@ -656,24 +698,57 @@ const FormularioVentaMultiple = () => {
     }
     const p = Number(telefonoPrecio);
     if (isNaN(p) || p <= 0) { setMensaje({ tipo: 'error', texto: 'Precio inválido.' }); return; }
+    const productoBase = {
+      producto: `${telefonoMarca} ${telefonoModelo}`,
+      cantidad: 1, tipo_producto: 'telefono', tipo_venta: telefonoTipo_venta,
+      chip_casado: Chip_casado || null,
+    };
+    const resetTel = () => {
+      setTelefonoMarca(''); setTelefonoModelo(''); setTelefonoTipo_venta('');
+      setMetodoPago(''); setTelefonoPrecio(''); setChip_casado(''); settelefono('');
+      setMontoDividido({ efectivo: '', tarjeta: '' });
+    };
+
+    if (metodoPago === 'dividido') {
+      const ef = parseFloat(montoDividido.efectivo);
+      const ta = parseFloat(montoDividido.tarjeta);
+      if (isNaN(ef) || ef <= 0 || isNaN(ta) || ta <= 0) {
+        setMensaje({ tipo: 'error', texto: 'Ambos montos deben ser mayores a $0.' });
+        return;
+      }
+      if (Math.abs(ef + ta - p) > 0.01) {
+        setMensaje({ tipo: 'error', texto: 'Los montos divididos deben sumar exactamente el precio del teléfono.' });
+        return;
+      }
+      const [resEf, resTa] = await Promise.allSettled([
+        axios.post(`${process.env.REACT_APP_API_URL}/ventas/ventas`, { productos: [{ ...productoBase, precio_unitario: ef, skip_comision: false }], metodo_pago: 'efectivo', telefono_cliente: telefono?.trim() || '' }, config),
+        axios.post(`${process.env.REACT_APP_API_URL}/ventas/ventas`, { productos: [{ ...productoBase, precio_unitario: ta, skip_comision: true  }], metodo_pago: 'tarjeta',  telefono_cliente: telefono?.trim() || '' }, config),
+      ]);
+      const okEf = resEf.status === 'fulfilled';
+      const okTa = resTa.status === 'fulfilled';
+      if (okEf && okTa) {
+        setMensaje({ tipo: 'success', texto: 'Venta de teléfono registrada correctamente' });
+        resetTel();
+        if (rol === 'asesor') { fetchVentas(); fetchComisionesHoy(); }
+      } else if (okEf && !okTa) {
+        setMensaje({ tipo: 'error', texto: 'Se guardó la parte en efectivo pero falló la parte en tarjeta. Verifica antes de continuar.' });
+      } else if (!okEf && okTa) {
+        setMensaje({ tipo: 'error', texto: 'Se guardó la parte en tarjeta pero falló la parte en efectivo. Verifica antes de continuar.' });
+      } else {
+        const detail = (resEf as PromiseRejectedResult).reason?.response?.data?.detail;
+        setMensaje({ tipo: 'error', texto: typeof detail === 'string' ? detail : 'Error al registrar la venta en ambos métodos.' });
+      }
+      return;
+    }
+
     try {
       await axios.post(
         `${process.env.REACT_APP_API_URL}/ventas/ventas`,
-        {
-          productos: [{
-            producto: `${telefonoMarca} ${telefonoModelo}`,
-            cantidad: 1, precio_unitario: p,
-            tipo_producto: 'telefono', tipo_venta: telefonoTipo_venta,
-            chip_casado: Chip_casado || null,
-          }],
-          metodo_pago: metodoPago,
-          telefono_cliente: telefono?.trim() || '',
-        },
+        { productos: [{ ...productoBase, precio_unitario: p }], metodo_pago: metodoPago, telefono_cliente: telefono?.trim() || '' },
         config,
       );
       setMensaje({ tipo: 'success', texto: 'Venta de teléfono registrada correctamente' });
-      setTelefonoMarca(''); setTelefonoModelo(''); setTelefonoTipo_venta('');
-      setMetodoPago(''); setTelefonoPrecio(''); setChip_casado(''); settelefono('');
+      resetTel();
       if (rol === 'asesor') { fetchVentas(); fetchComisionesHoy(); }
     } catch (err: any) {
       let msg = 'Error al registrar la venta de teléfono';
@@ -744,20 +819,83 @@ const FormularioVentaMultiple = () => {
           />
           <TextField label="Precio Unitario" type="number" value={precio ?? ''} onChange={(e) => setPrecio(e.target.value === '' ? null : Number(e.target.value))} fullWidth margin="normal" />
           <TextField label="Cantidad" type="number" value={cantidad} onChange={(e) => setCantidad(parseInt(e.target.value))} fullWidth margin="normal" />
-          <TextField select label="Método de pago" value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} fullWidth margin="normal" required error={!metodoPago} helperText={!metodoPago ? 'Este campo es obligatorio' : ''}>
-            <MenuItem value="efectivo">Efectivo 💵</MenuItem>
-            <MenuItem value="tarjeta">Tarjeta 💳</MenuItem>
-          </TextField>
-          <Button variant="outlined" fullWidth onClick={agregarAlCarrito} sx={{ mt: 1 }} disabled={!producto || cantidad <= 0}>Agregar al Carrito</Button>
+          <Button variant="outlined" fullWidth onClick={agregarAlCarrito} sx={{ mt: 1 }} disabled={!producto || precio === null || cantidad <= 0}>Agregar al Carrito</Button>
           <TextField label="Teléfono del cliente" value={telefono} onChange={(e) => settelefono(e.target.value)} fullWidth margin="normal" />
           <Box mt={2}>
             <Typography variant="h6">Carrito</Typography>
             {carrito.length === 0
               ? <Typography color="text.secondary">No hay productos agregados</Typography>
-              : <ul>{carrito.map((p, i) => <li key={i}>{p.producto} — {p.cantidad} × ${p.precio_unitario}</li>)}</ul>}
+              : <ul style={{ paddingLeft: 16, margin: 0 }}>{carrito.map((p, i) => (
+                  <li key={i} style={{ marginBottom: 2, fontSize: 13 }}>
+                    {p.producto} — {p.cantidad} × ${p.precio_unitario.toFixed(2)}
+                  </li>
+                ))}</ul>}
           </Box>
           <Typography variant="h6" mt={1}>Total: ${carrito.reduce((a, p) => a + p.precio_unitario * p.cantidad, 0).toFixed(2)}</Typography>
-          <Button variant="contained" fullWidth onClick={enviarCarrito} sx={{ mt: 2 }} disabled={carrito.length === 0}>Registrar Venta</Button>
+          <Divider sx={{ my: 2 }} />
+          <TextField select label="¿Cómo paga el cliente?" value={metodoPago}
+            onChange={(e) => { setMetodoPago(e.target.value); setMontoDividido({ efectivo: '', tarjeta: '' }); }}
+            fullWidth margin="normal" required
+            error={carrito.length > 0 && !metodoPago}
+            helperText={carrito.length > 0 && !metodoPago ? 'Selecciona el método de pago' : ''}>
+            <MenuItem value="efectivo">Efectivo 💵</MenuItem>
+            <MenuItem value="tarjeta">Tarjeta 💳</MenuItem>
+            <MenuItem value="dividido">Dividido 💳💵</MenuItem>
+          </TextField>
+          {metodoPago === 'dividido' && carrito.length > 0 && (() => {
+            const totalCarrito = carrito.reduce((a, p) => a + p.precio_unitario * p.cantidad, 0);
+            const efRaw = parseFloat(montoDividido.efectivo);
+            const taRaw = parseFloat(montoDividido.tarjeta);
+            const ef = isNaN(efRaw) ? 0 : efRaw;
+            const ta = isNaN(taRaw) ? 0 : taRaw;
+            const eitherZero = (montoDividido.efectivo !== '' && efRaw <= 0) || (montoDividido.tarjeta !== '' && taRaw <= 0);
+            const diff = totalCarrito - (ef + ta);
+            const sumOk = !eitherZero && Math.abs(diff) < 0.01 && ef > 0 && ta > 0;
+            const captionColor = eitherZero ? 'error.main' : sumOk ? 'success.main' : diff > 0 ? 'warning.main' : 'error.main';
+            const captionText = eitherZero
+              ? 'Para dividir, ambos montos deben ser mayores a $0. Si solo es uno, usa Efectivo o Tarjeta directamente.'
+              : sumOk
+                ? `✓ Asignado: $${(ef + ta).toFixed(2)} / $${totalCarrito.toFixed(2)}`
+                : diff > 0
+                  ? `Falta $${diff.toFixed(2)} por asignar (total: $${totalCarrito.toFixed(2)})`
+                  : `Te excediste por $${Math.abs(diff).toFixed(2)}`;
+            const pctEf = sumOk ? ef / totalCarrito : 0;
+            const pctTa = sumOk ? ta / totalCarrito : 0;
+            return (
+              <Box sx={{ border: '1px solid #e2e8f0', borderRadius: 1, p: 1.5, mb: 1 }}>
+                <Box display="flex" gap={1}>
+                  <TextField label="Efectivo 💵" type="number" value={montoDividido.efectivo}
+                    onChange={(e) => setMontoDividido(m => ({ ...m, efectivo: e.target.value }))}
+                    size="small" sx={{ flex: 1 }} />
+                  <TextField label="Tarjeta 💳" type="number" value={montoDividido.tarjeta}
+                    onChange={(e) => setMontoDividido(m => ({ ...m, tarjeta: e.target.value }))}
+                    size="small" sx={{ flex: 1 }} />
+                </Box>
+                <Typography variant="caption" sx={{ mt: 0.5, display: 'block', color: captionColor }}>
+                  {captionText}
+                </Typography>
+                {sumOk && (
+                  <Box sx={{ mt: 1, pt: 1, borderTop: '1px dashed #e2e8f0' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', display: 'block', mb: 0.5 }}>
+                      Vista previa del cobro:
+                    </Typography>
+                    {carrito.map((item, i) => {
+                      const totalItem = item.precio_unitario * item.cantidad;
+                      return (
+                        <Typography key={i} variant="caption" sx={{ display: 'block', color: '#94a3b8', fontSize: 11 }}>
+                          • {item.producto}: ${(totalItem * pctEf).toFixed(2)} ef + ${(totalItem * pctTa).toFixed(2)} ta
+                        </Typography>
+                      );
+                    })}
+                  </Box>
+                )}
+              </Box>
+            );
+          })()}
+          <Button variant="contained" fullWidth onClick={enviarCarrito} sx={{ mt: 2 }}
+            disabled={carrito.length === 0 || !metodoPago}>
+            Registrar Venta
+          </Button>
         </>
       )}
 
@@ -835,13 +973,50 @@ const FormularioVentaMultiple = () => {
             <MenuItem value="Paguitos">Paguitos</MenuItem>
           </TextField>
           <TextField label="Precio" type="number" value={telefonoPrecio} onChange={(e) => setTelefonoPrecio(e.target.value)} fullWidth margin="normal" />
-          <TextField select label="Método de pago" value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} fullWidth margin="normal" required>
+          <TextField label="Chip casado" value={Chip_casado} onChange={(e) => setChip_casado(e.target.value)} fullWidth margin="normal" />
+          <Divider sx={{ my: 2 }} />
+          <TextField select label="¿Cómo paga el cliente?" value={metodoPago}
+            onChange={(e) => { setMetodoPago(e.target.value); setMontoDividido({ efectivo: '', tarjeta: '' }); }}
+            fullWidth margin="normal" required>
             <MenuItem value="efectivo">💵 Efectivo</MenuItem>
             <MenuItem value="tarjeta">💳 Tarjeta</MenuItem>
+            <MenuItem value="dividido">Dividido 💳💵</MenuItem>
           </TextField>
-          <TextField label="Chip casado" value={Chip_casado} onChange={(e) => setChip_casado(e.target.value)} fullWidth margin="normal" />
+          {metodoPago === 'dividido' && telefonoPrecio && Number(telefonoPrecio) > 0 && (() => {
+            const total = Number(telefonoPrecio);
+            const efRaw = parseFloat(montoDividido.efectivo);
+            const taRaw = parseFloat(montoDividido.tarjeta);
+            const ef = isNaN(efRaw) ? 0 : efRaw;
+            const ta = isNaN(taRaw) ? 0 : taRaw;
+            const eitherZero = (montoDividido.efectivo !== '' && efRaw <= 0) || (montoDividido.tarjeta !== '' && taRaw <= 0);
+            const diff = total - (ef + ta);
+            const sumOk = !eitherZero && Math.abs(diff) < 0.01 && ef > 0 && ta > 0;
+            const captionColor = eitherZero ? 'error.main' : sumOk ? 'success.main' : diff > 0 ? 'warning.main' : 'error.main';
+            const captionText = eitherZero
+              ? 'Para dividir, ambos montos deben ser mayores a $0. Si solo es uno, usa Efectivo o Tarjeta directamente.'
+              : sumOk
+                ? `✓ Asignado: $${(ef + ta).toFixed(2)} / $${total.toFixed(2)}`
+                : diff > 0
+                  ? `Falta $${diff.toFixed(2)} por asignar (total: $${total.toFixed(2)})`
+                  : `Te excediste por $${Math.abs(diff).toFixed(2)}`;
+            return (
+              <Box sx={{ border: '1px solid #e2e8f0', borderRadius: 1, p: 1.5, mb: 1 }}>
+                <Box display="flex" gap={1}>
+                  <TextField label="Efectivo 💵" type="number" value={montoDividido.efectivo}
+                    onChange={(e) => setMontoDividido(m => ({ ...m, efectivo: e.target.value }))}
+                    size="small" sx={{ flex: 1 }} />
+                  <TextField label="Tarjeta 💳" type="number" value={montoDividido.tarjeta}
+                    onChange={(e) => setMontoDividido(m => ({ ...m, tarjeta: e.target.value }))}
+                    size="small" sx={{ flex: 1 }} />
+                </Box>
+                <Typography variant="caption" sx={{ mt: 0.5, display: 'block', color: captionColor }}>
+                  {captionText}
+                </Typography>
+              </Box>
+            );
+          })()}
           <Button variant="contained" color="secondary" fullWidth onClick={registrarVentaTelefono}
-            disabled={!telefonoMarca || !telefonoModelo || !telefonoTipo_venta || !telefonoPrecio} sx={{ mt: 2 }}>
+            disabled={!telefonoMarca || !telefonoModelo || !telefonoTipo_venta || !telefonoPrecio || !metodoPago} sx={{ mt: 2 }}>
             Registrar Venta Teléfono
           </Button>
         </>
