@@ -31,6 +31,7 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import { Grid } from '@mui/material';
 import axios from 'axios';
+import { Navigate } from 'react-router-dom';
 import { obtenerRolDesdeToken } from '../components/Token';
 
 const HOY = new Date().toLocaleDateString('en-CA');
@@ -342,8 +343,13 @@ const CorteVisual = ({ corte, ventas }: { corte: any; ventas: any[] }) => {
 // ─── CortePage ────────────────────────────────────────────────────────────────
 const CortePage = () => {
   const rolToken = useMemo(() => obtenerRolDesdeToken(), []);
+  const moduloNombreGlobal = localStorage.getItem('modulo') || '';
   const token = localStorage.getItem('token');
   const config = { headers: { Authorization: `Bearer ${token}` } };
+
+  if (rolToken === 'asesor' && moduloNombreGlobal === 'Cadenas Comerciales') {
+    return <Navigate to="/ventas" replace />;
+  }
   const API = process.env.REACT_APP_API_URL;
 
   // ── admin / contador state ────────────────────────────────────────────────
@@ -489,9 +495,9 @@ const CortePage = () => {
     }
   };
 
-  // ── on mount: load all encargado data ─────────────────────────────────────
+  // ── on mount: load all encargado/asesor data ──────────────────────────────
   useEffect(() => {
-    if (rolToken !== 'encargado') return;
+    if (rolToken !== 'encargado' && rolToken !== 'asesor') return;
     const cargar = async () => {
       const resRes = await axios.get(`${API}/ventas/corte-general`, config).catch(() => ({ data: null }));
       setResumen(resRes.data);
@@ -503,9 +509,9 @@ const CortePage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rolToken]);
 
-  // ── notificación corte revisado (encargado) ──────────────────────────────
+  // ── notificación corte revisado (encargado/asesor) ───────────────────────
   useEffect(() => {
-    if (rolToken !== 'encargado' || !corteHoy?.modulo_id) return;
+    if ((rolToken !== 'encargado' && rolToken !== 'asesor') || !corteHoy?.modulo_id) return;
     axios
       .get(`${API}/asistencia/notificaciones?solo_no_leidas=true`, config)
       .then(({ data }) => {
@@ -543,7 +549,7 @@ const CortePage = () => {
 
   // ── midnight auto-send ────────────────────────────────────────────────────
   useEffect(() => {
-    if (rolToken !== 'encargado' || corteEnviado) return;
+    if ((rolToken !== 'encargado' && rolToken !== 'asesor') || corteEnviado) return;
     const ahora = new Date();
     const manana = new Date(ahora);
     manana.setDate(manana.getDate() + 1);

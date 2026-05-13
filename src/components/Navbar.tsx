@@ -241,6 +241,7 @@ const Navbar = () => {
                   <Button sx={navBtnSx} component={Link} to="/comisiones/usuario">Comisiones</Button>
                   <Button sx={navBtnSx} component={Link} to="/inventario/modulo">Inventario</Button>
                   <Button sx={navBtnSx} component={Link} to="/ventas/chips">Chips</Button>
+                  <Button sx={navBtnSx} component={Link} to="/corte" startIcon={<ContentCutIcon />}>Corte</Button>
                 </>
               )}
 
@@ -250,6 +251,9 @@ const Navbar = () => {
                   <Button sx={navBtnSx} component={Link} to="/ventas" startIcon={<ConfirmationNumberIcon />}>Ticket</Button>
                   <Button sx={navBtnSx} component={Link} to="/comisiones/usuario">Comisiones</Button>
                   <Button sx={navBtnSx} component={Link} to="/ventas/chips">Chips</Button>
+                  {modulo !== "Cadenas Comerciales" && (
+                    <Button sx={navBtnSx} component={Link} to="/corte" startIcon={<ContentCutIcon />}>Corte</Button>
+                  )}
                 </>
               )}
 
@@ -488,6 +492,10 @@ const Navbar = () => {
                 <ListItemIcon sx={drawerIconSx}><SimCardIcon /></ListItemIcon>
                 <ListItemText primary="Chips" />
               </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/corte")}>
+                <ListItemIcon sx={drawerIconSx}><ContentCutIcon /></ListItemIcon>
+                <ListItemText primary="Corte" />
+              </ListItemButton>
             </>
           )}
 
@@ -510,6 +518,12 @@ const Navbar = () => {
                 <ListItemIcon sx={drawerIconSx}><SimCardIcon /></ListItemIcon>
                 <ListItemText primary="Chips" />
               </ListItemButton>
+              {modulo !== "Cadenas Comerciales" && (
+                <ListItemButton sx={drawerItemSx} onClick={() => navegar("/corte")}>
+                  <ListItemIcon sx={drawerIconSx}><ContentCutIcon /></ListItemIcon>
+                  <ListItemText primary="Corte" />
+                </ListItemButton>
+              )}
             </>
           )}
 
