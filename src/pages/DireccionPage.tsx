@@ -35,7 +35,7 @@ const HOY = new Date().toLocaleDateString('en-CA');
 const MODULOS_OCULTOS = ['V2', 'Cadenas C.', 'MI2', 'BO', 'prueba'];
 // ─── Style helpers ────────────────────────────────────────────────────────────
 const thStyle: React.CSSProperties = {
-  padding: '3px 8px',
+  padding: '1px 5px',
   borderBottom: '1px solid #eef2f7',
   color: '#475569',
   fontWeight: 700,
@@ -47,10 +47,10 @@ const thStyle: React.CSSProperties = {
   textTransform: 'uppercase',
 };
 const tdStyle: React.CSSProperties = {
-  padding: '4px 8px',
+  padding: '2px 5px',
   borderBottom: '1px solid #f1f5f9',
   fontSize: 11,
-  lineHeight: 1.3,
+  lineHeight: 1.2,
   color: '#334155',
 };
 const tdR: React.CSSProperties  = { ...tdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' };
@@ -73,15 +73,15 @@ const SECTION_SALIDA:  SectionConfig = { bg: '#c62828', color: '#ffffff', border
 const SECTION_TOTALES: SectionConfig = { bg: '#1a2744', color: '#ffffff', border: '#1a2744' };
 
 const secH = (label: string, cfg: SectionConfig, icon?: React.ReactNode) => (
-  <Box sx={{ px: '12px', py: '4px', bgcolor: cfg.bg, borderBottom: `1px solid ${cfg.border}`, display: 'flex', alignItems: 'center', gap: 0.75, minHeight: 28 }}>
+  <Box sx={{ px: '10px', py: '3px', bgcolor: cfg.bg, borderBottom: `1px solid ${cfg.border}`, display: 'flex', alignItems: 'center', gap: 0.75, minHeight: 24 }}>
     {icon}
-    <Typography fontWeight={700} fontSize={12} color={cfg.color} letterSpacing={0.3} lineHeight={1.2}>{label}</Typography>
+    <Typography fontWeight={700} fontSize={11} color={cfg.color} letterSpacing={0.3} lineHeight={1.2}>{label}</Typography>
   </Box>
 );
 const secF = (label: string, value: React.ReactNode, cfg: SectionConfig) => (
-  <Box sx={{ px: '12px', py: '3px', bgcolor: cfg.bg, borderTop: `1px solid ${cfg.border}`, display: 'flex', justifyContent: 'space-between' }}>
-    <Typography fontSize={11} fontWeight={700} color={cfg.color}>{label}</Typography>
-    <Typography fontSize={11} fontWeight={700} color={cfg.color} sx={{ fontVariantNumeric: 'tabular-nums' }}>{value}</Typography>
+  <Box sx={{ px: '10px', py: '2px', bgcolor: cfg.bg, borderTop: `1px solid ${cfg.border}`, display: 'flex', justifyContent: 'space-between' }}>
+    <Typography fontSize={10} fontWeight={700} color={cfg.color}>{label}</Typography>
+    <Typography fontSize={10} fontWeight={700} color={cfg.color} sx={{ fontVariantNumeric: 'tabular-nums' }}>{value}</Typography>
   </Box>
 );
 
@@ -264,19 +264,19 @@ const DireccionPage: React.FC = () => {
 
   const cardMontos = card(<>
     {secH('MONTOS ADICIONALES', SECTION_MONTOS, <MonetizationOnIcon sx={{ color: '#854D0E', fontSize: 15 }} />)}
-    <Box sx={{ px: '12px', py: '6px' }}>
+    <Box sx={{ px: '10px', py: '4px' }}>
       {[
         { label: 'Recargas Telcel', val: rec   },
         { label: 'Recargas YOVOY',  val: trans  },
         { label: 'Centro de Pagos', val: otr   },
       ].map(({ label, val }) => (
-        <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', py: '4px', borderBottom: '1px solid #f1f5f9' }}>
+        <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', py: '2px', borderBottom: '1px solid #f1f5f9' }}>
           <Typography fontSize={11} color="#475569">{label}</Typography>
           <Typography fontSize={11} fontWeight={600} color="#0f172a" sx={{ fontVariantNumeric: 'tabular-nums' }}>${val.toFixed(2)}</Typography>
         </Box>
       ))}
-      <Box sx={{ border: '1px solid #FDE047', borderRadius: '6px', px: '10px', py: '5px', mt: '6px', mb: '6px', bgcolor: '#FEFCE8' }}>
-        <Typography sx={{ fontSize: 9.5, fontWeight: 700, color: '#854D0E', letterSpacing: '0.6px', mb: '2px' }}>RECARGAS MAYOREO</Typography>
+      <Box sx={{ border: '1px solid #FDE047', borderRadius: '6px', px: '8px', py: '3px', mt: '4px', mb: '4px', bgcolor: '#FEFCE8' }}>
+        <Typography sx={{ fontSize: 9.5, fontWeight: 700, color: '#854D0E', letterSpacing: '0.6px', mb: '1px' }}>RECARGAS MAYOREO</Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Typography fontSize={11} color="#475569">Cantidad</Typography>
           <Typography fontSize={11} fontWeight={600} color="#0f172a" sx={{ fontVariantNumeric: 'tabular-nums' }}>${may.toFixed(2)}</Typography>
@@ -288,24 +288,24 @@ const DireccionPage: React.FC = () => {
           </Box>
         )}
       </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#FEF9C3', border: '1px solid #FDE047', borderRadius: '6px', px: '10px', py: '5px' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#FEF9C3', border: '1px solid #FDE047', borderRadius: '6px', px: '8px', py: '3px' }}>
         <Typography fontWeight={600} color="#854D0E" fontSize={11}>Total Adicional</Typography>
-        <Typography fontWeight={800} color="#A16207" fontSize={14} sx={{ fontVariantNumeric: 'tabular-nums' }}>${totalAdicional.toFixed(2)}</Typography>
+        <Typography fontWeight={800} color="#A16207" fontSize={13} sx={{ fontVariantNumeric: 'tabular-nums' }}>${totalAdicional.toFixed(2)}</Typography>
       </Box>
     </Box>
   </>);
 
   const cardSalida = card(<>
     {secH('SALIDA DE EFECTIVO', SECTION_SALIDA, <TrendingDownIcon sx={{ color: '#ffffff', fontSize: 15 }} />)}
-    <Box sx={{ px: '12px', py: '6px' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', py: '4px' }}>
+    <Box sx={{ px: '10px', py: '4px' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', py: '2px' }}>
         <Typography fontSize={11} color="#475569">Monto de salida</Typography>
         <Typography fontSize={11} fontWeight={600} color={sal > 0 ? '#b91c1c' : '#0f172a'} sx={{ fontVariantNumeric: 'tabular-nums' }}>
           {sal > 0 ? `-$${sal.toFixed(2)}` : `$${sal.toFixed(2)}`}
         </Typography>
       </Box>
       {corte?.nota_salida && (
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', py: '4px' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', py: '2px' }}>
           <Typography fontSize={11} color="#475569">Nota</Typography>
           <Typography fontSize={11} color="#0f172a">{corte.nota_salida}</Typography>
         </Box>
@@ -371,11 +371,11 @@ const DireccionPage: React.FC = () => {
   // ── Panel detalle ─────────────────────────────────────────────────────────
   const panelDetalle = corte ? (
     <>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, columnGap: '12px', rowGap: '8px', alignItems: 'start', mb: '10px' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, columnGap: '10px', rowGap: '6px', alignItems: 'start', mb: '6px' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 }}>
           {cardChips}{cardTelefonos}{cardAccesorios}
         </Box>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 }}>
           {cardMontos}{cardSalida}
         </Box>
       </Box>
@@ -385,14 +385,14 @@ const DireccionPage: React.FC = () => {
 
       {/* Botón MARCAR */}
       {corte.revisado_direccion ? (
-        <Alert severity="success" sx={{ mt: '10px', py: 0.5, fontSize: 13, borderRadius: 1 }}>
+        <Alert severity="success" sx={{ mt: '8px', py: 0.5, fontSize: 12, borderRadius: 1 }}>
           ✅ Revisado por <strong>{corte.revisado_por}</strong>{' '}
           {new Date(corte.revisado_at).toLocaleString('es-MX', { timeZone: 'America/Mexico_City', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
         </Alert>
       ) : (
         <Button
           variant="contained" fullWidth onClick={() => setDialogConfirm(true)}
-          sx={{ bgcolor: '#166534', '&:hover': { bgcolor: '#14532d' }, fontWeight: 700, fontSize: 12.5, minHeight: 36, maxHeight: 36, mt: '10px', borderRadius: '6px', letterSpacing: '0.3px' }}
+          sx={{ bgcolor: '#166534', '&:hover': { bgcolor: '#14532d' }, fontWeight: 700, fontSize: 12, minHeight: 32, maxHeight: 32, mt: '8px', borderRadius: '6px', letterSpacing: '0.3px' }}
         >
           ✅ MARCAR CORTE COMO REVISADO
         </Button>
@@ -402,7 +402,7 @@ const DireccionPage: React.FC = () => {
 
   // ── Filter bar ────────────────────────────────────────────────────────────
   const filterBar = (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: '12px', py: '10px', bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', mb: '12px' }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: '12px', py: '7px', bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', mb: '8px' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mr: '4px', flexShrink: 0 }}>
         <FilterAltIcon sx={{ fontSize: 14, color: '#64748b' }} />
         <Typography fontSize={10.5} fontWeight={700} color="#475569" sx={{ letterSpacing: '0.5px', textTransform: 'uppercase' }}>Filtrar</Typography>
@@ -440,10 +440,10 @@ const DireccionPage: React.FC = () => {
   // RENDER
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#eef0f3', minHeight: '100vh' }}>
+    <Box sx={{ p: { xs: 1.5, sm: 2 }, bgcolor: '#eef0f3', minHeight: '100vh' }}>
 
       {/* Page header */}
-      <Box sx={{ mb: '14px' }}>
+      <Box sx={{ mb: '8px' }}>
         <Typography fontWeight={700} fontSize={22} color="#0f172a" letterSpacing="-0.2px" sx={{ mb: '4px' }}>Revisión de cortes</Typography>
         <Typography fontSize={12.5} color="#64748b">
           Resumen del día por módulo.{' '}
@@ -455,10 +455,10 @@ const DireccionPage: React.FC = () => {
       </Box>
 
       {/* Main grid 30/70 */}
-      <Box sx={{ display: { xs: 'block', lg: 'grid' }, gridTemplateColumns: { lg: '30% 70%' }, gap: '16px', alignItems: 'start' }}>
+      <Box sx={{ display: { xs: 'block', lg: 'grid' }, gridTemplateColumns: { lg: '30% 70%' }, gap: '12px', alignItems: 'start' }}>
 
         {/* ══ LEFT — Cortes pendientes ══════════════════════════════════ */}
-        <Box sx={{ bgcolor: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', p: '14px', maxHeight: { lg: 'calc(100vh - 310px)' }, overflowY: { lg: 'auto' }, mb: { xs: 3, lg: 0 } }}>
+        <Box sx={{ bgcolor: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', p: '10px', maxHeight: { lg: 'calc(100vh - 90px)' }, overflowY: { lg: 'auto' }, mb: { xs: 3, lg: 0 } }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: '10px' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <FactCheckIcon sx={{ color: '#FF6600', fontSize: 18 }} />
@@ -501,7 +501,7 @@ const DireccionPage: React.FC = () => {
         </Box>
 
         {/* ══ RIGHT — Panel dinámico ═══════════════════════════════════ */}
-        <Box sx={{ bgcolor: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', p: '14px', maxHeight: { lg: 'calc(100vh - 310px)' }, overflowY: { lg: 'auto' } }}>
+        <Box sx={{ bgcolor: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', p: '10px', maxHeight: { lg: 'calc(100vh - 90px)' }, overflowY: { lg: 'auto' } }}>
 
           {/* MOBILE */}
           <Box sx={{ display: { xs: 'block', lg: 'none' } }}>
@@ -520,7 +520,7 @@ const DireccionPage: React.FC = () => {
             ) : (
               <>
                 {/* Detail head */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: '10px', mb: '12px', borderBottom: '1px solid #e2e8f0' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: '6px', mb: '8px', borderBottom: '1px solid #e2e8f0' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <Button startIcon={<ArrowBackIcon sx={{ fontSize: 14 }} />} onClick={volverAlFiltro} size="small"
                       sx={{ color: '#64748b', fontWeight: 500, fontSize: 11.5, textTransform: 'none', py: '4px', px: 1, borderRadius: '6px', '&:hover': { bgcolor: '#f1f5f9', color: '#0f172a' } }}>
