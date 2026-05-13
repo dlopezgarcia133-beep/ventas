@@ -346,10 +346,6 @@ const CortePage = () => {
   const moduloNombreGlobal = localStorage.getItem('modulo') || '';
   const token = localStorage.getItem('token');
   const config = { headers: { Authorization: `Bearer ${token}` } };
-
-  if (rolToken === 'asesor' && moduloNombreGlobal === 'Cadenas Comerciales') {
-    return <Navigate to="/ventas" replace />;
-  }
   const API = process.env.REACT_APP_API_URL;
 
   // ── admin / contador state ────────────────────────────────────────────────
@@ -582,6 +578,11 @@ const CortePage = () => {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtroModulo, filtroFecha]);
+
+  // ── bloqueo: asesor de Cadenas Comerciales no accede al corte ─────────────
+  if (rolToken === 'asesor' && moduloNombreGlobal === 'Cadenas Comerciales') {
+    return <Navigate to="/ventas" replace />;
+  }
 
   // ── encargado actions ─────────────────────────────────────────────────────
   const guardarRecargas = async () => {
