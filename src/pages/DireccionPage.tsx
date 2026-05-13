@@ -26,22 +26,13 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import PaymentsIcon from '@mui/icons-material/Payments';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import SummarizeIcon from '@mui/icons-material/Summarize';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
-import EventIcon from '@mui/icons-material/Event';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SearchIcon from '@mui/icons-material/Search';
 import axios from 'axios';
 
 const HOY = new Date().toLocaleDateString('en-CA');
 const MODULOS_OCULTOS = ['V2', 'Cadenas C.', 'MI2', 'BO', 'prueba'];
-const fechaHoyLabel = new Date().toLocaleDateString('es-MX', {
-  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-});
-
 // ─── Style helpers ────────────────────────────────────────────────────────────
 const thStyle: React.CSSProperties = {
   padding: '3px 8px',
@@ -105,14 +96,6 @@ interface CortePendiente {
   id: number; modulo_id: number; modulo_nombre: string; fecha: string;
   total_efectivo: number; total_tarjeta: number; total_general: number;
 }
-
-// ─── KPI palette ──────────────────────────────────────────────────────────────
-const KPI_PAL: Record<string, { bg: string; ico: string }> = {
-  amber: { bg: '#fff3e0', ico: '#FF6B00' },
-  green: { bg: '#e8f5e9', ico: '#2E7D32' },
-  blue:  { bg: '#e3f2fd', ico: '#1565C0' },
-  slate: { bg: '#eef2f7', ico: '#475569' },
-};
 
 // ─────────────────────────────────────────────────────────────────────────────
 const DireccionPage: React.FC = () => {
@@ -197,10 +180,6 @@ const DireccionPage: React.FC = () => {
   const total_general_corte   = total_efectivo_final + total_tarjeta;
   const moduloNombre          = modulos.find((m) => String(m.id) === moduloId)?.nombre ?? '';
 
-  // KPI aggregates
-  const kpiEfectivo = pendientes.reduce((s, c) => s + c.total_efectivo, 0);
-  const kpiTarjeta  = pendientes.reduce((s, c) => s + c.total_tarjeta,  0);
-  const kpiGeneral  = pendientes.reduce((s, c) => s + c.total_general,  0);
 
   // ── Cards ─────────────────────────────────────────────────────────────────
   const cardChips = card(<>
@@ -463,21 +442,6 @@ const DireccionPage: React.FC = () => {
   return (
     <Box sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#eef0f3', minHeight: '100vh' }}>
 
-      {/* Topbar */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: '18px' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Typography fontSize={12} color="#64748b" fontWeight={500}>Dirección</Typography>
-          <Typography fontSize={12} color="#cbd5e1">/</Typography>
-          <Typography fontSize={12} color="#64748b" fontWeight={500}>Cortes</Typography>
-          <Typography fontSize={12} color="#cbd5e1">/</Typography>
-          <Typography fontSize={12} color="#0f172a" fontWeight={600}>Revisión</Typography>
-        </Box>
-        <Box sx={{ bgcolor: '#fff', border: '1px solid #e2e8f0', borderRadius: '999px', px: '10px', py: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <EventIcon sx={{ fontSize: 14, color: '#64748b' }} />
-          <Typography fontSize={12} fontWeight={600} color="#334155" sx={{ textTransform: 'capitalize' }}>{fechaHoyLabel}</Typography>
-        </Box>
-      </Box>
-
       {/* Page header */}
       <Box sx={{ mb: '14px' }}>
         <Typography fontWeight={700} fontSize={22} color="#0f172a" letterSpacing="-0.2px" sx={{ mb: '4px' }}>Revisión de cortes</Typography>
@@ -488,29 +452,6 @@ const DireccionPage: React.FC = () => {
           </Box>{' '}
           pendientes de validación.
         </Typography>
-      </Box>
-
-      {/* KPI strip */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', mb: '16px' }}>
-        {([
-          { label: 'Pendientes',    value: String(pendientes.length), pal: 'amber', Icon: PendingActionsIcon },
-          { label: 'Total efectivo',value: fmt$(kpiEfectivo),         pal: 'green', Icon: PaymentsIcon },
-          { label: 'Total tarjeta', value: fmt$(kpiTarjeta),          pal: 'blue',  Icon: CreditCardIcon },
-          { label: 'Total general', value: fmt$(kpiGeneral),          pal: 'slate', Icon: SummarizeIcon },
-        ] as { label: string; value: string; pal: string; Icon: React.ElementType }[]).map(({ label, value, pal, Icon }) => {
-          const p = KPI_PAL[pal];
-          return (
-            <Box key={label} sx={{ bgcolor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', p: '10px 14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: p.bg, display: 'grid', placeItems: 'center' }}>
-                <Icon sx={{ fontSize: 18, color: p.ico }} />
-              </Box>
-              <Box>
-                <Typography fontSize={10.5} fontWeight={600} color="#64748b" sx={{ letterSpacing: '0.5px', textTransform: 'uppercase', lineHeight: 1.2 }}>{label}</Typography>
-                <Typography fontSize={17} fontWeight={700} color="#0f172a" sx={{ letterSpacing: '-0.2px', lineHeight: 1.15, fontVariantNumeric: 'tabular-nums' }}>{value}</Typography>
-              </Box>
-            </Box>
-          );
-        })}
       </Box>
 
       {/* Main grid 30/70 */}
