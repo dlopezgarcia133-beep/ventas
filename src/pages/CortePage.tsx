@@ -370,21 +370,17 @@ const CortePage = () => {
   const [notaSalida, setNotaSalida] = useState('');
   const [msgRecargas, setMsgRecargas] = useState('');
   const [msgSalida, setMsgSalida] = useState('');
-  const [msgEnviar, setMsgEnviar] = useState('');
   const [loadingRecargas, setLoadingRecargas] = useState(false);
   const [loadingSalida, setLoadingSalida] = useState(false);
-  const [loadingEnviar, setLoadingEnviar] = useState(false);
 
   // ── encargado right-column state ──────────────────────────────────────────
   const [fechaDerecha, setFechaDerecha] = useState(HOY);
   const [ventasDerecha, setVentasDerecha] = useState<any[]>([]);
   const [loadingVentas, setLoadingVentas] = useState(false);
 
-  const midnightRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fetchingFechaRef = useRef('');
   const esHoy = fechaDerecha === HOY;
-  const corteEnviado = corteHoy?.enviado === true;
-  const soloLectura = !esHoy || corteEnviado;
+  const soloLectura = !esHoy;
 
   // ── derived: right column ────────────────────────────────────────────────
   const ventasDerechaAcc = ventasDerecha.filter(
@@ -543,19 +539,6 @@ const CortePage = () => {
     setNotifCorte(null);
   };
 
-  // ── midnight auto-send ────────────────────────────────────────────────────
-  useEffect(() => {
-    if ((rolToken !== 'encargado' && rolToken !== 'asesor') || corteEnviado) return;
-    const ahora = new Date();
-    const manana = new Date(ahora);
-    manana.setDate(manana.getDate() + 1);
-    manana.setHours(0, 0, 0, 0);
-    const ms = manana.getTime() - ahora.getTime();
-    midnightRef.current = setTimeout(() => enviarCorte(true), ms);
-    return () => { if (midnightRef.current) clearTimeout(midnightRef.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [corteEnviado, rolToken]);
-
   // ── admin/contador: modules ───────────────────────────────────────────────
   useEffect(() => {
     if (rolToken !== 'contador' && rolToken !== 'admin') return;
@@ -623,20 +606,6 @@ const CortePage = () => {
       setMsgSalida(err?.response?.data?.detail || 'Error al guardar');
     } finally {
       setLoadingSalida(false);
-    }
-  };
-
-  const enviarCorte = async (automatico = false) => {
-    setLoadingEnviar(true);
-    setMsgEnviar('');
-    try {
-      const res = await axios.post(`${API}/ventas/cortes/hoy/enviar`, {}, config);
-      setCorteHoy(res.data);
-      setMsgEnviar(automatico ? 'Corte enviado automáticamente' : 'Corte enviado correctamente');
-    } catch (err: any) {
-      setMsgEnviar(err?.response?.data?.detail || 'Error al enviar');
-    } finally {
-      setLoadingEnviar(false);
     }
   };
 
@@ -718,7 +687,7 @@ const CortePage = () => {
       {/* Título */}
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
         <Typography variant="h5" fontWeight={700}>Corte del Día</Typography>
-        {corteEnviado && <Chip label="ENVIADO" color="success" />}
+        {!esHoy && <Chip label="CERRADO" color="default" size="small" />}
       </Stack>
 
       {/* 1 ── Filtro de fecha ───────────────────────────────────────────── */}
@@ -928,7 +897,7 @@ const CortePage = () => {
               {msgRecargas}
             </Alert>
           )}
-          {esHoy && !corteEnviado && (
+          {esHoy && (
             <Button variant="contained" fullWidth
               sx={{ bgcolor: '#FF6600', color: 'white', fontWeight: 700, fontSize: 14, py: 1.5, borderRadius: 2, '&:hover': { bgcolor: '#cc4400' } }}
               onClick={guardarRecargas} disabled={loadingRecargas}>
@@ -962,7 +931,7 @@ const CortePage = () => {
               {msgSalida}
             </Alert>
           )}
-          {esHoy && !corteEnviado && (
+          {esHoy && (
             <Button variant="contained" fullWidth
               sx={{ bgcolor: '#FF6600', color: 'white', fontWeight: 700, fontSize: 14, py: 1.5, borderRadius: 2, mt: 1, '&:hover': { bgcolor: '#cc4400' } }}
               onClick={guardarSalida} disabled={loadingSalida}>
@@ -1029,26 +998,6 @@ const CortePage = () => {
         </Table>
       </Paper>
 
-      {/* 8 ── Botón Enviar Corte ─────────────────────────────────────────── */}
-      {esHoy && !corteEnviado ? (
-        <Button
-          variant="contained" size="large" fullWidth
-          sx={{ py: 2, fontWeight: 700, fontSize: '1rem', bgcolor: '#f97316', '&:hover': { bgcolor: '#ea6c0a' } }}
-          onClick={() => enviarCorte(false)} disabled={loadingEnviar}
-        >
-          {loadingEnviar ? 'Enviando...' : 'ENVIAR CORTE DEL DÍA'}
-        </Button>
-      ) : (
-        <Alert severity="success">Corte del día enviado y bloqueado.</Alert>
-      )}
-      {msgEnviar && (
-        <Alert
-          severity={msgEnviar.toLowerCase().includes('error') ? 'error' : 'success'}
-          sx={{ mt: 1.5 }}
-        >
-          {msgEnviar}
-        </Alert>
-      )}
     </Box>
   );
 };
