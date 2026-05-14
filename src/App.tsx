@@ -29,6 +29,7 @@ import QuienTienePage from './pages/QuienTienePage';
 import AsistenciaPage from './pages/AsistenciaPage';
 import EstadisticasPage from './pages/EstadisticasPage';
 import TiempoRealPage from './pages/TiempoRealPage';
+import RecargasPage from './pages/RecargasPage';
 
 const RutaProtegida: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -66,6 +67,7 @@ const App: React.FC = () => {
     { path: '/asistencia', element: <RutaProtegida><AsistenciaPage /></RutaProtegida> },
     { path: '/estadisticas', element: <RutaProtegida><EstadisticasPage /></RutaProtegida> },
     { path: '/tiempo-real', element: <RutaProtegida><TiempoRealPage /></RutaProtegida> },
+    { path: '/recargas', element: <RutaProtegida><RecargasPage /></RutaProtegida> },
   ]);
 
   return routes;

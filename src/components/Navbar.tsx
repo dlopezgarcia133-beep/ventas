@@ -265,6 +265,9 @@ const Navbar = () => {
                   <Button sx={{ ...navBtnSx, color: "#f97316", fontWeight: 700 }} component={Link} to="/direccion">
                     Cortes
                   </Button>
+                  <Button sx={navBtnSx} component={Link} to="/recargas">
+                    RECARGAS
+                  </Button>
                   <Button sx={navBtnSx} component={Link} to="/estadisticas">
                     ESTADÍSTICAS
                   </Button>
@@ -536,6 +539,10 @@ const Navbar = () => {
               <ListItemButton sx={drawerItemSx} onClick={() => navegar("/direccion")}>
                 <ListItemIcon sx={{ ...drawerIconSx, color: "#f97316" }}><ContentCutIcon /></ListItemIcon>
                 <ListItemText primary="Cortes" primaryTypographyProps={{ color: "#f97316", fontWeight: 700 }} />
+              </ListItemButton>
+              <ListItemButton sx={drawerItemSx} onClick={() => navegar("/recargas")}>
+                <ListItemIcon sx={drawerIconSx}><ReceiptLongIcon /></ListItemIcon>
+                <ListItemText primary="RECARGAS" primaryTypographyProps={{ fontWeight: 700 }} />
               </ListItemButton>
               <ListItemButton sx={drawerItemSx} onClick={() => navegar("/estadisticas")}>
                 <ListItemIcon sx={drawerIconSx}><BarChartIcon /></ListItemIcon>
