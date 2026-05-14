@@ -115,6 +115,11 @@ const DireccionPage: React.FC = () => {
   const [marcando, setMarcando]                 = useState(false);
   const [snack, setSnack]                       = useState<{ msg: string; sev: 'success' | 'error' } | null>(null);
   const [mostrarDetalle, setMostrarDetalle]     = useState(false);
+  const [editandoRecargas, setEditandoRecargas] = useState(false);
+  const [editRec, setEditRec]                   = useState('');
+  const [editTrans, setEditTrans]               = useState('');
+  const [editOtr, setEditOtr]                   = useState('');
+  const [editMay, setEditMay]                   = useState('');
 
   const cargarPendientes = useCallback(async () => {
     setLoadingPendientes(true);
@@ -157,6 +162,34 @@ const DireccionPage: React.FC = () => {
       setDialogConfirm(false); cargarPendientes();
     } catch { setSnack({ msg: 'Error al marcar como revisado', sev: 'error' }); }
     finally { setMarcando(false); }
+  };
+
+  const guardarRecargas = async () => {
+    const parse = (s: string) => {
+      if (s === '') return 0;
+      const n = parseFloat(s);
+      return isNaN(n) || n < 0 ? null : n;
+    };
+    const r = parse(editRec);
+    const t = parse(editTrans);
+    const o = parse(editOtr);
+    const m = parse(editMay);
+    if (r === null || t === null || o === null || m === null) {
+      setSnack({ msg: 'Valores inválidos. Ingresa números >= 0.', sev: 'error' });
+      return;
+    }
+    try {
+      await axios.put(
+        `${API}/direccion/cortes/${corte.id}/editar-recargas`,
+        { adicional_recargas: r, adicional_transporte: t, adicional_otros: o, adicional_mayoreo: m },
+        config,
+      );
+      setCorte((prev: any) => ({ ...prev, adicional_recargas: r, adicional_transporte: t, adicional_otros: o, adicional_mayoreo: m }));
+      setEditandoRecargas(false);
+      setSnack({ msg: 'Recargas actualizadas correctamente', sev: 'success' });
+    } catch {
+      setSnack({ msg: 'Error al actualizar recargas', sev: 'error' });
+    }
   };
 
   // ── Derived ───────────────────────────────────────────────────────────────
@@ -263,35 +296,76 @@ const DireccionPage: React.FC = () => {
   </>);
 
   const cardMontos = card(<>
-    {secH('MONTOS ADICIONALES', SECTION_MONTOS, <MonetizationOnIcon sx={{ color: '#854D0E', fontSize: 15 }} />)}
+    <Box sx={{ px: '10px', py: '3px', bgcolor: SECTION_MONTOS.bg, borderBottom: `1px solid ${SECTION_MONTOS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 24 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+        <MonetizationOnIcon sx={{ color: '#854D0E', fontSize: 15 }} />
+        <Typography fontWeight={700} fontSize={11} color={SECTION_MONTOS.color} letterSpacing={0.3} lineHeight={1.2}>MONTOS ADICIONALES</Typography>
+      </Box>
+      {!editandoRecargas && (
+        <Button size="small" onClick={() => { setEditRec(String(rec)); setEditTrans(String(trans)); setEditOtr(String(otr)); setEditMay(String(may)); setEditandoRecargas(true); }}
+          sx={{ fontSize: 10, py: '1px', px: 1, minHeight: 20, color: '#854D0E', '&:hover': { bgcolor: '#FEF9C3' } }}>
+          ✏️ Editar
+        </Button>
+      )}
+    </Box>
     <Box sx={{ px: '10px', py: '4px' }}>
-      {[
-        { label: 'Recargas Telcel', val: rec   },
-        { label: 'Recargas YOVOY',  val: trans  },
-        { label: 'Centro de Pagos', val: otr   },
-      ].map(({ label, val }) => (
-        <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', py: '2px', borderBottom: '1px solid #f1f5f9' }}>
-          <Typography fontSize={11} color="#475569">{label}</Typography>
-          <Typography fontSize={11} fontWeight={600} color="#0f172a" sx={{ fontVariantNumeric: 'tabular-nums' }}>${val.toFixed(2)}</Typography>
-        </Box>
-      ))}
-      <Box sx={{ border: '1px solid #FDE047', borderRadius: '6px', px: '8px', py: '3px', mt: '4px', mb: '4px', bgcolor: '#FEFCE8' }}>
-        <Typography sx={{ fontSize: 9.5, fontWeight: 700, color: '#854D0E', letterSpacing: '0.6px', mb: '1px' }}>RECARGAS MAYOREO</Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Typography fontSize={11} color="#475569">Cantidad</Typography>
-          <Typography fontSize={11} fontWeight={600} color="#0f172a" sx={{ fontVariantNumeric: 'tabular-nums' }}>${may.toFixed(2)}</Typography>
-        </Box>
-        {corte?.adicional_mayoreo_para && (
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography fontSize={11} color="#475569">Para quién</Typography>
-            <Typography fontSize={11} fontWeight={600} color="#0f172a">{corte.adicional_mayoreo_para}</Typography>
+      {editandoRecargas ? (
+        <>
+          {([
+            { label: 'Recargas Telcel', val: editRec,   set: setEditRec   },
+            { label: 'Recargas YOVOY',  val: editTrans, set: setEditTrans },
+            { label: 'Centro de Pagos', val: editOtr,   set: setEditOtr   },
+            { label: 'Mayoreo',         val: editMay,   set: setEditMay   },
+          ] as { label: string; val: string; set: (v: string) => void }[]).map(({ label, val, set }) => (
+            <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: '3px', borderBottom: '1px solid #f1f5f9' }}>
+              <Typography fontSize={11} color="#475569">{label}</Typography>
+              <TextField size="small" value={val} onChange={(e) => set(e.target.value)}
+                inputProps={{ min: 0, style: { textAlign: 'right', fontSize: 11, padding: '2px 6px' } }}
+                sx={{ width: 90, '& .MuiOutlinedInput-root': { height: 26 } }} />
+            </Box>
+          ))}
+          <Box sx={{ display: 'flex', gap: 1, mt: '6px' }}>
+            <Button variant="contained" size="small" onClick={guardarRecargas}
+              sx={{ flex: 1, bgcolor: '#166534', '&:hover': { bgcolor: '#14532d' }, fontSize: 11, py: '2px', fontWeight: 700 }}>
+              Guardar
+            </Button>
+            <Button variant="outlined" size="small" onClick={() => setEditandoRecargas(false)}
+              sx={{ flex: 1, fontSize: 11, py: '2px', color: '#64748b', borderColor: '#cbd5e1' }}>
+              Cancelar
+            </Button>
           </Box>
-        )}
-      </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#FEF9C3', border: '1px solid #FDE047', borderRadius: '6px', px: '8px', py: '3px' }}>
-        <Typography fontWeight={600} color="#854D0E" fontSize={11}>Total Adicional</Typography>
-        <Typography fontWeight={800} color="#A16207" fontSize={13} sx={{ fontVariantNumeric: 'tabular-nums' }}>${totalAdicional.toFixed(2)}</Typography>
-      </Box>
+        </>
+      ) : (
+        <>
+          {[
+            { label: 'Recargas Telcel', val: rec   },
+            { label: 'Recargas YOVOY',  val: trans  },
+            { label: 'Centro de Pagos', val: otr   },
+          ].map(({ label, val }) => (
+            <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', py: '2px', borderBottom: '1px solid #f1f5f9' }}>
+              <Typography fontSize={11} color="#475569">{label}</Typography>
+              <Typography fontSize={11} fontWeight={600} color="#0f172a" sx={{ fontVariantNumeric: 'tabular-nums' }}>${val.toFixed(2)}</Typography>
+            </Box>
+          ))}
+          <Box sx={{ border: '1px solid #FDE047', borderRadius: '6px', px: '8px', py: '3px', mt: '4px', mb: '4px', bgcolor: '#FEFCE8' }}>
+            <Typography sx={{ fontSize: 9.5, fontWeight: 700, color: '#854D0E', letterSpacing: '0.6px', mb: '1px' }}>RECARGAS MAYOREO</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Typography fontSize={11} color="#475569">Cantidad</Typography>
+              <Typography fontSize={11} fontWeight={600} color="#0f172a" sx={{ fontVariantNumeric: 'tabular-nums' }}>${may.toFixed(2)}</Typography>
+            </Box>
+            {corte?.adicional_mayoreo_para && (
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography fontSize={11} color="#475569">Para quién</Typography>
+                <Typography fontSize={11} fontWeight={600} color="#0f172a">{corte.adicional_mayoreo_para}</Typography>
+              </Box>
+            )}
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#FEF9C3', border: '1px solid #FDE047', borderRadius: '6px', px: '8px', py: '3px' }}>
+            <Typography fontWeight={600} color="#854D0E" fontSize={11}>Total Adicional</Typography>
+            <Typography fontWeight={800} color="#A16207" fontSize={13} sx={{ fontVariantNumeric: 'tabular-nums' }}>${totalAdicional.toFixed(2)}</Typography>
+          </Box>
+        </>
+      )}
     </Box>
   </>);
 
