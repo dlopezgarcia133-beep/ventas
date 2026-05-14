@@ -505,9 +505,9 @@ const CortePage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rolToken]);
 
-  // ── notificación corte revisado (encargado/asesor) ───────────────────────
+  // ── notificación corte revisado (encargado) ──────────────────────────────
   useEffect(() => {
-    if ((rolToken !== 'encargado' && rolToken !== 'asesor') || !corteHoy?.modulo_id) return;
+    if (rolToken !== 'encargado' || !corteHoy?.modulo_id) return;
     axios
       .get(`${API}/asistencia/notificaciones?solo_no_leidas=true`, config)
       .then(({ data }) => {

@@ -89,12 +89,15 @@ const Navbar = () => {
   const cerrarSesion = async () => {
     const token = localStorage.getItem("token");
     try {
-      await fetch(`${process.env.REACT_APP_API_URL}/asistencias/logout`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/asistencias/logout`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!res.ok && res.status !== 400) {
+        console.error("Error al registrar salida:", res.status);
+      }
     } catch (error) {
-      console.error("Error al registrar salida:", error);
+      console.error("Error de red al registrar salida:", error);
     } finally {
       localStorage.clear();
       setUsuario("");

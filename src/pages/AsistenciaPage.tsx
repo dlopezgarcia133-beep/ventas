@@ -503,7 +503,7 @@ const TabRegistros: React.FC = () => {
   const [cargando, setCargando] = useState(false);
 
   useEffect(() => {
-    axios.get<UsuarioBasico[]>(`${API}/usuarios/all`, { headers: authH() })
+    axios.get<UsuarioBasico[]>(`${API}/registro/usuarios`, { headers: authH() })
       .then(({ data }) => setUsuarios(data)).catch(() => {});
     axios.get<ModuloConUbicacion[]>(`${API}/modulos/con-ubicacion`, { headers: authH() })
       .then(({ data }) => setModulos(data)).catch(() => {});
@@ -965,8 +965,10 @@ const TabAlertas: React.FC = () => {
   const [notifs, setNotifs] = useState<Notificacion[]>([]);
   const [soloNoLeidas, setSoloNoLeidas] = useState(true);
   const [cargando, setCargando] = useState(false);
+  const rolActual = localStorage.getItem("rol") ?? "";
 
   const cargar = useCallback(async () => {
+    if (!["admin", "direccion", "encargado"].includes(rolActual)) return;
     setCargando(true);
     try {
       const { data } = await axios.get<Notificacion[]>(
@@ -977,7 +979,7 @@ const TabAlertas: React.FC = () => {
     } finally {
       setCargando(false);
     }
-  }, [soloNoLeidas]);
+  }, [soloNoLeidas, rolActual]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
