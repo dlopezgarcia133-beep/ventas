@@ -217,7 +217,7 @@ def obtener_ventas(
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(get_current_user)  # quien hizo login
 ):
-    hoy = date.today()
+    hoy = datetime.now(zona_horaria).date()
     fecha_consulta = fecha or hoy
 
     query = (
@@ -1063,10 +1063,10 @@ def obtener_ventas_telefonos(
 @router.get("/corte-general")
 def corte_general(
     db: Session = Depends(get_db),
-    modulo_id: int | None = Query(None),    
+    modulo_id: int | None = Query(None),
     current_user: models.Usuario = Depends(get_current_user)
 ):
-    hoy = date.today()
+    hoy = datetime.now(zona_horaria).date()
 
     modulo_final = modulo_id or current_user.modulo_id
 
@@ -1232,7 +1232,7 @@ def crear_corte(
         raise HTTPException(status_code=400, detail="El encargado no tiene un módulo asignado")
 
     nuevo_corte = models.CorteDia(
-        fecha=date.today(),
+        fecha=datetime.now(zona_horaria).date(),
         modulo_id=user.modulo_id,
         # Accesorios
         accesorios_efectivo=corte_data.accesorios_efectivo,
@@ -1265,7 +1265,7 @@ def obtener_corte_hoy(
     user: models.Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    target = fecha if fecha is not None else date.today()
+    target = fecha if fecha is not None else datetime.now(zona_horaria).date()
     print(f"[cortes/hoy] fecha_param={fecha!r} target={target!r} modulo_id={user.modulo_id}")
     resultado = db.query(models.CorteDia).filter(
         models.CorteDia.fecha == target,
@@ -1281,7 +1281,8 @@ def guardar_recargas(
     user: models.Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    hoy = date.today()
+    print('guardar_recargas recibido:', data)
+    hoy = datetime.now(zona_horaria).date()
     corte = db.query(models.CorteDia).filter(
         models.CorteDia.fecha == hoy,
         models.CorteDia.modulo_id == user.modulo_id
@@ -1296,7 +1297,9 @@ def guardar_recargas(
     corte.adicional_otros = data.adicional_otros
     corte.adicional_mayoreo = data.adicional_mayoreo
     corte.adicional_mayoreo_para = data.adicional_mayoreo_para
+    print('guardando para fecha:', hoy, 'corte_id:', corte.id)
     db.commit()
+    print('commit OK')
     db.refresh(corte)
     return corte
 
@@ -1307,7 +1310,7 @@ def guardar_salida(
     user: models.Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    hoy = date.today()
+    hoy = datetime.now(zona_horaria).date()
     corte = db.query(models.CorteDia).filter(
         models.CorteDia.fecha == hoy,
         models.CorteDia.modulo_id == user.modulo_id
@@ -1334,7 +1337,7 @@ def enviar_corte_hoy(
     if not user.modulo_id:
         raise HTTPException(status_code=400, detail="El encargado no tiene módulo asignado")
 
-    hoy = date.today()
+    hoy = datetime.now(zona_horaria).date()
     corte = db.query(models.CorteDia).filter(
         models.CorteDia.fecha == hoy,
         models.CorteDia.modulo_id == user.modulo_id
@@ -1401,7 +1404,7 @@ def obtener_comisiones_ciclo_admin(
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(verificar_rol_requerido(models.RolEnum.admin))
 ):
-    hoy = date.today()
+    hoy = datetime.now(zona_horaria).date()
     dias_desde_lunes = hoy.weekday()
     inicio_ciclo = hoy - timedelta(days=dias_desde_lunes)
     fin_ciclo = inicio_ciclo + timedelta(days=6)
