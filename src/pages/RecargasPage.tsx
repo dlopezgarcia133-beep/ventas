@@ -132,15 +132,12 @@ const TablaRecargas: React.FC<{
 
 // ─── Página principal ────────────────────────────────────────────────────────
 const RecargasPage: React.FC = () => {
+  // 1️⃣ TODOS los hooks primero — sin excepción
   const [tab, setTab] = useState(0);
   const [pendientes, setPendientes] = useState<RecargaItem[]>([]);
   const [revisadas, setRevisadas] = useState<RecargaItem[]>([]);
   const [cargandoPend, setCargandoPend] = useState(false);
   const [cargandoRev, setCargandoRev] = useState(false);
-
-  // ── guard de rol (después de los hooks) ──────────────────────────────────
-  const rol = localStorage.getItem('rol') ?? '';
-  if (rol !== 'direccion') return <Navigate to="/" replace />;
 
   const cargarPendientes = useCallback(async () => {
     setCargandoPend(true);
@@ -170,6 +167,10 @@ const RecargasPage: React.FC = () => {
 
   useEffect(() => { cargarPendientes(); }, [cargarPendientes]);
   useEffect(() => { cargarRevisadas(); }, [cargarRevisadas]);
+
+  // 2️⃣ Guard de rol DESPUÉS de todos los hooks
+  const rol = localStorage.getItem('rol') ?? '';
+  if (rol !== 'direccion') return <Navigate to="/" replace />;
 
   const handleToggle = async (id: number, estaRevisada: boolean) => {
     const endpoint = estaRevisada
