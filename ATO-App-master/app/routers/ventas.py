@@ -1281,6 +1281,7 @@ def guardar_recargas(
     user: models.Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    print('guardar_recargas recibido:', data)
     hoy = date.today()
     corte = db.query(models.CorteDia).filter(
         models.CorteDia.fecha == hoy,
@@ -1296,7 +1297,9 @@ def guardar_recargas(
     corte.adicional_otros = data.adicional_otros
     corte.adicional_mayoreo = data.adicional_mayoreo
     corte.adicional_mayoreo_para = data.adicional_mayoreo_para
+    print('guardando para fecha:', hoy, 'corte_id:', corte.id)
     db.commit()
+    print('commit OK')
     db.refresh(corte)
     return corte
 

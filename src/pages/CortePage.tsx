@@ -586,17 +586,22 @@ const CortePage = () => {
 
   // ── encargado actions ─────────────────────────────────────────────────────
   const guardarRecargas = async () => {
+    console.log('GUARDAR RECARGAS click - payload:', { recargas, transporte, otros, mayoreo, mayoreoParaQuien, fecha: fechaDerecha });
     setLoadingRecargas(true);
     setMsgRecargas('');
+    const url = `${API}/ventas/cortes/hoy/recargas`;
     try {
+      console.log('enviando a endpoint:', url);
       const res = await axios.patch(
-        `${API}/ventas/cortes/hoy/recargas`,
+        url,
         { adicional_recargas: rec, adicional_transporte: trans, adicional_otros: otr, adicional_mayoreo: may, adicional_mayoreo_para: mayoreoParaQuien || null },
         config,
       );
+      console.log('respuesta guardar:', res.data, res.status);
       setCorteHoy(res.data);
       setMsgRecargas('Recargas guardadas');
     } catch (err: any) {
+      console.log('ERROR guardar:', err.response?.data, err.message);
       setMsgRecargas(err?.response?.data?.detail || 'Error al guardar');
     } finally {
       setLoadingRecargas(false);
