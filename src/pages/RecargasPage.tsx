@@ -57,6 +57,7 @@ interface RecargaItem {
   adicional_transporte: number;
   adicional_otros: number;
   adicional_mayoreo: number;
+  adicional_mayoreo_para?: string | null;
   recarga_revisada: boolean;
 }
 
@@ -107,7 +108,14 @@ const TablaRecargas: React.FC<{
               <TableCell sx={tdR}>{fmt$(r.adicional_recargas)}</TableCell>
               <TableCell sx={tdR}>{fmt$(r.adicional_transporte)}</TableCell>
               <TableCell sx={tdR}>{fmt$(r.adicional_otros)}</TableCell>
-              <TableCell sx={tdR}>{fmt$(r.adicional_mayoreo)}</TableCell>
+              <TableCell sx={tdR}>
+                {fmt$(r.adicional_mayoreo)}
+                {r.adicional_mayoreo_para && (
+                  <Box component="div" sx={{ fontSize: 10, color: '#94a3b8', fontWeight: 400, mt: '1px' }}>
+                    para: {r.adicional_mayoreo_para}
+                  </Box>
+                )}
+              </TableCell>
               <TableCell sx={{ ...tdStyle, textAlign: 'center', padding: '0 6px' }}>
                 <Tooltip title={revisadas ? 'Desmarcar (regresa a pendientes)' : 'Marcar como revisada'}>
                   <Checkbox
