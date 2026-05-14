@@ -477,15 +477,10 @@ const DireccionPage: React.FC = () => {
             <Box sx={{ border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden' }}>
               {pendientes.map((c, idx) => (
                 <Box key={c.id} onClick={() => abrirCortePendiente(c)}
-                  sx={{ display: 'flex', alignItems: 'center', px: '8px', py: '2px', minHeight: 24, bgcolor: '#fff', borderBottom: idx < pendientes.length - 1 ? '1px solid #eef2f7' : 'none', cursor: 'pointer', gap: '6px', '&:hover': { bgcolor: '#f8fafc' } }}>
-                  <Box sx={{ flex: '0 0 26%', minWidth: 0 }}>
-                    <Typography fontWeight={700} fontSize={10.5} color="#0f172a" lineHeight={1.1}>{c.modulo_nombre}</Typography>
-                    <Typography fontSize={9} color="#94a3b8" lineHeight={1.1} sx={{ fontVariantNumeric: 'tabular-nums' }}>{fmtFecha(c.fecha)}</Typography>
-                  </Box>
-                  <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
-                    <Typography fontWeight={700} fontSize={10.5} color="#0f172a" lineHeight={1.1} sx={{ fontVariantNumeric: 'tabular-nums' }}>{fmt$(c.total_general)}</Typography>
-                    <Typography fontSize={9} color="#94a3b8" noWrap lineHeight={1.1} sx={{ fontVariantNumeric: 'tabular-nums' }}>Ef: {fmt$(c.total_efectivo)} · Ta: {fmt$(c.total_tarjeta)}</Typography>
-                  </Box>
+                  sx={{ display: 'flex', alignItems: 'center', px: '14px', py: '10px', minHeight: 52, bgcolor: '#fff', borderBottom: idx < pendientes.length - 1 ? '1px solid #eef2f7' : 'none', cursor: 'pointer', gap: '16px', '&:hover': { bgcolor: '#f8fafc' } }}>
+                  <Typography fontWeight={700} fontSize={18} color="#1a1a2e" lineHeight={1}>{c.modulo_nombre}</Typography>
+                  <Typography fontSize={14} color="#888" lineHeight={1} sx={{ fontVariantNumeric: 'tabular-nums' }}>{fmtFecha(c.fecha)}</Typography>
+                  <Box sx={{ flex: '1 1 auto' }} />
                   <Box sx={{ flexShrink: 0 }}>
                     <Button variant="contained"
                       endIcon={<ArrowForwardIcon sx={{ fontSize: 9 }} />}
