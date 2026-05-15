@@ -18,6 +18,8 @@ import { useNavigate } from 'react-router-dom';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 const HOY = new Date().toLocaleDateString('en-CA'); // "YYYY-MM-DD" local time
+const fmtFecha = (d: string) => { const [y, m, day] = (d || '').split('-'); return day ? `${day}/${m}/${y}` : d || ''; };
+const fmtHora  = (h: string) => (h ? h.slice(0, 5) : '');
 
 const thStyle: React.CSSProperties = {
   padding: 8,
@@ -1939,7 +1941,7 @@ const FormularioVentaMultiple = () => {
           <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                {['Nombre', 'Producto', 'Cant.', 'Precio', 'Total', 'Fecha', 'Estado', ''].map((h) => (
+                {['Nombre', 'Producto', 'Cant.', 'Precio', 'Total', 'Método', 'Fecha', 'Estado', ''].map((h) => (
                   <th key={h} style={thStyle}>{h}</th>
                 ))}
               </tr>
@@ -1954,7 +1956,10 @@ const FormularioVentaMultiple = () => {
                     <td style={tdStyle}>{v.cantidad}</td>
                     <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
                     <td style={tdStyle}>${typeof v.total === 'number' ? v.total.toFixed(2) : '0.00'}</td>
-                    <td style={tdStyle}>{`${v.fecha} ${v.hora}`}</td>
+                    <td style={{ ...tdStyle, color: v.metodo_pago?.toLowerCase() === 'efectivo' ? '#2e7d32' : v.metodo_pago?.toLowerCase() === 'tarjeta' ? '#1565c0' : '#64748b', fontWeight: 600 }}>
+                      {v.metodo_pago ? v.metodo_pago.charAt(0).toUpperCase() + v.metodo_pago.slice(1).toLowerCase() : '—'}
+                    </td>
+                    <td style={tdStyle}>{`${fmtFecha(v.fecha)} ${fmtHora(v.hora)}`}</td>
                     <td style={{ ...tdStyle, color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600 }}>
                       {v.cancelada ? 'Cancelada' : 'Activa'}
                     </td>
@@ -1965,7 +1970,7 @@ const FormularioVentaMultiple = () => {
                   </tr>
                 ))}
               {ventas.filter((v) => v.tipo_producto === 'accesorios').length === 0 && (
-                <tr><td colSpan={8} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8' }}>Sin ventas</td></tr>
+                <tr><td colSpan={9} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8' }}>Sin ventas</td></tr>
               )}
             </tbody>
           </Box>
@@ -1992,7 +1997,7 @@ const FormularioVentaMultiple = () => {
           <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                {['Nombre', 'Teléfono', 'Chip casado', 'Tipo', 'Precio', 'Fecha', 'Estado', ''].map((h) => (
+                {['Nombre', 'Teléfono', 'Chip casado', 'Tipo', 'Precio', 'Método', 'Fecha', 'Estado', ''].map((h) => (
                   <th key={h} style={thStyle}>{h}</th>
                 ))}
               </tr>
@@ -2007,7 +2012,10 @@ const FormularioVentaMultiple = () => {
                     <td style={tdStyle}>{v.chip_casado}</td>
                     <td style={tdStyle}>{v.tipo_venta}</td>
                     <td style={tdStyle}>${typeof v.precio_unitario === 'number' ? v.precio_unitario.toFixed(2) : '0.00'}</td>
-                    <td style={tdStyle}>{new Date(v.fecha).toLocaleDateString()}</td>
+                    <td style={{ ...tdStyle, color: v.metodo_pago?.toLowerCase() === 'efectivo' ? '#2e7d32' : v.metodo_pago?.toLowerCase() === 'tarjeta' ? '#1565c0' : '#64748b', fontWeight: 600 }}>
+                      {v.metodo_pago ? v.metodo_pago.charAt(0).toUpperCase() + v.metodo_pago.slice(1).toLowerCase() : '—'}
+                    </td>
+                    <td style={tdStyle}>{`${fmtFecha(v.fecha)} ${fmtHora(v.hora)}`}</td>
                     <td style={{ ...tdStyle, color: v.cancelada ? '#ef4444' : '#22c55e', fontWeight: 600 }}>
                       {v.cancelada ? 'Cancelada' : 'Activa'}
                     </td>
@@ -2018,7 +2026,7 @@ const FormularioVentaMultiple = () => {
                   </tr>
                 ))}
               {ventasTelefonos.length === 0 && (
-                <tr><td colSpan={8} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8' }}>Sin ventas</td></tr>
+                <tr><td colSpan={9} style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8' }}>Sin ventas</td></tr>
               )}
             </tbody>
           </Box>
